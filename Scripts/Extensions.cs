@@ -26,5 +26,23 @@ namespace Celeste.Mod.izumisQOL
 				descriptionText.FadeVisible = false;
 			});
 		}
+
+		public static void NeedsRelaunch(this TextMenuExt.SubMenu subMenu, TextMenu containingMenu, TextMenu.Item subMenuItem)
+		{
+			TextMenuExt.EaseInSubHeaderExt needsRelaunchText = new TextMenuExt.EaseInSubHeaderExt(Dialog.Clean("MODOPTIONS_NEEDSRELAUNCH"), initiallyVisible: false, containingMenu)
+			{
+				TextColor = Color.OrangeRed,
+				HeightExtra = 0f
+			};
+			subMenu.Add(needsRelaunchText);
+			subMenuItem.OnEnter = (Action)Delegate.Combine(subMenuItem.OnEnter, (Action)delegate
+			{
+				needsRelaunchText.FadeVisible = true;
+			});
+			subMenuItem.OnLeave = (Action)Delegate.Combine(subMenuItem.OnLeave, (Action)delegate
+			{
+				needsRelaunchText.FadeVisible = false;
+			});
+		}
 	}
 }

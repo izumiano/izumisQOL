@@ -20,15 +20,6 @@ namespace Celeste.Mod.izumisQOL
 		public List<ButtonBinding> ButtonsSwapKeybinds { get; set; } = new();
 
 		[SettingIgnore]
-		private TextMenu.Button CopyButton { get; set; }
-		[SettingIgnore]
-		private TextMenu.Button LoadButton { get; set; }
-		[SettingIgnore]
-		private TextMenu.Button AddKeyBindingsButton { get; set; }
-		[SettingIgnore]
-		private TextMenu.Button RemoveKeyBindingsButton { get; set; }
-
-		[SettingIgnore]
 		private TextMenu.Slider CurrentKeybindSlider { get; set; }
 
 		public bool AutoLoadKeybinds = true;
@@ -55,41 +46,77 @@ namespace Celeste.Mod.izumisQOL
 			}
 		}
 
-		public List<string> BlackListNames = new List<string>();
+		private List<string> BlacklistNames = new();
 
-		public int CurrentBlacklistSlot { get; set; }
+		private TextMenu.Slider CurrentBlacklistSlider;
+		private int currentBlacklistSlot = 0;
+		public int CurrentBlacklistSlot 
+		{
+			get
+			{
+				if(currentBlacklistSlot > BlacklistNames.Count - 1)
+				{
+					currentBlacklistSlot = BlacklistNames.Count - 1;
+				}
+				return currentBlacklistSlot;
+			} 
+			set
+			{
+				currentBlacklistSlot = value;
+			}
+		}
 
 		public void CreateCurrentKeybindSlotEntry(TextMenu menu, bool inGame)
 		{
 			TextMenuExt.SubMenu subMenu = new("Binding Settings", false);
 
+			TextMenu.Item menuItem;
+
 			Global.Log("keybindSettings.Count=" + KeybindModule.KeybindSettings.Count);
-			subMenu.Add(CurrentKeybindSlider = new TextMenu.Slider("Current Key Bind Slot", i => (i + 1).ToString(), 0, KeybindModule.KeybindSettings.Count - 1, CurrentKeybindSlot));
+			subMenu.Add(CurrentKeybindSlider = new TextMenu.Slider("Current Keybind Slot", i => (i + 1).ToString(), 0, KeybindModule.KeybindSettings.Count - 1, CurrentKeybindSlot)
+			{
+				OnValueChange = delegate (int val)
+				{
+					if (AutoLoadKeybinds)
+					{
+						Global.Log(val);
+						KeybindModule.ApplyKeybinds(val);
+					}
+				}
+			});
+			subMenu.AddDescription(menu, CurrentKeybindSlider, "The currently selected keybinds. \n\nNote: Turn auto-load keybinds off if you want to edit an existing keybind slot.");
+			//subMenu.AddDescription(menu, CurrentKeybindSlider, "Turn auto-load keybinds off if you want to edit an existing keybind slot.");
 
-			subMenu.Add(new TextMenu.OnOff("Auto-Load Keybinds", AutoLoadKeybinds));
+			subMenu.Add(new TextMenu.OnOff("Auto-Load Keybinds", AutoLoadKeybinds)
+			{
+				OnValueChange = delegate(bool val)
+				{
+					AutoLoadKeybinds = val;
+				}
+			});
 
-			subMenu.Add(CopyButton = new TextMenu.Button("Copy Current Keybinds Here"));
-			CopyButton.Pressed(
+			subMenu.Add(menuItem = new TextMenu.Button("Copy Current Keybinds Here"));
+			menuItem.Pressed(
 				delegate
 				{
 					Global.Log("Copying to: " + CurrentKeybindSlider.Index);
 					KeybindModule.CopyCelesteSettingsToKeybindIDFile(CurrentKeybindSlider.Index);
 				}
 			);
-			subMenu.AddDescription(menu, CopyButton, "Copies the keybinds configured in settings to the current keybind slot.");
+			subMenu.AddDescription(menu, menuItem, "Copies the keybinds configured in settings to the current keybind slot.");
 
-			subMenu.Add(LoadButton = new TextMenu.Button("Load"));
-			LoadButton.Pressed(
+			subMenu.Add(menuItem = new TextMenu.Button("Load"));
+			menuItem.Pressed(
 				delegate
 				{
 					Global.Log(CurrentKeybindSlider.Index);
 					KeybindModule.ApplyKeybinds(CurrentKeybindSlider.Index);
 				}
 			);
-			subMenu.AddDescription(menu, LoadButton, "Load the current keybind slot into your keybind-settings.");
+			subMenu.AddDescription(menu, menuItem, "Load the current keybind slot into your keybind-settings.");
 
-			subMenu.Add(AddKeyBindingsButton = new TextMenu.Button("Add"));
-			AddKeyBindingsButton.Pressed(
+			subMenu.Add(menuItem = new TextMenu.Button("Add"));
+			menuItem.Pressed(
 				delegate
 				{
 					int val = CurrentKeybindSlider.Values.Count;
@@ -103,9 +130,9 @@ namespace Celeste.Mod.izumisQOL
 					izumisQOL.InitializeButtonBinding(ButtonsSwapKeybinds[val]);
 				}
 			);
-			subMenu.AddDescription(menu, AddKeyBindingsButton, "Add another keybind slot.");
+			subMenu.AddDescription(menu, menuItem, "Add another keybind slot.");
 
-			//subMenu.Remove(RemoveKeyBindingsButton = new TextMenu.Button("Remove"));
+			//subMenu.Remove(menuItem = new TextMenu.Button("Remove"));
 			//RemoveKeyBindingsButton.Pressed(
 			//	delegate
 			//	{
@@ -123,7 +150,43 @@ namespace Celeste.Mod.izumisQOL
 
 			TextMenuExt.SubMenu subMenu = new("Blacklist Settings", false);
 
-			subMenu.Add(new TextMenu.Slider("Current Blacklist", i => BlackListNames[i], 0, BlackListNames.Count));
+			TextMenu.Item menuItem;
+
+			subMenu.Add(CurrentBlacklistSlider = new TextMenu.Slider("Current Blacklist", i => BlacklistNames[i], 0, BlacklistNames.Count - 1, CurrentBlacklistSlot)
+			{
+				OnValueChange = delegate(int val)
+				{
+					CurrentBlacklistSlot = val;
+					BlacklistModule.CopyCustomBlacklistToCeleste(BlacklistNames[val]);
+				}
+			});
+			subMenu.NeedsRelaunch(menu, CurrentBlacklistSlider);
+
+			subMenu.Add(menuItem = new TextMenu.Button("Import Name From Clipboard"));
+			menuItem.Pressed(
+				delegate
+				{
+					string clipboardText = TextInput.GetClipboardText();
+					if(!string.IsNullOrEmpty(clipboardText))
+					{
+						BlacklistModule.ChangeFileName(BlacklistNames[CurrentBlacklistSlot], clipboardText);
+						BlacklistNames[CurrentBlacklistSlot] = clipboardText;
+						CurrentBlacklistSlider.Values.Insert(CurrentBlacklistSlot + 1, Tuple.Create(clipboardText, CurrentBlacklistSlot));
+						CurrentBlacklistSlider.Values.RemoveAt(CurrentBlacklistSlot);
+						CurrentBlacklistSlider.SelectWiggler.Start();
+					}
+				}
+			);
+
+			subMenu.Add(menuItem = new TextMenu.Button("Add"));
+			menuItem.Pressed(
+				delegate
+				{
+					BlacklistModule.CopyCelesteBlacklistToNewFile();
+					CurrentBlacklistSlider.Add(BlacklistNames[BlacklistNames.Count - 1], BlacklistNames.Count - 1);
+					CurrentBlacklistSlider.SelectWiggler.Start();
+				}
+			);
 
 			menu.Add(subMenu);
 		}
@@ -131,6 +194,15 @@ namespace Celeste.Mod.izumisQOL
 		public TextMenu.Slider GetCurrentKeybindSlider()
 		{
 			return CurrentKeybindSlider;
+		}
+
+		public void AddBlackListName(string name)
+		{
+			if (!BlacklistNames.Contains(name))
+			{
+				Global.Log(name);
+				BlacklistNames.Add(name);
+			}
 		}
 	}
 }

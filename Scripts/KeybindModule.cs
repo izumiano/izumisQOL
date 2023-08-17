@@ -46,7 +46,7 @@ namespace Celeste.Mod.izumisQOL
 
 		private static void SetUpDirectory()
 		{
-			keybindsPath = BaseDirectory + "Saves/izuMod/keybinds";
+			keybindsPath = BaseDirectory + "Saves\\izuMod\\keybinds";
 			Directory.CreateDirectory(keybindsPath);
 
 			if (!File.Exists(keybindsPath + "/blacklist.txt"))
