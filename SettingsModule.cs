@@ -8,6 +8,20 @@ using Monocle;
 using Celeste.Mod.izumisQOL.Menu;
 using Microsoft.Xna.Framework;
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Threading.Tasks;
+using Celeste;
+using Celeste.Mod;
+using FMOD.Studio;
+using Monocle;
+using On.Celeste;
+using On.Monocle;
+
 namespace Celeste.Mod.izumisQOL
 {
 	[SettingName("modoptions_izumisQOL_title")]
@@ -32,7 +46,7 @@ namespace Celeste.Mod.izumisQOL
 				if(currentKeybindSlot == -1)
 				{
 					currentKeybindSlot = 0;
-					KeybindModule.CopyCelesteSettingsToKeybindIDFile(0);
+					KeybindModule.CopyCelesteSettingsToKeybindIDFiles(0);
 				}
 				if(currentKeybindSlot > KeybindModule.KeybindSettings.Count - 1)
 				{
@@ -66,6 +80,9 @@ namespace Celeste.Mod.izumisQOL
 			}
 		}
 
+		[SettingSubText("Enable to get more debug info.")]
+		public bool VerboseLogging { get; set; } = false;
+
 		public void CreateCurrentKeybindSlotEntry(TextMenu menu, bool inGame)
 		{
 			TextMenuExt.SubMenu subMenu = new("Binding Settings", false);
@@ -85,22 +102,26 @@ namespace Celeste.Mod.izumisQOL
 				}
 			});
 			subMenu.AddDescription(menu, CurrentKeybindSlider, "The currently selected keybinds. \n\nNote: Turn auto-load keybinds off if you want to edit an existing keybind slot.");
-			//subMenu.AddDescription(menu, CurrentKeybindSlider, "Turn auto-load keybinds off if you want to edit an existing keybind slot.");
 
-			subMenu.Add(new TextMenu.OnOff("Auto-Load Keybinds", AutoLoadKeybinds)
+			subMenu.Add(menuItem = new TextMenu.OnOff("Auto-Load Keybinds", AutoLoadKeybinds)
 			{
 				OnValueChange = delegate(bool val)
 				{
 					AutoLoadKeybinds = val;
 				}
 			});
+			subMenu.AddDescription(menu, menuItem, "Whether the keybinds are loaded automatically when selecting a keybind\nor when pressing the load button.");
 
 			subMenu.Add(menuItem = new TextMenu.Button("Copy Current Keybinds Here"));
 			menuItem.Pressed(
 				delegate
 				{
 					Global.Log("Copying to: " + CurrentKeybindSlider.Index);
-					KeybindModule.CopyCelesteSettingsToKeybindIDFile(CurrentKeybindSlider.Index);
+					Tooltip.Show("Copying current keybinds to slot " + (CurrentKeybindSlider.Index + 1));
+
+					//Everest.SaveSettings();
+
+					KeybindModule.CopyCelesteSettingsToKeybindIDFiles(CurrentKeybindSlider.Index);
 				}
 			);
 			subMenu.AddDescription(menu, menuItem, "Copies the keybinds configured in settings to the current keybind slot.");
@@ -121,10 +142,12 @@ namespace Celeste.Mod.izumisQOL
 				{
 					int val = CurrentKeybindSlider.Values.Count;
 
-					KeybindModule.CopyCelesteSettingsToKeybindIDFile(val);
+					KeybindModule.CopyCelesteSettingsToKeybindIDFiles(val);
 
 					CurrentKeybindSlider.Add((val + 1).ToString(), val);
 					CurrentKeybindSlider.SelectWiggler.Start();
+
+					Tooltip.Show("Adding new keybind slot");
 
 					ButtonsSwapKeybinds.Add(new ButtonBinding());
 					izumisQOL.InitializeButtonBinding(ButtonsSwapKeybinds[val]);
@@ -177,6 +200,7 @@ namespace Celeste.Mod.izumisQOL
 					}
 				}
 			);
+			subMenu.AddDescription(menu, menuItem, "Sets the name of the current blacklist to the text in your clipboard.");
 
 			subMenu.Add(menuItem = new TextMenu.Button("Add"));
 			menuItem.Pressed(
@@ -187,6 +211,7 @@ namespace Celeste.Mod.izumisQOL
 					CurrentBlacklistSlider.SelectWiggler.Start();
 				}
 			);
+			subMenu.AddDescription(menu, menuItem, "Add another blacklist.");
 
 			menu.Add(subMenu);
 		}

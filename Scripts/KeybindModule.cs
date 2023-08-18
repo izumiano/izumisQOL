@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using Celeste;
 using Monocle;
+using System.Reflection;
 
 namespace Celeste.Mod.izumisQOL
 {
@@ -36,6 +37,10 @@ namespace Celeste.Mod.izumisQOL
 				{
 					ApplyKeybinds(izuSettings.CurrentKeybindSlot);
 				}
+				else
+				{
+					Tooltip.Show("Slot " + (buttonPressed + 1) + " selected");
+				}
 			}
 
 			if (izuSettings.ButtonLoadKeybind.Pressed)
@@ -49,9 +54,12 @@ namespace Celeste.Mod.izumisQOL
 			keybindsPath = BaseDirectory + "Saves\\izuMod\\keybinds";
 			Directory.CreateDirectory(keybindsPath);
 
-			if (!File.Exists(keybindsPath + "/blacklist.txt"))
+			if (!File.Exists(keybindsPath + "/whitelist.txt"))
 			{
-				File.WriteAllText(keybindsPath + "/blacklist.txt", "# Mods written here will not have their settings copied by izumi's keybind swapper\n# Lines starting with # are ignored\nizumisQOL");
+				File.WriteAllText(keybindsPath + "/whitelist.txt", 
+					"# Mods written here will have their settings copied by izumisQOL\n" +
+					"# Lines starting with # are ignored"
+					);
 			}
 		}
 
@@ -122,7 +130,7 @@ namespace Celeste.Mod.izumisQOL
 
 			if (keybindIndex == -1)
 			{
-				CopyCelesteSettingsToKeybindIDFile(0);
+				CopyCelesteSettingsToKeybindIDFiles(0);
 				return;
 			}
 		}
@@ -133,7 +141,7 @@ namespace Celeste.Mod.izumisQOL
 
 			foreach(string keybindFile in keybindFiles)
 			{
-				string shortPath = keybindFile.Replace(BaseDirectory + "Saves/", "").Replace(".celeste", ""); // izuMod\0_
+				string shortPath = keybindFile.Replace(BaseDirectory + "Saves\\", "").Replace(".celeste", ""); // izuMod\0_
 				string fileName = shortPath.Replace("izuMod\\keybinds\\", "");
 
 				if (!fileName.StartsWith(izuSettings.CurrentKeybindSlot.ToString()))
@@ -160,7 +168,7 @@ namespace Celeste.Mod.izumisQOL
 			}
 		}
 
-		public static void CopyCelesteSettingsToKeybindIDFile(int id)
+		public static void CopyCelesteSettingsToKeybindIDFiles(int id)
 		{
 			FileStream fileStream = File.Open("Saves/settings.celeste", FileMode.Open);
 
@@ -171,61 +179,117 @@ namespace Celeste.Mod.izumisQOL
 			}
 			fileStream.Dispose();
 
-			//string celesteSettingsFile = File.ReadAllText("Saves/settings.celeste");
 			File.WriteAllText(keybindsPath + "/" + id + "_keybind.celeste", celesteSettingsFile);
 
-			//string[] files = Directory.GetFiles(BaseDirectory + "Saves");
-			//foreach (string file in files)
-			//{
-			//	string name = file.Replace(BaseDirectory + "Saves\\", "");
+			#region Modsaves
+			foreach(EverestModule module in Everest.Modules)
+			{
+				if (!WhitelistContains(module.Metadata.Name))
+					continue;
 
-			//	if(!IsValidSettingsFile(name))
-			//		continue;
-
-			//	Log(keybindsPath + "/" + id + "_" + name);
-			//	string s = File.ReadAllText(file);
-			//	File.WriteAllText(keybindsPath + "/" + id + "_" + name, s);
-			//}
+				try
+				{
+					object settings = module._Settings;
+					PropertyInfo[] properties = module.SettingsType.GetProperties();
+					ModKeybindsSaveType settingsSave = new ModKeybindsSaveType();
+					foreach (PropertyInfo prop in properties)
+					{
+						SettingInGameAttribute attribInGame;
+						if (((attribInGame = prop.GetCustomAttribute<SettingInGameAttribute>()) != null && attribInGame.InGame != Engine.Scene is Level) || prop.GetCustomAttribute<SettingIgnoreAttribute>() != null || !prop.CanRead || !prop.CanWrite)
+						{
+							continue;
+						}
+						if (typeof(ButtonBinding).IsAssignableFrom(prop.PropertyType))
+						{
+							if (prop.GetValue(settings) is ButtonBinding binding)
+							{
+								settingsSave.buttonBindings.Add(prop.Name, ((ButtonBinding)prop.GetValue(settings)).Button.Binding);
+							}
+						}
+					}
+					FileStream fileStream2 = File.Create(keybindsPath + "\\" + id + "_modsettings-" + module.Metadata.Name + ".celeste");
+					using StreamWriter writer = new StreamWriter(fileStream2);
+					YamlHelper.Serializer.Serialize(writer, settingsSave, typeof(ModKeybindsSaveType));
+				}
+				catch
+				{
+					Log("Could not write modsettings to keybind file.", LogLevel.Warn);
+				}
+			}
+			#endregion
 
 			LoadKeybindFiles();
 			CopyFromKeybindsToKeybindSwapper(id);
 		}
 
-		private static bool IsValidSettingsFile(string shortPath)
+		private static bool WhitelistContains(string name)
 		{
-			if (!shortPath.StartsWith("modsettings-"))
+			foreach (string line in File.ReadAllLines(keybindsPath + "/whitelist.txt"))
 			{
-				return false;
-			}
-
-			string name = shortPath.Replace("modsettings-", "");
-			foreach (string line in File.ReadAllLines(keybindsPath + "/blacklist.txt"))
-			{
-				if(name[0] == '#')
+				if (name[0] == '#')
 				{
 					continue;
 				}
 				if (name.StartsWith(line))
 				{
-					return false;
+					return true;
 				}
 			}
-			return true;
+			return false;
 		}
 
 		public static void ApplyKeybinds(int keybindID)
 		{
-			Log("Applying keybind " + keybindID);
+			Tooltip.Show("Applying keybind " + (keybindID + 1));
 
 			CopyFromKeybindSwapperToKeybinds(keybindID);
 
-			//CopyFromKeybindSwapperToModSaves();
-			//Log("Reloading all mod settings");
-			//foreach (EverestModule module in Everest.Modules)
-			//{
-			//	module.LoadSettings();
-			//	//Log(module.)
-			//}
+			CopyFromKeybindSwapperToModSaves();
+			Log("Reloading all mod settings");
+			foreach (EverestModule module in Everest.Modules)
+			{
+				bool inWhitelist = WhitelistContains(module.Metadata.Name);
+				Log(module.Metadata.Name + " in whitelist: " + inWhitelist);
+
+				if (!inWhitelist)
+				{
+					continue;
+				}
+
+				try
+				{
+					FileStream fileStream = File.OpenRead(keybindsPath + "\\" + keybindID + "_modsettings-" + module.Metadata.Name + ".celeste");
+					using StreamReader reader = new StreamReader(fileStream);
+					ModKeybindsSaveType modKeybindsSaveType = (ModKeybindsSaveType)YamlHelper.Deserializer.Deserialize(reader, typeof(ModKeybindsSaveType));
+
+					object settings = module._Settings;
+					PropertyInfo[] properties = module.SettingsType.GetProperties();
+					foreach (PropertyInfo prop in properties)
+					{
+						SettingInGameAttribute attribInGame;
+						if (((attribInGame = prop.GetCustomAttribute<SettingInGameAttribute>()) != null && attribInGame.InGame != Engine.Scene is Level) || prop.GetCustomAttribute<SettingIgnoreAttribute>() != null || !prop.CanRead || !prop.CanWrite)
+						{
+							continue;
+						}
+						if (typeof(ButtonBinding).IsAssignableFrom(prop.PropertyType))
+						{
+							if (prop.GetValue(settings) is ButtonBinding buttonBinding)
+							{
+								Binding modBinding = buttonBinding.Button.Binding;
+								Binding customBinding = modKeybindsSaveType.buttonBindings[prop.Name];
+								ClearKey(modBinding);
+								modBinding.Add(customBinding.Keyboard.ToArray());
+								modBinding.Add(customBinding.Controller.ToArray());
+								modBinding.Add(customBinding.Mouse.ToArray());
+							}
+						}
+					}
+				}
+				catch
+				{
+					Log("Could not read modsettings from keybind file.", LogLevel.Warn);
+				}
+			}
 		}
 
 		public static void CopyFromKeybindSwapperToKeybinds(int keybindID)
@@ -250,14 +314,32 @@ namespace Celeste.Mod.izumisQOL
 			//Settings.Instance            KeybindSettings[keybindID]
 			#region
 			// adding the menu binds earlier because they always need atleast one button bound
-			b.MenuLeft.Add(a.MenuLeft.Keyboard.ToArray());
+			b.MenuLeft.	Add(a.MenuLeft.	Keyboard.ToArray());
 			b.MenuRight.Add(a.MenuRight.Keyboard.ToArray());
-			b.MenuUp.Add(a.MenuUp.Keyboard.ToArray());
-			b.MenuDown.Add(a.MenuDown.Keyboard.ToArray());
-			b.Confirm.Add(a.Confirm.Keyboard.ToArray());
-			b.Cancel.Add(a.Cancel.Keyboard.ToArray());
-			b.Journal.Add(a.Journal.Keyboard.ToArray());
-			b.Pause.Add(a.Pause.Keyboard.ToArray());
+			b.MenuUp.	Add(a.MenuUp.	Keyboard.ToArray());
+			b.MenuDown.	Add(a.MenuDown.	Keyboard.ToArray());
+			b.Confirm.  Add(a.Confirm.	Keyboard.ToArray());
+			b.Cancel.   Add(a.Cancel.	Keyboard.ToArray());
+			b.Journal.  Add(a.Journal.	Keyboard.ToArray());
+			b.Pause.    Add(a.Pause.	Keyboard.ToArray());
+
+			b.MenuLeft. Add(a.MenuLeft.	Controller.ToArray());
+			b.MenuRight.Add(a.MenuRight.Controller.ToArray());
+			b.MenuUp.   Add(a.MenuUp.	Controller.ToArray());
+			b.MenuDown. Add(a.MenuDown.	Controller.ToArray());
+			b.Confirm.  Add(a.Confirm.	Controller.ToArray());
+			b.Cancel.   Add(a.Cancel.	Controller.ToArray());
+			b.Journal.  Add(a.Journal.	Controller.ToArray());
+			b.Pause.    Add(a.Pause.	Controller.ToArray());
+
+			b.MenuLeft.	Add(a.MenuLeft.	Mouse.ToArray());
+			b.MenuRight.Add(a.MenuRight.Mouse.ToArray());
+			b.MenuUp.	Add(a.MenuUp.	Mouse.ToArray());
+			b.MenuDown.	Add(a.MenuDown.	Mouse.ToArray());
+			b.Confirm.	Add(a.Confirm.	Mouse.ToArray());
+			b.Cancel.	Add(a.Cancel.	Mouse.ToArray());
+			b.Journal.	Add(a.Journal.	Mouse.ToArray());
+			b.Pause.	Add(a.Pause.	Mouse.ToArray());
 			#endregion
 
 			Binding[] bindings =
@@ -323,6 +405,8 @@ namespace Celeste.Mod.izumisQOL
 			{
 				ClearKey(bindings[i]);
 				bindings[i].Add(newBindings[i].Keyboard.ToArray());
+				bindings[i].Add(newBindings[i].Controller.ToArray());
+				bindings[i].Add(newBindings[i].Mouse.ToArray());
 			}
 		}
 
@@ -350,6 +434,11 @@ namespace Celeste.Mod.izumisQOL
 			{
 				izuSettings.ButtonsSwapKeybinds.Add(new ButtonBinding());
 			}
+		}
+
+		class ModKeybindsSaveType
+		{
+			public Dictionary<string, Binding> buttonBindings = new Dictionary<string, Binding>();
 		}
 	}
 }
