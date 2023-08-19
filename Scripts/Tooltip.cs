@@ -5,6 +5,7 @@ using Celeste;
 //using Celeste.Mod.SpeedrunTool.SaveLoad;
 using Microsoft.Xna.Framework;
 using Monocle;
+using System;
 
 [Tracked(false)]
 public class Tooltip : Entity
@@ -24,8 +25,13 @@ public class Tooltip : Entity
 		this.message = message;
 		this.duration = duration;
 		Vector2 messageSize = ActiveFont.Measure(message);
-		Position = new Vector2(25f, (float)Engine.Height - messageSize.Y - 12.5f);
-		base.Tag = (int)Tags.HUD | (int)Tags.Global | (int)Tags.FrozenUpdate | (int)Tags.PauseUpdate | (int)Tags.TransitionUpdate;
+		Position = new Vector2(25f, Engine.Height - messageSize.Y - 12.5f);
+		Tag = (int)Tags.HUD | (int)Tags.Global | (int)Tags.FrozenUpdate | (int)Tags.PauseUpdate | (int)Tags.TransitionUpdate;
+		Convert.ToString((int)Tags.HUD,				 2).Log("HUD");
+		Convert.ToString((int)Tags.Global,			 2).Log("Global");
+		Convert.ToString((int)Tags.FrozenUpdate,	 2).Log("FrozenUpdate");
+		Convert.ToString((int)Tags.PauseUpdate,		 2).Log("PauseUpdate");
+		Convert.ToString((int)Tags.TransitionUpdate, 2).Log("TransitionUpdate");
 		Add(new Coroutine(Show()));
 		//Add(new IgnoreSaveLoadComponent());
 	}

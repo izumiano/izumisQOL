@@ -46,7 +46,7 @@ namespace Celeste.Mod.izumisQOL
 				if(currentKeybindSlot == -1)
 				{
 					currentKeybindSlot = 0;
-					KeybindModule.CopyCelesteSettingsToKeybindIDFiles(0);
+					KeybindModule.SaveKeybinds(0);
 				}
 				if(currentKeybindSlot > KeybindModule.KeybindSettings.Count - 1)
 				{
@@ -121,7 +121,7 @@ namespace Celeste.Mod.izumisQOL
 
 					//Everest.SaveSettings();
 
-					KeybindModule.CopyCelesteSettingsToKeybindIDFiles(CurrentKeybindSlider.Index);
+					KeybindModule.SaveKeybinds(CurrentKeybindSlider.Index);
 				}
 			);
 			subMenu.AddDescription(menu, menuItem, "Copies the keybinds configured in settings to the current keybind slot.");
@@ -142,7 +142,7 @@ namespace Celeste.Mod.izumisQOL
 				{
 					int val = CurrentKeybindSlider.Values.Count;
 
-					KeybindModule.CopyCelesteSettingsToKeybindIDFiles(val);
+					KeybindModule.SaveKeybinds(val);
 
 					CurrentKeybindSlider.Add((val + 1).ToString(), val);
 					CurrentKeybindSlider.SelectWiggler.Start();

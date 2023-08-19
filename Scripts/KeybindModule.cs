@@ -130,7 +130,7 @@ namespace Celeste.Mod.izumisQOL
 
 			if (keybindIndex == -1)
 			{
-				CopyCelesteSettingsToKeybindIDFiles(0);
+				SaveKeybinds(0);
 				return;
 			}
 		}
@@ -168,7 +168,7 @@ namespace Celeste.Mod.izumisQOL
 			}
 		}
 
-		public static void CopyCelesteSettingsToKeybindIDFiles(int id)
+		public static void SaveKeybinds(int keybindID)
 		{
 			FileStream fileStream = File.Open("Saves/settings.celeste", FileMode.Open);
 
@@ -179,10 +179,27 @@ namespace Celeste.Mod.izumisQOL
 			}
 			fileStream.Dispose();
 
-			File.WriteAllText(keybindsPath + "/" + id + "_keybind.celeste", celesteSettingsFile);
+			File.WriteAllText(keybindsPath + "/" + keybindID + "_keybind.celeste", celesteSettingsFile);
 
-			#region Modsaves
-			foreach(EverestModule module in Everest.Modules)
+			SaveModKeybinds(keybindID);
+
+			LoadKeybindFiles();
+			CopyFromKeybindsToKeybindSwapper(keybindID);
+		}
+
+		public static void ApplyKeybinds(int keybindID)
+		{
+			Tooltip.Show("Applying keybind " + (keybindID + 1));
+
+			CopyFromKeybindSwapperToKeybinds(keybindID);
+
+			CopyFromKeybindSwapperToModSaves();
+			LoadModKeybinds(keybindID);
+		}
+
+		private static void SaveModKeybinds(int keybindID)
+		{
+			foreach (EverestModule module in Everest.Modules)
 			{
 				if (!WhitelistContains(module.Metadata.Name))
 					continue;
@@ -201,13 +218,30 @@ namespace Celeste.Mod.izumisQOL
 						}
 						if (typeof(ButtonBinding).IsAssignableFrom(prop.PropertyType))
 						{
-							if (prop.GetValue(settings) is ButtonBinding binding)
+							if (prop.GetValue(settings) is ButtonBinding)
 							{
-								settingsSave.buttonBindings.Add(prop.Name, ((ButtonBinding)prop.GetValue(settings)).Button.Binding);
+								List<Binding> buttonBindingList = new();
+								buttonBindingList.Add(((ButtonBinding)prop.GetValue(settings)).Button.Binding);
+								settingsSave.buttonBindings.Add(prop.Name, buttonBindingList);
 							}
+							continue;
+						}
+						if (typeof(List<ButtonBinding>).IsAssignableFrom(prop.PropertyType))
+						{
+							if (prop.GetValue(settings) is List<ButtonBinding>)
+							{
+								List<Binding> bindingList = new();
+								List<ButtonBinding> buttonBindingList = (List<ButtonBinding>)prop.GetValue(settings);
+								buttonBindingList.ForEach(delegate (ButtonBinding buttonBinding)
+								{
+									bindingList.Add(buttonBinding.Binding);
+								});
+								settingsSave.buttonBindings.Add(prop.Name, bindingList);
+							}
+							continue;
 						}
 					}
-					FileStream fileStream2 = File.Create(keybindsPath + "\\" + id + "_modsettings-" + module.Metadata.Name + ".celeste");
+					FileStream fileStream2 = File.Create(keybindsPath + "\\" + keybindID + "_modsettings-" + module.Metadata.Name + ".celeste");
 					using StreamWriter writer = new StreamWriter(fileStream2);
 					YamlHelper.Serializer.Serialize(writer, settingsSave, typeof(ModKeybindsSaveType));
 				}
@@ -216,36 +250,11 @@ namespace Celeste.Mod.izumisQOL
 					Log("Could not write modsettings to keybind file.", LogLevel.Warn);
 				}
 			}
-			#endregion
-
-			LoadKeybindFiles();
-			CopyFromKeybindsToKeybindSwapper(id);
 		}
 
-		private static bool WhitelistContains(string name)
+		private static void LoadModKeybinds(int keybindID)
 		{
-			foreach (string line in File.ReadAllLines(keybindsPath + "/whitelist.txt"))
-			{
-				if (name[0] == '#')
-				{
-					continue;
-				}
-				if (name.StartsWith(line))
-				{
-					return true;
-				}
-			}
-			return false;
-		}
-
-		public static void ApplyKeybinds(int keybindID)
-		{
-			Tooltip.Show("Applying keybind " + (keybindID + 1));
-
-			CopyFromKeybindSwapperToKeybinds(keybindID);
-
-			CopyFromKeybindSwapperToModSaves();
-			Log("Reloading all mod settings");
+			Log("Reloading mod keybinds");
 			foreach (EverestModule module in Everest.Modules)
 			{
 				bool inWhitelist = WhitelistContains(module.Metadata.Name);
@@ -276,12 +285,29 @@ namespace Celeste.Mod.izumisQOL
 							if (prop.GetValue(settings) is ButtonBinding buttonBinding)
 							{
 								Binding modBinding = buttonBinding.Button.Binding;
-								Binding customBinding = modKeybindsSaveType.buttonBindings[prop.Name];
+								Binding customBinding = modKeybindsSaveType.buttonBindings[prop.Name][0];
 								ClearKey(modBinding);
 								modBinding.Add(customBinding.Keyboard.ToArray());
 								modBinding.Add(customBinding.Controller.ToArray());
 								modBinding.Add(customBinding.Mouse.ToArray());
 							}
+							continue;
+						}
+						if (typeof(List<ButtonBinding>).IsAssignableFrom(prop.PropertyType))
+						{
+							if(prop.GetValue(settings) is List<ButtonBinding> propButtonBindings)
+							{
+								List<Binding> savedBindings = modKeybindsSaveType.buttonBindings[prop.Name];
+								for(int i = 0; i< savedBindings.Count; i++)
+								{
+									Binding modBinding = propButtonBindings[i].Button.Binding;
+									ClearKey(modBinding);
+									modBinding.Add(savedBindings[i].Keyboard.ToArray());
+									modBinding.Add(savedBindings[i].Controller.ToArray());
+									modBinding.Add(savedBindings[i].Mouse.ToArray());
+								}
+							}
+							continue;
 						}
 					}
 				}
@@ -436,9 +462,25 @@ namespace Celeste.Mod.izumisQOL
 			}
 		}
 
-		class ModKeybindsSaveType
+		private static bool WhitelistContains(string name)
 		{
-			public Dictionary<string, Binding> buttonBindings = new Dictionary<string, Binding>();
+			foreach (string line in File.ReadAllLines(keybindsPath + "/whitelist.txt"))
+			{
+				if (name[0] == '#')
+				{
+					continue;
+				}
+				if (name.StartsWith(line))
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		private class ModKeybindsSaveType
+		{
+			public Dictionary<string, List<Binding>> buttonBindings = new();
 		}
 	}
 }
