@@ -8,20 +8,6 @@ using Monocle;
 using Celeste.Mod.izumisQOL.Menu;
 using Microsoft.Xna.Framework;
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.Serialization;
-using System.Threading.Tasks;
-using Celeste;
-using Celeste.Mod;
-using FMOD.Studio;
-using Monocle;
-using On.Celeste;
-using On.Monocle;
-
 namespace Celeste.Mod.izumisQOL
 {
 	[SettingName("modoptions_izumisQOL_title")]
@@ -46,7 +32,8 @@ namespace Celeste.Mod.izumisQOL
 				if(currentKeybindSlot == -1)
 				{
 					currentKeybindSlot = 0;
-					KeybindModule.SaveKeybinds(0);
+					//KeybindModule.SaveKeybinds(0);
+					KeybindModule.LoadKeybindFiles();
 				}
 				if(currentKeybindSlot > KeybindModule.KeybindSettings.Count - 1)
 				{

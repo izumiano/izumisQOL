@@ -16,8 +16,10 @@ public class Global
 
 	public static void Log<T>(T text, LogLevel logLevel = LogLevel.Verbose)
 	{
+#if !DEBUG
 		if(logLevel == LogLevel.Verbose && !izuSettings.VerboseLogging)
 			return;
+#endif
 
 		string log = text.ToString();
 

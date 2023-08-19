@@ -135,41 +135,10 @@ namespace Celeste.Mod.izumisQOL
 			}
 		}
 
-		private static void CopyFromKeybindSwapperToModSaves()
-		{
-			string[] keybindFiles = Directory.GetFiles(keybindsPath);
-
-			foreach(string keybindFile in keybindFiles)
-			{
-				string shortPath = keybindFile.Replace(BaseDirectory + "Saves\\", "").Replace(".celeste", ""); // izuMod\0_
-				string fileName = shortPath.Replace("izuMod\\keybinds\\", "");
-
-				if (!fileName.StartsWith(izuSettings.CurrentKeybindSlot.ToString()))
-					continue;
-
-				string s = fileName.Remove(0, fileName.IndexOf('_') + 1);
-				if (!s.StartsWith("modsettings"))
-					continue;
-
-				string t = File.ReadAllText(keybindFile);
-
-				string p = BaseDirectory + "Saves/" + s + ".celeste";
-				FileStream fileStream = File.Create(p);
-
-				using (var sw = new StreamWriter(fileStream))
-				{
-					sw.Write(t);
-				}
-				fileStream.Dispose();
-
-				//File.WriteAllText(p, t);
-
-				Log("Applying: " + fileName);
-			}
-		}
-
 		public static void SaveKeybinds(int keybindID)
 		{
+			Log("saving keybind " + keybindID);
+
 			FileStream fileStream = File.Open("Saves/settings.celeste", FileMode.Open);
 
 			string celesteSettingsFile;
@@ -193,7 +162,6 @@ namespace Celeste.Mod.izumisQOL
 
 			CopyFromKeybindSwapperToKeybinds(keybindID);
 
-			CopyFromKeybindSwapperToModSaves();
 			LoadModKeybinds(keybindID);
 		}
 
