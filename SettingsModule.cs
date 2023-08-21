@@ -32,7 +32,6 @@ namespace Celeste.Mod.izumisQOL
 				if(currentKeybindSlot == -1)
 				{
 					currentKeybindSlot = 0;
-					//KeybindModule.SaveKeybinds(0);
 					KeybindModule.LoadKeybindFiles();
 				}
 				if(currentKeybindSlot > KeybindModule.KeybindSettings.Count - 1)
@@ -47,25 +46,26 @@ namespace Celeste.Mod.izumisQOL
 			}
 		}
 
-		private List<string> BlacklistNames = new();
+		private List<string> WhitelistNames = new();
 
-		private TextMenu.Slider CurrentBlacklistSlider;
-		private int currentBlacklistSlot = 0;
-		public int CurrentBlacklistSlot 
+		private TextMenu.Slider CurrentWhitelistSlider;
+		private int currentWhitelistSlot = 0;
+		public int CurrentWhitelistSlot 
 		{
 			get
 			{
-				if(currentBlacklistSlot > BlacklistNames.Count - 1)
+				if(currentWhitelistSlot > WhitelistNames.Count - 1)
 				{
-					currentBlacklistSlot = BlacklistNames.Count - 1;
+					currentWhitelistSlot = WhitelistNames.Count - 1;
 				}
-				return currentBlacklistSlot;
+				return currentWhitelistSlot;
 			} 
 			set
 			{
-				currentBlacklistSlot = value;
+				currentWhitelistSlot = value;
 			}
 		}
+		public bool WhitelistIsExclusive = false;
 
 		[SettingSubText("Enable to get more debug info.")]
 		public bool VerboseLogging { get; set; } = false;
@@ -88,7 +88,7 @@ namespace Celeste.Mod.izumisQOL
 					}
 				}
 			});
-			subMenu.AddDescription(menu, CurrentKeybindSlider, "The currently selected keybinds. \n\nNote: Turn auto-load keybinds off if you want to edit an existing keybind slot.");
+			subMenu.AddDescription(menu, CurrentKeybindSlider, "The currently selected keybinds. \n\nNote: You may want to turn auto-load keybinds off if you want to edit an existing keybind slot.");
 
 			subMenu.Add(menuItem = new TextMenu.OnOff("Auto-Load Keybinds", AutoLoadKeybinds)
 			{
@@ -153,37 +153,64 @@ namespace Celeste.Mod.izumisQOL
 			menu.Add(subMenu);
 		}
 
-		public void CreateCurrentBlacklistSlotEntry(TextMenu menu, bool inGame)
+		public void CreateCurrentWhitelistSlotEntry(TextMenu menu, bool inGame)
 		{
 			if (inGame)
 				return;
 
-			TextMenuExt.SubMenu subMenu = new("Blacklist Settings", false);
+			TextMenuExt.SubMenu subMenu = new("Whitelist Settings", false);
 
 			TextMenu.Item menuItem;
 
-			subMenu.Add(CurrentBlacklistSlider = new TextMenu.Slider("Current Blacklist", i => BlacklistNames[i], 0, BlacklistNames.Count - 1, CurrentBlacklistSlot)
+			subMenu.Add(CurrentWhitelistSlider = new TextMenu.Slider("Current Whitelist", i => WhitelistNames[i], 0, WhitelistNames.Count - 1, CurrentWhitelistSlot)
 			{
 				OnValueChange = delegate(int val)
 				{
-					CurrentBlacklistSlot = val;
-					BlacklistModule.CopyCustomBlacklistToCeleste(BlacklistNames[val]);
+					CurrentWhitelistSlot = val;
+					
 				}
 			});
-			subMenu.NeedsRelaunch(menu, CurrentBlacklistSlider);
+			subMenu.AddDescription(menu, CurrentWhitelistSlider, "The currently selected whitelist.");
+
+			subMenu.Add(menuItem = new TextMenu.Button("Apply Current Whitelist"));
+			menuItem.Pressed(
+				delegate
+				{
+					WhitelistModule.WriteToEverestBlacklist(WhitelistNames[CurrentWhitelistSlot]);
+				}
+			);
+			subMenu.AddDescription(menu, menuItem, "Apply the currently selected whitelist.");
+			subMenu.NeedsRelaunch(menu, menuItem);
+
+			subMenu.Add(menuItem = new TextMenu.Button("Save Current Whitelist"));
+			menuItem.Pressed(
+				delegate
+				{
+					WhitelistModule.SaveCurrentWhitelist(WhitelistNames[CurrentWhitelistSlot], CurrentWhitelistSlot);
+				}
+			);
+			subMenu.AddDescription(menu, menuItem, "Save the currently enabled mods to this whitelist.");
+
+			subMenu.Add(menuItem = new TextMenu.OnOff("Is Exclusive", WhitelistIsExclusive)
+			{
+				OnValueChange = delegate(bool val)
+				{
+					WhitelistIsExclusive = val;
+				}
+			});
+			subMenu.AddDescription(menu, menuItem, "Whether everything not in the whitelist is disabled or not");
 
 			subMenu.Add(menuItem = new TextMenu.Button("Import Name From Clipboard"));
 			menuItem.Pressed(
 				delegate
 				{
 					string clipboardText = TextInput.GetClipboardText();
-					if(!string.IsNullOrEmpty(clipboardText))
+					if(!string.IsNullOrEmpty(clipboardText) && WhitelistModule.RenameFile(WhitelistNames[CurrentWhitelistSlot], clipboardText))
 					{
-						BlacklistModule.ChangeFileName(BlacklistNames[CurrentBlacklistSlot], clipboardText);
-						BlacklistNames[CurrentBlacklistSlot] = clipboardText;
-						CurrentBlacklistSlider.Values.Insert(CurrentBlacklistSlot + 1, Tuple.Create(clipboardText, CurrentBlacklistSlot));
-						CurrentBlacklistSlider.Values.RemoveAt(CurrentBlacklistSlot);
-						CurrentBlacklistSlider.SelectWiggler.Start();
+						WhitelistNames[CurrentWhitelistSlot] = clipboardText;
+						CurrentWhitelistSlider.Values.Insert(CurrentWhitelistSlot + 1, Tuple.Create(clipboardText, CurrentWhitelistSlot));
+						CurrentWhitelistSlider.Values.RemoveAt(CurrentWhitelistSlot);
+						CurrentWhitelistSlider.SelectWiggler.Start();
 					}
 				}
 			);
@@ -193,12 +220,15 @@ namespace Celeste.Mod.izumisQOL
 			menuItem.Pressed(
 				delegate
 				{
-					BlacklistModule.CopyCelesteBlacklistToNewFile();
-					CurrentBlacklistSlider.Add(BlacklistNames[BlacklistNames.Count - 1], BlacklistNames.Count - 1);
-					CurrentBlacklistSlider.SelectWiggler.Start();
+					WhitelistModule.AddWhitelist();
+					int val = WhitelistNames.Count - 1;
+					CurrentWhitelistSlider.Add(WhitelistNames[val], val);
+					CurrentWhitelistSlider.SelectWiggler.Start();
+
+					Tooltip.Show("Added whitelist");
 				}
 			);
-			subMenu.AddDescription(menu, menuItem, "Add another blacklist.");
+			subMenu.AddDescription(menu, menuItem, "Add another whitelist.");
 
 			menu.Add(subMenu);
 		}
@@ -208,13 +238,20 @@ namespace Celeste.Mod.izumisQOL
 			return CurrentKeybindSlider;
 		}
 
-		public void AddBlackListName(string name)
+		public void AddWhitelistName(string name)
 		{
-			if (!BlacklistNames.Contains(name))
+			if (!WhitelistNames.Contains(name))
 			{
 				Global.Log(name);
-				BlacklistNames.Add(name);
+				WhitelistNames.Add(name);
+				return;
 			}
+			Global.Log(name + " is already another whitelist's name", LogLevel.Info);
+		}
+
+		public void ChangeWhitelistName(int index, string name)
+		{
+			WhitelistNames[index] = name;
 		}
 	}
 }

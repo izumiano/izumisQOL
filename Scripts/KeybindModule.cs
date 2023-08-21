@@ -17,7 +17,7 @@ namespace Celeste.Mod.izumisQOL
 
 		public static void Init()
 		{
-			izuSettings = izumisQOL.ModSettings;
+			ModSettings = izumisQOL.ModSettings;
 
 			SetUpDirectory();
 
@@ -31,11 +31,11 @@ namespace Celeste.Mod.izumisQOL
 			int buttonPressed = CheckButtonSwapBinds();
 			if(buttonPressed > -1)
 			{
-				izuSettings.CurrentKeybindSlot = buttonPressed;
+				ModSettings.CurrentKeybindSlot = buttonPressed;
 
-				if (izuSettings.AutoLoadKeybinds)
+				if (ModSettings.AutoLoadKeybinds)
 				{
-					ApplyKeybinds(izuSettings.CurrentKeybindSlot);
+					ApplyKeybinds(ModSettings.CurrentKeybindSlot);
 				}
 				else
 				{
@@ -43,15 +43,15 @@ namespace Celeste.Mod.izumisQOL
 				}
 			}
 
-			if (izuSettings.ButtonLoadKeybind.Pressed)
+			if (ModSettings.ButtonLoadKeybind.Pressed)
 			{
-				ApplyKeybinds(izuSettings.CurrentKeybindSlot);
+				ApplyKeybinds(ModSettings.CurrentKeybindSlot);
 			}
 		}
 
 		private static void SetUpDirectory()
 		{
-			keybindsPath = BaseDirectory + "Saves\\izuMod\\keybinds";
+			keybindsPath = BaseDirectory + "Saves\\izumisQOL\\keybinds";
 			Directory.CreateDirectory(keybindsPath);
 
 			if (!File.Exists(keybindsPath + "/whitelist.txt"))
@@ -65,10 +65,10 @@ namespace Celeste.Mod.izumisQOL
 
 		private static int CheckButtonSwapBinds()
 		{
-			if (!izuSettings.EnableHotkeys)
+			if (!ModSettings.EnableHotkeys)
 				return -1;
 
-			List<ButtonBinding> buttonSwapBinds = izuSettings.ButtonsSwapKeybinds;
+			List<ButtonBinding> buttonSwapBinds = ModSettings.ButtonsSwapKeybinds;
 			if (buttonSwapBinds == null)
 				return -1;
 
@@ -84,7 +84,7 @@ namespace Celeste.Mod.izumisQOL
 			if (val == -1)
 				return -1;
 
-			TextMenu.Slider currentKeybindSlider = izuSettings.GetCurrentKeybindSlider();
+			TextMenu.Slider currentKeybindSlider = ModSettings.GetCurrentKeybindSlider();
 			if (currentKeybindSlider != null)
 			{
 				currentKeybindSlider.Index = val;
@@ -106,7 +106,7 @@ namespace Celeste.Mod.izumisQOL
 			for(int i = 0; i < files.Length; i++)
 			{
 				string shortPath = files[i].Replace(BaseDirectory + "Saves/", "").Replace(".celeste", ""); // izuMod\0_
-				string fileName = shortPath.Replace("izuMod\\keybinds\\", "");
+				string fileName = shortPath.Replace("izumisQOL\\keybinds\\", "");
 
 				string s = fileName.Remove(0, fileName.IndexOf('_') + 1);
 				if (!s.StartsWith("keybind"))
@@ -169,7 +169,7 @@ namespace Celeste.Mod.izumisQOL
 		{
 			foreach (EverestModule module in Everest.Modules)
 			{
-				if (!WhitelistContains(module.Metadata.Name))
+				if (!WhitelistContains(keybindsPath + "/whitelist.txt", module.Metadata.Name))
 					continue;
 
 				try
@@ -225,7 +225,7 @@ namespace Celeste.Mod.izumisQOL
 			Log("Reloading mod keybinds");
 			foreach (EverestModule module in Everest.Modules)
 			{
-				bool inWhitelist = WhitelistContains(module.Metadata.Name);
+				bool inWhitelist = WhitelistContains(keybindsPath + "/whitelist.txt", module.Metadata.Name);
 				Log(module.Metadata.Name + " in whitelist: " + inWhitelist);
 
 				if (!inWhitelist)
@@ -302,8 +302,8 @@ namespace Celeste.Mod.izumisQOL
 
 		private static void ChangeKeybindsFromAToB(Settings a, Settings b, int keybindID)
 		{
-			izuSettings.CurrentKeybindSlot = keybindID;
-			Log("Modifying Key Bind " + izuSettings.CurrentKeybindSlot);
+			ModSettings.CurrentKeybindSlot = keybindID;
+			Log("Modifying Key Bind " + ModSettings.CurrentKeybindSlot);
 
 			//Settings.Instance            KeybindSettings[keybindID]
 			#region
@@ -413,37 +413,21 @@ namespace Celeste.Mod.izumisQOL
 
 		private static void MatchKeybindButtonsToKeybindSettings()
 		{
-			if (izuSettings.ButtonsSwapKeybinds == null)
+			if (ModSettings.ButtonsSwapKeybinds == null)
 				return;
 
-			int swapKeybindsCount = izuSettings.ButtonsSwapKeybinds.Count;
+			int swapKeybindsCount = ModSettings.ButtonsSwapKeybinds.Count;
 			if (swapKeybindsCount > KeybindSettings.Count)
 			{
-				Log(izuSettings.ButtonsSwapKeybinds.Count);
-				izuSettings.ButtonsSwapKeybinds.RemoveRange(KeybindSettings.Count, swapKeybindsCount - KeybindSettings.Count);
-				Log(izuSettings.ButtonsSwapKeybinds.Count);
+				Log(ModSettings.ButtonsSwapKeybinds.Count);
+				ModSettings.ButtonsSwapKeybinds.RemoveRange(KeybindSettings.Count, swapKeybindsCount - KeybindSettings.Count);
+				Log(ModSettings.ButtonsSwapKeybinds.Count);
 			}
-			swapKeybindsCount = izuSettings.ButtonsSwapKeybinds.Count;
+			swapKeybindsCount = ModSettings.ButtonsSwapKeybinds.Count;
 			for (int i = swapKeybindsCount; i < KeybindSettings.Count; i++)
 			{
-				izuSettings.ButtonsSwapKeybinds.Add(new ButtonBinding());
+				ModSettings.ButtonsSwapKeybinds.Add(new ButtonBinding());
 			}
-		}
-
-		private static bool WhitelistContains(string name)
-		{
-			foreach (string line in File.ReadAllLines(keybindsPath + "/whitelist.txt"))
-			{
-				if (name[0] == '#')
-				{
-					continue;
-				}
-				if (name.StartsWith(line))
-				{
-					return true;
-				}
-			}
-			return false;
 		}
 
 		private class ModKeybindsSaveType

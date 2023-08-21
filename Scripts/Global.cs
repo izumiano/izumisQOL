@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.IO;
 
 using Celeste.Mod;
 using Celeste.Mod.izumisQOL;
@@ -12,7 +13,7 @@ public class Global
 {
 	public static string BaseDirectory;
 
-	public static SettingsModule izuSettings;
+	public static SettingsModule ModSettings;
 
 	public static void Log<T>(T text, LogLevel logLevel = LogLevel.Verbose)
 	{
@@ -37,5 +38,17 @@ public class Global
 #else
 		Logger.Log(logLevel, "izumisQOL", log);
 #endif
+	}
+
+	public static bool WhitelistContains(string path, string name)
+	{
+		foreach (string line in File.ReadAllLines(path))
+		{
+			if (line[0] == '#')
+				continue;
+			if (line.StartsWith(name))
+				return true;
+		}
+		return false;
 	}
 }

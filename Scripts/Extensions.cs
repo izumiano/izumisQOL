@@ -49,8 +49,10 @@ public static class Extensions
 
 	public static void Log<T>(this T text, string identifier = null, LogLevel logLevel = LogLevel.Verbose)
 	{
+#if !DEBUG
 		if (logLevel == LogLevel.Verbose && !Global.izuSettings.VerboseLogging)
 			return;
+#endif
 
 		string log = string.IsNullOrEmpty(identifier) ? text.ToString() : identifier + ": " + text.ToString();
 
