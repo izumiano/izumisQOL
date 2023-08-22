@@ -81,6 +81,13 @@ namespace Celeste.Mod.izumisQOL
 			ModSettings.AddWhitelistName("whitelist_" + id);
 		}
 
+		public static void RemoveWhitelist(string fileName)
+		{
+			string path = whitelistsPath + "/" + fileName + ".txt";
+			Log("Deleting: " + path);
+			File.Delete(path);
+		}
+
 		public static void SaveCurrentWhitelist(string fileName, int index)
 		{
 			try

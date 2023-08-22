@@ -100,31 +100,34 @@ namespace Celeste.Mod.izumisQOL
 
 		private static void LoadVanillaKeybindFiles()
 		{
-			string[] files = Directory.GetFiles(keybindsPath);
+			Dictionary<string, string> keybindFiles = GetKeybindFilesIDPathValuePair(Directory.GetFiles(keybindsPath));
 
 			int keybindIndex = -1;
-			for(int i = 0; i < files.Length; i++)
+			for(int i = 0; i < keybindFiles.Count; i++)
 			{
-				string shortPath = files[i].Replace(BaseDirectory + "Saves/", "").Replace(".celeste", ""); // izuMod\0_
+				if (!keybindFiles.ContainsKey(i.ToString()))
+					continue;
+
+				string shortPath = keybindFiles[i.ToString()].Replace(BaseDirectory + "Saves\\", "").Replace(".celeste", ""); // izuMod\0_
 				string fileName = shortPath.Replace("izumisQOL\\keybinds\\", "");
 
 				string s = fileName.Remove(0, fileName.IndexOf('_') + 1);
-				if (!s.StartsWith("keybind"))
-					continue;
 
 				keybindIndex++;
 
-				Log("Loading: " + fileName);
+				Log("Loading: " + shortPath);
 
 				if (keybindIndex >= KeybindSettings.Count)
 				{
 					Log("Add keybind setting " + keybindIndex);
 					KeybindSettings.Add(UserIO.Load<Settings>(shortPath, backup: false));
+					ModSettings.AddKeybindName(s);
 				}
 				else
 				{
 					Log("Reload keybind setting " + keybindIndex);
 					KeybindSettings[keybindIndex] = UserIO.Load<Settings>(shortPath, backup: false);
+					ModSettings.ChangeKeybindName(keybindIndex, s);
 				}
 			}
 
@@ -148,7 +151,22 @@ namespace Celeste.Mod.izumisQOL
 			}
 			fileStream.Dispose();
 
-			File.WriteAllText(keybindsPath + "/" + keybindID + "_keybind.celeste", celesteSettingsFile);
+			string name;
+			List<string> keybindNames = ModSettings.GetKeybindNames();
+			if(keybindID < keybindNames.Count)
+			{
+				name = keybindNames[keybindID];
+			}
+			else
+			{
+				int index = 0;
+				while(keybindNames.Contains("keybind" + index))
+				{
+					index++;
+				}
+				name = "keybind" + index;
+			}
+			File.WriteAllText(keybindsPath + "/" + keybindID + "_" + name + ".celeste", celesteSettingsFile);
 
 			SaveModKeybinds(keybindID);
 
@@ -156,9 +174,101 @@ namespace Celeste.Mod.izumisQOL
 			CopyFromKeybindsToKeybindSwapper(keybindID);
 		}
 
+		public static void RemoveKeybindSlot(int keybindID)
+		{
+			List<string> keybindNames = ModSettings.GetKeybindNames();
+
+			Dictionary<string, string> keybindFiles = GetKeybindFilesIDPathValuePair(Directory.GetFiles(keybindsPath));
+
+			string keybindDelPath = keybindsPath + "/" + keybindID + "_" + keybindNames[keybindID] + ".celeste";
+			File.Delete(keybindDelPath);
+			Log("Deleting: " + keybindDelPath);
+
+			foreach(string keybindFile in keybindFiles.Keys)
+			{
+				keybindFile.Log("file");
+			}
+			for (int i = keybindID + 1; i < keybindFiles.Count; i++)
+			{
+				if (!keybindFiles.TryGetValue(i.ToString(), out string filePath))
+					continue;
+
+				string fileName = Path.GetFileName(filePath);
+				string newName = (i - 1).ToString() + fileName.Remove(0, fileName.IndexOf('_'));
+
+				Log("Renaming: "  + fileName + " to: " + newName);
+				File.Move(filePath, keybindsPath + "/" + newName);
+			}
+
+			KeybindSettings.RemoveAt(keybindID);
+		}
+
+		private static Dictionary<string, string> GetKeybindFilesIDPathValuePair(string[] filePaths)
+		{
+			Dictionary<string, string> keybindFiles = new();
+			foreach (string filePath in filePaths)
+			{
+				string fileName = filePath.Replace(keybindsPath + "\\", "");
+				if (fileName.Contains(".celeste"))
+				{
+					int underscoreIndex = fileName.IndexOf('_');
+					string key = "";
+					for (int i = 0; i < underscoreIndex; i++)
+					{
+						key += fileName[i];
+					}
+					keybindFiles.Add(key, filePath);
+				}
+			}
+			return keybindFiles;
+		}
+
+		public static bool RenameFile(string origName, string newName)
+		{
+			try
+			{
+				if (!origName.Contains('_'))
+				{
+					Log("invalid name");
+					return false;
+				}
+
+				string origNameIndex = "";
+				for(int i = 0; i < origName.Length; i++)
+				{
+					if (origName[i] == '_')
+						break;
+					origNameIndex += origName[i];
+				}
+				string newPath = keybindsPath + "/" + origNameIndex + "_" + newName + ".celeste";
+				if (File.Exists(newPath))
+				{
+					Log(newPath + " already exists", LogLevel.Info);
+					Tooltip.Show(newName + " already exists");
+					return false;
+				}
+				File.Move(keybindsPath + "/" + origName + ".celeste", newPath);
+				Tooltip.Show("Imported: " + newName + " from clipboard");
+				return true;
+			}
+			catch (Exception ex)
+			{
+				Tooltip.Show("Invalid text in clipboard");
+				Log(ex, LogLevel.Warn);
+				return false;
+			}
+		}
+
 		public static void ApplyKeybinds(int keybindID)
 		{
-			Tooltip.Show("Applying keybind " + (keybindID + 1));
+			if(keybindID >= ModSettings.GetKeybindNames().Count)
+			{
+				Log(keybindID + " exceeded the size of keybindNames");
+				Tooltip.Show("Failed applying keybind id: " + keybindID);
+				return;
+			}
+			Log("Applying keybind " + ModSettings.GetKeybindNames()[keybindID]);
+			Tooltip.Show("Applying keybind " + ModSettings.GetKeybindNames()[keybindID]);
 
 			CopyFromKeybindSwapperToKeybinds(keybindID);
 
@@ -290,6 +400,7 @@ namespace Celeste.Mod.izumisQOL
 		{
 			if(keybindID > KeybindSettings.Count)
 				return;
+			Log("Swapper to keybinds");
 			ChangeKeybindsFromAToB(KeybindSettings[keybindID], Settings.Instance, keybindID);
 		}
 
@@ -297,6 +408,7 @@ namespace Celeste.Mod.izumisQOL
 		{
 			if (KeybindSettings.Count < keybindID)
 				return;
+			Log("Keybinds to swapper");
 			ChangeKeybindsFromAToB(Settings.Instance, KeybindSettings[keybindID], keybindID);
 		}
 
@@ -304,6 +416,17 @@ namespace Celeste.Mod.izumisQOL
 		{
 			ModSettings.CurrentKeybindSlot = keybindID;
 			Log("Modifying Key Bind " + ModSettings.CurrentKeybindSlot);
+
+			if (a == null)
+			{
+				Log("setting 'a' was null", LogLevel.Warn);
+				return;
+			}
+			if (b == null)
+			{
+				Log("setting 'b' was null", LogLevel.Warn);
+				return;
+			}
 
 			//Settings.Instance            KeybindSettings[keybindID]
 			#region

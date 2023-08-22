@@ -17,10 +17,11 @@ public class Global
 
 	public static void Log<T>(T text, LogLevel logLevel = LogLevel.Verbose)
 	{
-#if !DEBUG
-		if(logLevel == LogLevel.Verbose && !izuSettings.VerboseLogging)
-			return;
-#endif
+//#if !DEBUG
+//		Logger.Log(LogLevel.Info, "izumisQOL", "is not log verbose: " + (!ModSettings.VerboseLogging).ToString());
+//		if (logLevel == LogLevel.Verbose && !ModSettings.VerboseLogging)
+//			return;
+//#endif
 
 		string log = text.ToString();
 
