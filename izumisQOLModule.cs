@@ -21,7 +21,7 @@ namespace Celeste.Mod.izumisQOL
 			Logger.SetLogLevel(nameof(izumisQOL), LogLevel.Verbose);
 #else
             // release builds use info logging to reduce spam in log files
-            Logger.SetLogLevel(nameof(izumiKeybindSwapperModule), LogLevel.Info);
+            Logger.SetLogLevel(nameof(izumisQOL), LogLevel.Info);
 #endif
 		}
 

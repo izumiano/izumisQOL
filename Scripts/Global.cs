@@ -3,22 +3,53 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
+using System.IO;
 
-namespace Celeste.Mod.izumisQOL
+using Celeste.Mod;
+using Celeste.Mod.izumisQOL;
+
+public class Global
 {
-	public class Global
+	public static string BaseDirectory;
+
+	public static SettingsModule ModSettings;
+
+	public static void Log<T>(T text, LogLevel logLevel = LogLevel.Verbose)
 	{
-		public static string BaseDirectory;
+//#if !DEBUG
+//		Logger.Log(LogLevel.Info, "izumisQOL", "is not log verbose: " + (!ModSettings.VerboseLogging).ToString());
+//		if (logLevel == LogLevel.Verbose && !ModSettings.VerboseLogging)
+//			return;
+//#endif
 
-		public static SettingsModule izuSettings;
+		string log = text.ToString();
 
-		public static void Log<T>(T text)
+		if (string.IsNullOrEmpty(log))
 		{
-			if(text == null)
-			{
-				Logger.Log(LogLevel.Info, "izumi keybind swapper", "value was null");
-			}
-			Logger.Log(LogLevel.Info, "izumi keybind swapper", text.ToString());
+			log = "value was null or empty";
 		}
+
+#if DEBUG
+		var methodInfo = new StackTrace().GetFrame(1).GetMethod();
+		var className = methodInfo.ReflectedType.Name;
+		var methodName = methodInfo.Name;
+
+		Logger.Log(LogLevel.Debug, "izumisQOL/" + className + "/" + methodName, log);
+#else
+		Logger.Log(logLevel, "izumisQOL", log);
+#endif
+	}
+
+	public static bool WhitelistContains(string path, string name)
+	{
+		foreach (string line in File.ReadAllLines(path))
+		{
+			if (line[0] == '#')
+				continue;
+			if (line.StartsWith(name))
+				return true;
+		}
+		return false;
 	}
 }

@@ -22,7 +22,7 @@ namespace Celeste.Mod.izumisQOL
 			BaseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
 			KeybindModule.Init();
-			BlacklistModule.Init();
+			WhitelistModule.Init();
 		}
 
 		internal static void Unload()
@@ -31,7 +31,7 @@ namespace Celeste.Mod.izumisQOL
 			On.Monocle.Engine.Update -= Update;
 			On.Celeste.GameplayRenderer.Render -= TestClassDraw;
 
-			izuSettings.ButtonsSwapKeybinds.Clear();
+			ModSettings.ButtonsSwapKeybinds.Clear();
 			Log("unload");
 		}
 
