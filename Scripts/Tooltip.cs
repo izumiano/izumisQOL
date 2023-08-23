@@ -110,6 +110,15 @@ public class Tooltip : Entity
 			tooltipQueue.Enqueue(tooltip);
 		}
 	}
+
+	public static void Add(bool clearQueue, params TooltipInfo[] tooltips)
+	{
+		if (clearQueue)
+		{
+			tooltipQueue.Clear();
+		}
+		Add(tooltips);
+	}
 }
 
 public struct TooltipInfo
