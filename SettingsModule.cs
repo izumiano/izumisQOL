@@ -66,7 +66,7 @@ namespace Celeste.Mod.izumisQOL
 				currentWhitelistSlot = value;
 			}
 		}
-		public bool WhitelistIsExclusive = false;
+		public bool WhitelistIsExclusive = true;
 
 		private bool verboseLogging = false;
 		[SettingSubText("Enable to get more debug info.")]
