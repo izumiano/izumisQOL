@@ -58,6 +58,7 @@ namespace Celeste.Mod.izumisQOL
 			}
 			catch (Exception ex)
 			{
+				Tooltip.Show("Invalid text in clipboard");
 				Log(ex, LogLevel.Warn);
 				return false;
 			}

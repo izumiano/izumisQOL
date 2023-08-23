@@ -49,7 +49,7 @@ namespace Celeste.Mod.izumisQOL
 
 		private readonly List<string> WhitelistNames = new();
 
-		private TextMenu.Slider CurrentWhitelistSlider;
+		public TextMenu.Slider CurrentWhitelistSlider;
 		private int currentWhitelistSlot = 0;
 		public int CurrentWhitelistSlot 
 		{
@@ -178,10 +178,17 @@ namespace Celeste.Mod.izumisQOL
 					if(KeybindNames.Count > 1)
 					{
 						int keybindSlot = CurrentKeybindSlider.Index;
+						Tooltip.Add(new TooltipInfo("Removed " + KeybindNames[keybindSlot]));
 
 						if (keybindSlot >= CurrentKeybindSlider.Values.Count - 1)
 						{
 							keybindSlot--;
+						}
+
+						if(keybindSlot < 0)
+						{
+							Global.Log("keybindSlot was negative", LogLevel.Warn);
+							keybindSlot = 0;
 						}
 
 						KeybindModule.RemoveKeybindSlot(CurrentKeybindSlider.Index);
@@ -198,7 +205,6 @@ namespace Celeste.Mod.izumisQOL
 
 						ButtonsSwapKeybinds.RemoveAt(ButtonsSwapKeybinds.Count - 1);
 
-						Tooltip.Add(new TooltipInfo("Removed " + KeybindNames[keybindSlot]));
 						if (AutoLoadKeybinds)
 						{
 							KeybindModule.ApplyKeybinds(keybindSlot);
@@ -302,10 +308,19 @@ namespace Celeste.Mod.izumisQOL
 						CurrentWhitelistSlider.Index.Log("Slider index");
 
 						int whitelistSlot = CurrentWhitelistSlider.Index;
+						Tooltip.Show("Removed " + WhitelistNames[whitelistSlot]);
 
-						if (CurrentWhitelistSlot >= CurrentWhitelistSlider.Values.Count - 1)
+						if (whitelistSlot >= CurrentWhitelistSlider.Values.Count - 1)
 						{
 							whitelistSlot--;
+						}
+						whitelistSlot.Log("whitelistSlot");
+						CurrentWhitelistSlider.Values.Count.Log("count");
+
+						if (whitelistSlot < 0)
+						{
+							Global.Log("whitelistSlot was negative", LogLevel.Warn);
+							whitelistSlot = 0;
 						}
 
 						WhitelistModule.RemoveWhitelist(WhitelistNames[CurrentWhitelistSlider.Index]);
@@ -323,6 +338,7 @@ namespace Celeste.Mod.izumisQOL
 					Global.Log("only 1 item in slider");
 				}
 			);
+			subMenu.AddDescription(menu, menuItem, "Remove this whitelist.");
 
 			menu.Add(subMenu);
 		}

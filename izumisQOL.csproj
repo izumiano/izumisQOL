@@ -41,9 +41,6 @@
         <Reference Include="$(CelestePrefix)\MMHOOK_Celeste.dll">
             <Private>false</Private>
         </Reference>
-        <Reference Include="Newtonsoft.Json">
-          <HintPath>..\..\Newtonsoft.Json.dll</HintPath>
-        </Reference>
         <Reference Include="YamlDotNet">
           <HintPath>..\..\YamlDotNet.dll</HintPath>
         </Reference>

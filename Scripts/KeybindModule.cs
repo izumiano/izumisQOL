@@ -299,8 +299,8 @@ namespace Celeste.Mod.izumisQOL
 				Tooltip.Show("Failed applying keybind id: " + keybindID);
 				return;
 			}
-			Log("Applying keybind " + ModSettings.GetKeybindNames()[keybindID]);
-			Tooltip.Show("Applying keybind " + ModSettings.GetKeybindNames()[keybindID]);
+			Log("Applying keybind: " + ModSettings.GetKeybindNames()[keybindID]);
+			Tooltip.Show("Applying keybind: " + ModSettings.GetKeybindNames()[keybindID]);
 
 			CopyFromKeybindSwapperToKeybinds(keybindID);
 
