@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Celeste;
 using Microsoft.Xna.Framework;
@@ -16,6 +17,8 @@ public class Tooltip : Entity
 
 	private readonly float duration;
 
+	private static Queue<TooltipInfo> tooltipQueue = new();
+
 	private Tooltip(string message, float duration = 1f)
 	{
 		this.message = message;
@@ -23,10 +26,10 @@ public class Tooltip : Entity
 		Vector2 messageSize = ActiveFont.Measure(message);
 		Position = new Vector2(25f, Engine.Height - messageSize.Y - 12.5f);
 		Tag = (int)Tags.HUD | (int)Tags.Global | (int)Tags.FrozenUpdate | (int)Tags.PauseUpdate | (int)Tags.TransitionUpdate;
-		Add(new Coroutine(Show()));
+		Add(new Coroutine(Sho()));
 	}
 
-	private IEnumerator Show()
+	private IEnumerator Sho()
 	{
 		while (alpha < 1f)
 		{
@@ -46,6 +49,12 @@ public class Tooltip : Entity
 			alpha = Ease.SineIn(unEasedAlpha);
 			yield return null;
 		}
+
+		if(tooltipQueue.Count > 0)
+		{
+			Display();
+		}
+
 		RemoveSelf();
 	}
 
@@ -55,7 +64,7 @@ public class Tooltip : Entity
 		ActiveFont.DrawOutline(message, Position, Vector2.Zero, Vector2.One, Color.White * alpha, 2f, Color.Black * alpha * alpha * alpha);
 	}
 
-	public static void Show(string message, float duration = 1f)
+	private static void Display()
 	{
 		Scene scene = Engine.Scene;
 		if (scene != null)
@@ -68,8 +77,50 @@ public class Tooltip : Entity
 			{
 				entity.RemoveSelf();
 			});
-			scene.Add(new Tooltip(message, duration));
+			TooltipInfo info = tooltipQueue.Dequeue();
+			scene.Add(new Tooltip(info.message, info.duration));
 		}
+	}
+
+	public static void Show(params TooltipInfo[] tooltips)
+	{
+		if(tooltips.Length == 1)
+		{
+			Show(tooltips[0].message, tooltips[0].duration);
+			return;
+		}
+
+		if(tooltips.Length > 0)
+		{
+			Add(tooltips);
+		}
+		Display();
+	}
+
+	public static void Show(string message, float duration = 1f)
+	{
+		tooltipQueue.Enqueue(new TooltipInfo(message, duration));
+		Display();
+	}
+
+	public static void Add(params TooltipInfo[] tooltips)
+	{
+		foreach (TooltipInfo tooltip in tooltips)
+		{
+			tooltipQueue.Enqueue(tooltip);
+		}
+	}
+}
+
+public struct TooltipInfo
+{
+	public string message;
+	public float duration;
+
+	public TooltipInfo(string message, float duration = 1f)
+	{
+		this.message = message;
+		this.duration = duration;
 	}
 }
 

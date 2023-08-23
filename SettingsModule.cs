@@ -113,7 +113,7 @@ namespace Celeste.Mod.izumisQOL
 					AutoLoadKeybinds = val;
 				}
 			});
-			subMenu.AddDescription(menu, menuItem, "Whether the keybinds are loaded automatically when selecting a keybind\nor when pressing the load button.");
+			subMenu.AddDescription(menu, menuItem, "Whether the keybinds are loaded automatically when selecting a keybind\nor only when pressing the load button.");
 
 			subMenu.Add(menuItem = new TextMenu.Button("Copy Current Keybinds Here"));
 			menuItem.Pressed(
@@ -131,7 +131,6 @@ namespace Celeste.Mod.izumisQOL
 			menuItem.Pressed(
 				delegate
 				{
-					Global.Log(CurrentKeybindSlider.Index);
 					KeybindModule.ApplyKeybinds(CurrentKeybindSlider.Index);
 				}
 			);
@@ -198,6 +197,16 @@ namespace Celeste.Mod.izumisQOL
 						CurrentKeybindSlider.SelectWiggler.Start();
 
 						ButtonsSwapKeybinds.RemoveAt(ButtonsSwapKeybinds.Count - 1);
+
+						Tooltip.Add(new TooltipInfo("Removed " + KeybindNames[keybindSlot]));
+						if (AutoLoadKeybinds)
+						{
+							KeybindModule.ApplyKeybinds(keybindSlot);
+						}
+						else
+						{
+							Tooltip.Show();
+						}
 					}
 					Global.Log("only 1 item in slider");
 				}
