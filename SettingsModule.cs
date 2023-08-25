@@ -20,6 +20,7 @@ namespace Celeste.Mod.izumisQOL
 		public List<ButtonBinding> ButtonsSwapKeybinds { get; set; } = new();
 
 		private readonly List<string> KeybindNames = new();
+
 		[SettingIgnore]
 		private TextMenu.Slider CurrentKeybindSlider { get; set; }
 
@@ -49,7 +50,8 @@ namespace Celeste.Mod.izumisQOL
 
 		private readonly List<string> WhitelistNames = new();
 
-		private TextMenu.Slider CurrentWhitelistSlider;
+		[SettingIgnore]
+		private TextMenu.Slider CurrentWhitelistSlider { get; set; }
 		private int currentWhitelistSlot = 0;
 		public int CurrentWhitelistSlot 
 		{
