@@ -17,7 +17,7 @@ public class Tooltip : Entity
 
 	private readonly float duration;
 
-	private static Queue<TooltipInfo> tooltipQueue = new();
+	private static readonly Queue<TooltipInfo> tooltipQueue = new();
 
 	private Tooltip(string message, float duration = 1f)
 	{
@@ -26,10 +26,10 @@ public class Tooltip : Entity
 		Vector2 messageSize = ActiveFont.Measure(message);
 		Position = new Vector2(25f, Engine.Height - messageSize.Y - 12.5f);
 		Tag = (int)Tags.HUD | (int)Tags.Global | (int)Tags.FrozenUpdate | (int)Tags.PauseUpdate | (int)Tags.TransitionUpdate;
-		Add(new Coroutine(Sho()));
+		Add(new Coroutine(Show()));
 	}
 
-	private IEnumerator Sho()
+	private IEnumerator Show()
 	{
 		while (alpha < 1f)
 		{

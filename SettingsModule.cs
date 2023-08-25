@@ -49,7 +49,7 @@ namespace Celeste.Mod.izumisQOL
 
 		private readonly List<string> WhitelistNames = new();
 
-		public TextMenu.Slider CurrentWhitelistSlider;
+		private TextMenu.Slider CurrentWhitelistSlider;
 		private int currentWhitelistSlot = 0;
 		public int CurrentWhitelistSlot 
 		{
