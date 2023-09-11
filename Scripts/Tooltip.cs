@@ -111,13 +111,22 @@ public class Tooltip : Entity
 		}
 	}
 
-	public static void Add(bool clearQueue, params TooltipInfo[] tooltips)
+	public static void Add(bool clearQueue = true, params TooltipInfo[] tooltips)
 	{
 		if (clearQueue)
 		{
 			tooltipQueue.Clear();
 		}
 		Add(tooltips);
+	}
+
+	public static void Add(string message, bool clearQueue = true, float duration = 1f)
+	{
+		if (clearQueue)
+		{
+			tooltipQueue.Clear();
+		}
+		tooltipQueue.Enqueue(new TooltipInfo(message, duration));
 	}
 }
 

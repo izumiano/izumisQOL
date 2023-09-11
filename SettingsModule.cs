@@ -15,6 +15,12 @@ namespace Celeste.Mod.izumisQOL
 	{
 		public bool EnableHotkeys { get; set; } = true;
 
+		public ButtonBinding ButtonSaveState { get; set; } = new ButtonBinding();
+		public ButtonBinding ButtonLoadState { get; set; } = new ButtonBinding();
+		public ButtonBinding ButtonNextState { get; set; } = new ButtonBinding();
+		public ButtonBinding ButtonPreviousState { get; set; } = new ButtonBinding();
+		public ButtonBinding ButtonDeleteState { get; set; } = new ButtonBinding();
+
 		public ButtonBinding ButtonLoadKeybind { get; set; } = new ButtonBinding();
 
 		public List<ButtonBinding> ButtonsSwapKeybinds { get; set; } = new();
@@ -69,6 +75,11 @@ namespace Celeste.Mod.izumisQOL
 			}
 		}
 		public bool WhitelistIsExclusive = true;
+
+		[SettingIgnore]
+		public bool SaveStatesEnabled { get; set; } = false;
+		[SettingIgnore]
+		public bool PauseAfterLoadingState { get; set; } = true;
 
 		private bool verboseLogging = false;
 		[SettingSubText("Enable to get more debug info.")]
@@ -341,6 +352,25 @@ namespace Celeste.Mod.izumisQOL
 				}
 			);
 			subMenu.AddDescription(menu, menuItem, "Remove this whitelist.");
+
+			menu.Add(subMenu);
+		}
+
+		public void CreateSaveStatesEnabledEntry(TextMenu menu, bool inGame)
+		{
+			TextMenuExt.SubMenu subMenu = new("Save State Settings", false);
+
+			TextMenu.Item menuItem;
+
+			subMenu.Add(menuItem = new TextMenu.OnOff("Enabled", SaveStatesEnabled)
+			{
+				OnValueChange = x => SaveStatesEnabled = x
+			});
+
+			subMenu.Add(menuItem = new TextMenu.OnOff("Pause After Loading State", PauseAfterLoadingState)
+			{
+				OnValueChange = x => PauseAfterLoadingState = x
+			});
 
 			menu.Add(subMenu);
 		}
