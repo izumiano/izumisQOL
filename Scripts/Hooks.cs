@@ -16,9 +16,6 @@ namespace Celeste.Mod.izumisQOL
 		internal static void Load()
 		{
 			On.Monocle.Engine.Update += Update;
-			On.Celeste.Level.Update += SaveStateModule.Update;
-			On.Monocle.Scene.Begin += SaveStateModule.OnSceneBegin;
-			On.Celeste.Player.OnTransition += SaveStateModule.OnScreenTransition;
 
 			BaseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
@@ -29,9 +26,6 @@ namespace Celeste.Mod.izumisQOL
 		internal static void Unload()
 		{
 			On.Monocle.Engine.Update -= Update;
-			On.Celeste.Level.Update -= SaveStateModule.Update;
-			On.Monocle.Scene.Begin -= SaveStateModule.OnSceneBegin;
-			On.Celeste.Player.OnTransition -= SaveStateModule.OnScreenTransition;
 
 			ModSettings.ButtonsSwapKeybinds.Clear();
 		}

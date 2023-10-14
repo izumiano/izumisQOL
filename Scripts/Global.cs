@@ -17,12 +17,6 @@ public class Global
 
 	public static void Log<T>(T obj, LogLevel logLevel = LogLevel.Verbose)
 	{
-//#if !DEBUG
-//		Logger.Log(LogLevel.Info, "izumisQOL", "is not log verbose: " + (!ModSettings.VerboseLogging).ToString());
-//		if (logLevel == LogLevel.Verbose && !ModSettings.VerboseLogging)
-//			return;
-//#endif
-
 		string text = obj is null ? "null" : obj.ToString();
 		string log = text.ToString();
 

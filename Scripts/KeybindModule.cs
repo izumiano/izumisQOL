@@ -338,13 +338,6 @@ namespace Celeste.Mod.izumisQOL
 						}
 						if (typeof(ButtonBinding).IsAssignableFrom(prop.PropertyType))
 						{
-							//if (prop.GetValue(settings) is null)
-							//{
-							//	Log("property was null");
-							//	doSave = false;
-							//	break;
-							//}
-
 							if (prop.GetValue(settings) is ButtonBinding)
 							{
 								List<Binding> buttonBindingList = new();

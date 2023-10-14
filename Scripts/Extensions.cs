@@ -49,13 +49,8 @@ public static class Extensions
 			});
 		}
 
-	public static void Log<T>(this T obj, string identifier = null, LogLevel logLevel = LogLevel.Verbose)
+	public static T Log<T>(this T obj, string identifier = null, LogLevel logLevel = LogLevel.Verbose)
 	{
-//#if !DEBUG
-//		if (logLevel == LogLevel.Verbose && !Global.ModSettings.VerboseLogging)
-//			return;
-//#endif
-
 		string text = obj is null ? "null" : obj.ToString();
 		string log = string.IsNullOrEmpty(identifier) ? text : identifier + ": " + text;
 
@@ -73,5 +68,6 @@ public static class Extensions
 #else
 		Logger.Log(logLevel, "izumisQOL", log);
 #endif
+		return obj;
 	}
 }
