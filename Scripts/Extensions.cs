@@ -9,6 +9,8 @@ using System.Diagnostics;
 using Celeste;
 using Celeste.Mod;
 
+using Monocle;
+
 public static class Extensions
 {
 	public static void AddDescription(this TextMenuExt.SubMenu subMenu, TextMenu containingMenu, TextMenu.Item subMenuItem, string description)
@@ -47,18 +49,19 @@ public static class Extensions
 			});
 		}
 
-	public static void Log<T>(this T text, string identifier = null, LogLevel logLevel = LogLevel.Verbose)
+	public static T1 Log<T1, T2>(this T1 obj, T2 identifier, LogLevel logLevel = LogLevel.Verbose)
 	{
-//#if !DEBUG
-//		if (logLevel == LogLevel.Verbose && !Global.ModSettings.VerboseLogging)
-//			return;
-//#endif
+		return Log(obj, identifier.ToString(), logLevel);
+	}
 
-		string log = string.IsNullOrEmpty(identifier) ? text.ToString() : identifier + ": " + text.ToString();
+	public static T Log<T>(this T obj, string identifier = null, LogLevel logLevel = LogLevel.Verbose)
+	{
+		string text = obj is null ? "null" : obj.ToString();
+		string log = string.IsNullOrEmpty(identifier) ? text : identifier + ": " + text;
 
 		if (string.IsNullOrEmpty(log))
 		{
-			log = "value was null or empty";
+			log = (string.IsNullOrEmpty(identifier) ? "value" : identifier) + " was null or empty";
 		}
 
 #if DEBUG
@@ -70,5 +73,6 @@ public static class Extensions
 #else
 		Logger.Log(logLevel, "izumisQOL", log);
 #endif
+		return obj;
 	}
 }

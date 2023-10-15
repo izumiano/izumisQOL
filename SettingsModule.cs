@@ -15,7 +15,7 @@ namespace Celeste.Mod.izumisQOL
 	{
 		public bool EnableHotkeys { get; set; } = true;
 
-		public ButtonBinding ButtonLoadKeybind { get; set; } = new ButtonBinding();
+		public ButtonBinding ButtonLoadKeybind { get; set; } = new();
 
 		public List<ButtonBinding> ButtonsSwapKeybinds { get; set; } = new();
 
@@ -69,6 +69,9 @@ namespace Celeste.Mod.izumisQOL
 			}
 		}
 		public bool WhitelistIsExclusive = true;
+
+		[SettingSubText("Enable to have the journal show the total time spent in a single mod in addition to the full total.")]
+		public bool ShowModTimeInJournal { get; set; } = false;
 
 		private bool verboseLogging = false;
 		[SettingSubText("Enable to get more debug info.")]

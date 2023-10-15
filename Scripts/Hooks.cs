@@ -15,9 +15,8 @@ namespace Celeste.Mod.izumisQOL
 	{
 		internal static void Load()
 		{
-			//On.Celeste.Player.Update += Update;
 			On.Monocle.Engine.Update += Update;
-			On.Celeste.GameplayRenderer.Render += TestClassDraw;
+			On.Celeste.OuiJournalProgress.ctor += BetterJournalModule.OuiJournalProgressCtor;
 
 			BaseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
@@ -27,12 +26,10 @@ namespace Celeste.Mod.izumisQOL
 
 		internal static void Unload()
 		{
-			//On.Celeste.Player.Update -= Update;
 			On.Monocle.Engine.Update -= Update;
-			On.Celeste.GameplayRenderer.Render -= TestClassDraw;
+			On.Celeste.OuiJournalProgress.ctor -= BetterJournalModule.OuiJournalProgressCtor;
 
 			ModSettings.ButtonsSwapKeybinds.Clear();
-			Log("unload");
 		}
 
 		private static void Update(On.Monocle.Engine.orig_Update orig, Engine self, GameTime gameTime)
@@ -40,17 +37,7 @@ namespace Celeste.Mod.izumisQOL
 			orig(self, gameTime);
 
 			KeybindModule.Update();
-		}
-
-		private static void TestClassDraw(On.Celeste.GameplayRenderer.orig_Render orig, GameplayRenderer self, Scene scene)
-		{
-			orig(self, scene);
-
-			Draw.SpriteBatch.Begin();
-
-			
-			
-			Draw.SpriteBatch.End();
+			//BetterJournalModule.thing();
 		}
 	}
 }
