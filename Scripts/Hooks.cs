@@ -16,6 +16,7 @@ namespace Celeste.Mod.izumisQOL
 		internal static void Load()
 		{
 			On.Monocle.Engine.Update += Update;
+			On.Celeste.OuiJournalProgress.ctor += BetterJournalModule.OuiJournalProgressCtor;
 
 			BaseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
@@ -26,6 +27,7 @@ namespace Celeste.Mod.izumisQOL
 		internal static void Unload()
 		{
 			On.Monocle.Engine.Update -= Update;
+			On.Celeste.OuiJournalProgress.ctor -= BetterJournalModule.OuiJournalProgressCtor;
 
 			ModSettings.ButtonsSwapKeybinds.Clear();
 		}
@@ -35,6 +37,7 @@ namespace Celeste.Mod.izumisQOL
 			orig(self, gameTime);
 
 			KeybindModule.Update();
+			//BetterJournalModule.thing();
 		}
 	}
 }

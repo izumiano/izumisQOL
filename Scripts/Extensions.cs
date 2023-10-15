@@ -49,6 +49,11 @@ public static class Extensions
 			});
 		}
 
+	public static T1 Log<T1, T2>(this T1 obj, T2 identifier, LogLevel logLevel = LogLevel.Verbose)
+	{
+		return Log(obj, identifier.ToString(), logLevel);
+	}
+
 	public static T Log<T>(this T obj, string identifier = null, LogLevel logLevel = LogLevel.Verbose)
 	{
 		string text = obj is null ? "null" : obj.ToString();
