@@ -2,9 +2,13 @@
 izumi's quality of life
 
 Currently available quality of life tools:
+
 Swapping between multiple customizable keybind configurations
+
 A whitelisting tool for mods
+
 Showing the individual mod time and death totals in the journal
+
 (EXPERIMENTAL) Swapping modded keybind settings
 
 Usage Instructions:
