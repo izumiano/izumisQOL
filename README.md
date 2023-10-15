@@ -7,7 +7,7 @@ Swapping between multiple customizable keybind configurations
 
 A whitelisting tool for mods
 
-Showing the individual mod time and death totals in the journal
+Showing an individual mod's time and death totals in the journal
 
 (EXPERIMENTAL) Swapping modded keybind settings
 
