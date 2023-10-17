@@ -7,7 +7,7 @@ namespace Celeste.Mod.izumisQOL
 {
 	public class WhitelistModule : Global
 	{
-		private static string whitelistsPath;
+		private static readonly string whitelistsPath = BaseDirectory + "Saves\\izumisQOL\\whitelists";
 
 		public static void Init()
 		{
@@ -18,7 +18,6 @@ namespace Celeste.Mod.izumisQOL
 
 		private static void SetUpDirectory()
 		{
-			whitelistsPath = BaseDirectory + "Saves\\izumisQOL\\whitelists";
 			Directory.CreateDirectory(whitelistsPath);
 		}
 

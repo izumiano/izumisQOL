@@ -17,17 +17,20 @@ namespace Celeste.Mod.izumisQOL
 		{
 			On.Monocle.Engine.Update += Update;
 			On.Celeste.OuiJournalProgress.ctor += BetterJournalModule.OuiJournalProgressCtor;
-
-			BaseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+			On.Celeste.OuiJournalProgress.Redraw += BetterJournalModule.OnJournalRedraw;
+			On.Celeste.OuiJournal.Close += BetterJournalModule.OnJournalClose;
 
 			KeybindModule.Init();
 			WhitelistModule.Init();
+			BetterJournalModule.Init();
 		}
 
 		internal static void Unload()
 		{
 			On.Monocle.Engine.Update -= Update;
 			On.Celeste.OuiJournalProgress.ctor -= BetterJournalModule.OuiJournalProgressCtor;
+			On.Celeste.OuiJournalProgress.Redraw -= BetterJournalModule.OnJournalRedraw;
+			On.Celeste.OuiJournal.Close -= BetterJournalModule.OnJournalClose;
 
 			ModSettings.ButtonsSwapKeybinds.Clear();
 		}
@@ -37,7 +40,7 @@ namespace Celeste.Mod.izumisQOL
 			orig(self, gameTime);
 
 			KeybindModule.Update();
-			//BetterJournalModule.thing();
+			BetterJournalModule.Update();
 		}
 	}
 }

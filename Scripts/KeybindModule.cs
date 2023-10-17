@@ -13,11 +13,11 @@ namespace Celeste.Mod.izumisQOL
 	public class KeybindModule : Global
 	{
 		public static List<Settings> KeybindSettings = new();
-		private static string keybindsPath;
+		private static readonly string keybindsPath = BaseDirectory + "Saves\\izumisQOL\\keybinds";
 
 		public static void Init()
 		{
-			ModSettings = izumisQOL.ModSettings;
+			//ModSettings = izumisQOL.ModSettings;
 
 			SetUpDirectory();
 
@@ -51,7 +51,6 @@ namespace Celeste.Mod.izumisQOL
 
 		private static void SetUpDirectory()
 		{
-			keybindsPath = BaseDirectory + "Saves\\izumisQOL\\keybinds";
 			Directory.CreateDirectory(keybindsPath);
 
 			if (!File.Exists(keybindsPath + "/whitelist.txt"))

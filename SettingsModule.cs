@@ -15,6 +15,9 @@ namespace Celeste.Mod.izumisQOL
 	{
 		public bool EnableHotkeys { get; set; } = true;
 
+		public ButtonBinding ButtonSaveJournal { get; set; } = new();
+		public ButtonBinding ButtonLoadJournal { get; set; } = new();
+
 		public ButtonBinding ButtonLoadKeybind { get; set; } = new();
 
 		public List<ButtonBinding> ButtonsSwapKeybinds { get; set; } = new();

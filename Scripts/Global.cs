@@ -11,9 +11,9 @@ using Celeste.Mod.izumisQOL;
 
 public class Global
 {
-	public static string BaseDirectory;
+	public static readonly string BaseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
-	public static SettingsModule ModSettings;
+	public static SettingsModule ModSettings => izumisQOL.ModSettings;
 
 	public static void Log<T>(T obj, LogLevel logLevel = LogLevel.Verbose)
 	{
