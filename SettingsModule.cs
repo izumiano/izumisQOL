@@ -16,7 +16,6 @@ namespace Celeste.Mod.izumisQOL
 		public bool EnableHotkeys { get; set; } = true;
 
 		public ButtonBinding ButtonSaveJournal { get; set; } = new();
-		public ButtonBinding ButtonLoadJournal { get; set; } = new();
 
 		public ButtonBinding ButtonLoadKeybind { get; set; } = new();
 
@@ -73,8 +72,9 @@ namespace Celeste.Mod.izumisQOL
 		}
 		public bool WhitelistIsExclusive = true;
 
-		[SettingSubText("Enable to have the journal show the total time spent in a single mod in addition to the full total.")]
-		public bool ShowModTimeInJournal { get; set; } = false;
+		public bool BetterJournalEnabled { get; set; } = false;
+		public bool ShowModTimeInJournal = false;
+		public bool SeparateABCSideTimes = true;
 
 		private bool verboseLogging = false;
 		[SettingSubText("Enable to get more debug info.")]
@@ -347,6 +347,30 @@ namespace Celeste.Mod.izumisQOL
 				}
 			);
 			subMenu.AddDescription(menu, menuItem, "Remove this whitelist.");
+
+			menu.Add(subMenu);
+		}
+
+		public void CreateBetterJournalEnabledEntry(TextMenu menu, bool inGame)
+		{
+			TextMenuExt.SubMenu subMenu = new("Better Journal Settings", false);
+			TextMenu.Item menuItem;
+
+			subMenu.Add(menuItem = new TextMenu.OnOff("Enabled", BetterJournalEnabled)
+			{
+				OnValueChange = (val) => BetterJournalEnabled = val
+			});
+
+			subMenu.Add(menuItem = new TextMenu.OnOff("Show Mod Time In Journal", ShowModTimeInJournal)
+			{
+				OnValueChange = (val) => ShowModTimeInJournal = val
+			});
+			subMenu.AddDescription(menu, menuItem, "Enable to have the journal show the total time spent in a single mod in addition to the full total.");
+
+			subMenu.Add(new TextMenu.OnOff("Separate ABC-Side Times", SeparateABCSideTimes)
+			{
+				OnValueChange = (val) => SeparateABCSideTimes = val
+			});
 
 			menu.Add(subMenu);
 		}

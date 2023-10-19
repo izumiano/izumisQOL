@@ -15,11 +15,10 @@ namespace Celeste.Mod.izumisQOL
 	{
 		private static readonly string journalStatsPath = BaseDirectory + "Saves\\izumisQOL\\journalStats\\";
 
-		private static bool inJournal = false;
-
 		enum JournalDataType
 		{
 			Default,
+			SeparateTimes,
 			Saved,
 			Difference
 		}
@@ -28,6 +27,48 @@ namespace Celeste.Mod.izumisQOL
 
 		private static OuiJournalProgress journalProgressPage;
 		private static VirtualRenderTarget renderTarget;
+
+		private static OuiJournalPage.TextCell ModTotalsTimeCell;
+
+		private static List<CustomAreaStats> journalSnapshot;
+		private static List<CustomAreaStats> JournalSnapshot
+		{
+			get
+			{
+				if(journalSnapshot == null)
+				{
+					journalSnapshot = LoadJournalSnapshot();
+				}
+				return journalSnapshot;
+			}
+			set
+			{
+				journalSnapshot = value;
+			}
+		}
+
+		private static int TimeColumnSpread
+		{
+			get
+			{
+				SaveData instance = SaveData.Instance;
+				if (instance == null)
+					return 1;
+				if(SeparateABCSideTimes(instance) <= 0 || journalDataType == JournalDataType.Default)
+				{
+					return 1;
+				}
+				return instance.UnlockedModes;
+			}
+		}
+
+		private static bool InJournal
+		{
+			get
+			{
+				return journalProgressPage != null;
+			}
+		}
 
 		public static void Init()
 		{
@@ -41,57 +82,111 @@ namespace Celeste.Mod.izumisQOL
 
 		public static void Update()
 		{
-			if (!inJournal)
+			if (!ModSettings.BetterJournalEnabled || !InJournal)
 				return;
 
 			if (ModSettings.ButtonSaveJournal.Pressed)
 			{
-				SaveJournalSnapshot();
+				if (SaveJournalSnapshot())
+				{
+					Tooltip.Show("Saved journal info.");
+					JournalSnapshot = null;
+					if (ChangeCurrentJournalDataType(JournalDataType.Default))
+					{
+						UpdateJournalData();
+					}
+				}
 			}
-			if (ModSettings.ButtonLoadJournal.Pressed)
-			{
-				LoadJournalSnapshot();
-			}
-			if(journalProgressPage != null)
+			if(InJournal)
 			{
 				if (Input.MenuUp.Pressed)
 				{
-					ChangeCurrentJournalDataType(1);
-					UpdateJournalData();
+					if (ChangeCurrentJournalDataType(1))
+					{
+						journalDataType.Log("type");
+						UpdateJournalData();
+					}
 				}
 				if (Input.MenuDown.Pressed)
 				{
-					ChangeCurrentJournalDataType(-1);
-					UpdateJournalData();
+					if (ChangeCurrentJournalDataType(-1))
+					{
+						UpdateJournalData();
+					}
 				}
 			}
 		}
 
-		private static void ChangeCurrentJournalDataType(int dir)
+		private static bool ChangeCurrentJournalDataType(int dir)
 		{
 			SaveData instance = SaveData.Instance;
 			if (instance == null)
-				return;
-
-			string path = journalStatsPath + instance.FileSlot + "_" + instance.Areas_Safe[0].LevelSet + ".txt";
-
-			if (!File.Exists(path))
 			{
-				return;
+				return false;
 			}
 
 			int newLocation = (int)journalDataType + dir;
+			JournalDataType newType = (JournalDataType)newLocation;
+			if (JournalSnapshot == null)
+			{
+				int abcSeparation = SeparateABCSideTimes(instance, newType);
+				if (newLocation > 1 || newLocation == 0)
+				{
+					journalDataType = JournalDataType.Default;
+					return true;
+				}
+				if (newLocation < 0)
+				{
+					newType = JournalDataType.SeparateTimes;
+				}
+				if (newType == JournalDataType.SeparateTimes && abcSeparation > 0)
+				{
+					Log(newType);
+					journalDataType = newType;
+					return true;
+				}
+				return false;
+			}
+
 			if (newLocation < 0)
 			{
 				journalDataType = JournalDataType.Difference;
-				return;
+				return true;
 			}
-			if(newLocation > 2)
+			if(newLocation > 3)
 			{
 				journalDataType = JournalDataType.Default;
-				return;
+				return true;
 			}
-			journalDataType = (JournalDataType)newLocation;
+			if (newType == JournalDataType.SeparateTimes && SeparateABCSideTimes(instance, newType) <= 0)
+			{
+				newType = (JournalDataType)(newLocation + dir);
+			}
+			journalDataType = newType;
+			return true;
+		}
+
+		private static bool ChangeCurrentJournalDataType(JournalDataType journalDataType)
+		{
+			SaveData instance = SaveData.Instance;
+			if (instance == null)
+			{
+				return false;
+			}
+
+			if (JournalSnapshot == null)
+			{
+				return false;
+			}
+
+			int newLocation = (int)journalDataType;
+			JournalDataType newType = (JournalDataType)newLocation;
+			if (newType == JournalDataType.SeparateTimes && SeparateABCSideTimes(instance) <= 0)
+			{
+				newType = (JournalDataType)(newLocation + 1);
+			}
+			BetterJournalModule.journalDataType = newType;
+			return true;
 		}
 
 		private static void UpdateJournalData()
@@ -100,32 +195,72 @@ namespace Celeste.Mod.izumisQOL
 			if (instance == null)
 				return;
 
-			Log("now");
 			DynamicData journalProgressDynData = DynamicData.For(journalProgressPage);
 			OuiJournalPage.Table table = journalProgressDynData.Get<OuiJournalPage.Table>("table");
 			DynamicData tableDynData = DynamicData.For(table);
 
 			List<OuiJournalPage.Row> rows = tableDynData.Get<List<OuiJournalPage.Row>>("rows");
-			for (int i = 1; i < rows.Count - 5; i++)
+
+			SetupModdedTableData();
+
+			if(JournalSnapshot == null && (int)journalDataType > 1)
+			{
+				Log("here");
+				return;
+			}
+
+			int lastUnmoddedRow = GetLastUnmoddedRowIndex(rows);
+			int abcSeparation = SeparateABCSideTimes(instance);
+			for (int i = 1; i < lastUnmoddedRow - 1; i++)
 			{
 				OuiJournalPage.Row row1 = rows[i];
+				InitializeColumns(row1);
 				List<OuiJournalPage.Cell> entries = row1.Entries;
 				try
 				{
-					long time = GetTimeAtIndexFromDataType(i - 1, instance);
-					if (time > 0)
+					ReplaceTime(0);
+
+					void ReplaceTime(int mode)
 					{
-						string timeDialog = Dialog.Time(time);
-						entries[entries.Count - 1] = new OuiJournalPage.TextCell(journalDataType == JournalDataType.Difference ? "+" + timeDialog : timeDialog, journalProgressPage.TextJustify, 0.5f, GetColorFromDataType());
-					}
-					else
-					{
-						entries[entries.Count - 1] = new OuiJournalPage.IconCell("dot");
+						OuiJournalPage.Cell cell = new OuiJournalPage.EmptyCell(100f);
+
+						long time = GetTimeAtIndexFromDataType(i - 1, journalDataType, mode, out int modesForThisArea, instance, JournalSnapshot);
+						if(mode > abcSeparation)
+						{
+							GetInterludeOffset(i - 1, instance, out AreaStats area);
+							AreaData areaData = AreaData.Get(area);
+							if (!areaData.HasMode((AreaMode)mode))
+							{
+								cell = new OuiJournalPage.EmptyCell(0);
+							}
+						}
+						else if(mode <= abcSeparation || journalDataType != JournalDataType.Default)
+						{
+							if (time == 0)
+							{
+								cell = new OuiJournalPage.IconCell("dot");
+							}
+							else
+							{
+								string timeDialog = time > 0 ? Dialog.Time(time) : "-";
+								timeDialog = (journalDataType == JournalDataType.Difference && time > 0) ? "+" + timeDialog : timeDialog;
+								cell = new OuiJournalPage.TextCell(timeDialog, journalProgressPage.TextJustify, 0.5f, GetColorFromDataType(journalDataType));
+							}
+						}
+
+						cell.SpreadOverColumns = (int)Math.Round(TimeColumnSpread / (float)modesForThisArea, MidpointRounding.AwayFromZero);
+
+						entries[entries.Count + mode + instance.UnlockedModes - 6] = cell;
+
+						if (modesForThisArea > mode + 1)
+						{
+							ReplaceTime(mode + 1);
+						}
 					}
 				}
 				catch (Exception ex)
 				{
-					Log(ex);
+					Log(ex, LogLevel.Error);
 				}
 
 				try
@@ -136,9 +271,11 @@ namespace Celeste.Mod.izumisQOL
 					void ReplaceDeathCount(int mode)
 					{
 						int unlockedCopy = unlocked;
-						string deathDialog = Dialog.Deaths(GetDeathsAtIndexFromDataType(i - 1, mode, ref unlocked, instance));
+						int deaths = GetDeathsAtIndexFromDataType(i - 1, journalDataType, mode, ref unlocked, instance, JournalSnapshot);
+						string deathDialog = deaths > -1 ? Dialog.Deaths(deaths) : "-";
+						deathDialog = (journalDataType == JournalDataType.Difference && deaths > -1) ? "+" + deathDialog : deathDialog;
 
-						entries[entries.Count + mode - unlockedCopy - 1] = new OuiJournalPage.TextCell(journalDataType == JournalDataType.Difference ? "+" + deathDialog : deathDialog, journalProgressPage.TextJustify, 0.5f, GetColorFromDataType())
+						entries[entries.Count + mode + instance.UnlockedModes - unlockedCopy - 6] = new OuiJournalPage.TextCell(deathDialog, journalProgressPage.TextJustify, 0.5f, GetColorFromDataType(journalDataType))
 						{
 							SpreadOverColumns = unlocked == unlockedCopy ? 1 : unlockedCopy
 						};
@@ -151,7 +288,7 @@ namespace Celeste.Mod.izumisQOL
 				}
 				catch (Exception ex)
 				{
-					Log(ex);
+					Log(ex, LogLevel.Error);
 				}
 			}
 
@@ -163,12 +300,115 @@ namespace Celeste.Mod.izumisQOL
 			{
 				Log("Could not find render target for journal progress page", LogLevel.Warn);
 			}
+
+			void InitializeColumns(OuiJournalPage.Row row)
+			{
+				while(row.Count < 12)
+				{
+					row.Add(new OuiJournalPage.EmptyCell(0f));
+				}
+			}
+
+			void SetupModdedTableData()
+			{
+				#region Top Row Time Columns
+				List<OuiJournalPage.Cell> entries = table.Header.Entries;
+				if (journalDataType == JournalDataType.Default || SeparateABCSideTimes(instance) <= 0)
+				{
+					entries[entries.Count - 3] = new OuiJournalPage.IconCell("time", 220f);
+					entries[entries.Count - 2] = new OuiJournalPage.EmptyCell(100f);
+				}
+				else if(instance.UnlockedModes > 2)
+				{
+					entries[entries.Count - 3] = new OuiJournalPage.EmptyCell(100f);
+					entries[entries.Count - 2] = new OuiJournalPage.IconCell("time", 100f);
+				}
+				#endregion
+
+				#region Header
+				rows[0].Entries[0] = new OuiJournalPage.TextCell(GetDataTypeText(journalDataType), new Vector2(0f, 0.5f), GetHeaderTextSizeFromDataType(journalDataType), Color.Black * 0.7f);
+				#endregion
+
+				if (ModTotalsTimeCell != null)
+				{
+					ModTotalsTimeCell.SpreadOverColumns = TimeColumnSpread;
+					DynamicData.For(ModTotalsTimeCell).Set("forceWidth", journalDataType != JournalDataType.Default);
+				}
+
+				#region Default Total Time Cell
+				int totalTimeRowIndex = GetLastUnmoddedRowIndex(rows);
+				if(totalTimeRowIndex < rows.Count - 1 && totalTimeRowIndex >= 0)
+				{
+					OuiJournalPage.Row defaultTotalTimeRow = rows[totalTimeRowIndex];
+					if(defaultTotalTimeRow != null)
+					{
+						OuiJournalPage.Cell totalTimeCell = defaultTotalTimeRow.Entries[defaultTotalTimeRow.Entries.Count - 1];
+						totalTimeCell.SpreadOverColumns = TimeColumnSpread;
+						DynamicData.For(totalTimeCell).Set("forceWidth", journalDataType != JournalDataType.Default);
+					}
+					else
+					{
+						Log("Could not find total time row", LogLevel.Error);
+					}
+				}
+				#endregion
+			}
+		}
+
+		/// <summary>
+		/// Gives back a zero indexed integer telling you how many sides should currently be available in the journal
+		/// </summary>
+		private static int SeparateABCSideTimes(SaveData instance, JournalDataType? journalDataType = null)
+		{
+			if(!journalDataType.HasValue)
+			{
+				journalDataType = BetterJournalModule.journalDataType;
+			}
+
+			if (!ModSettings.SeparateABCSideTimes || journalDataType.Value == JournalDataType.Default)
+				return 0;
+			
+			List<AreaStats> areas = instance.LevelSetStats.AreasIncludingCeleste;
+			int highestSideAvailable = 0;
+			foreach(AreaStats area in areas)
+			{
+				AreaData areaData = AreaData.Get(area);
+				if (areaData.HasMode((AreaMode)2))
+				{
+					highestSideAvailable = 2;
+					break;
+				}
+				if (areaData.HasMode((AreaMode)1))
+				{
+					highestSideAvailable = 1;
+				}
+			}
+			return Math.Min(instance.UnlockedModes - 1, highestSideAvailable);
+		}
+
+		private static int GetLastUnmoddedRowIndex(List<OuiJournalPage.Row> rows)
+		{
+			int offset = 0;
+			if (ModTotalsTimeCell != null && ModSettings.ShowModTimeInJournal)
+			{
+				offset = 2;
+			}
+			int val = rows.Count - 2 - offset;
+			if (val >= rows.Count - 1)
+			{
+				val = rows.Count - 1;
+			}
+			else if(val < 0)
+			{
+				val = 0;
+			}
+			return val;
 		}
 
 		private static int GetInterludeOffset(int index, SaveData instance, out AreaStats area)
 		{
 			int offset = 0;
-			List<AreaStats> areas = instance.GetLevelSetStats().AreasIncludingCeleste;
+			List<AreaStats> areas = instance.LevelSetStats.AreasIncludingCeleste;
 			for (int i = 0; i < areas.Count - 1; i++)
 			{
 				if (AreaData.Get(areas[i]).Interlude_Safe)
@@ -190,32 +430,54 @@ namespace Celeste.Mod.izumisQOL
 			return offset;
 		}
 
-		private static long GetTimeAtIndexFromDataType(int index, SaveData instance)
+		private static long GetTimeAtIndexFromDataType(int index, JournalDataType journalDataType, int mode, out int modesForThisArea, SaveData instance, List<CustomAreaStats> customAreaStats)
 		{
 			int offset = GetInterludeOffset(index, instance, out AreaStats area);
 
+			AreaData areaData = AreaData.Get(area);
+			modesForThisArea = areaData.Mode.Length;
+			if (!areaData.HasMode((AreaMode)mode))
+			{
+				return -1;
+			}
+
 			if (area == null)
-				return 0;
+				return -1;
 
-			long newTimePlayed;
-			newTimePlayed = area.TotalTimePlayed;
 
+			long newTimePlayed = area.Modes[mode].TimePlayed;
+
+
+			long totalTime = area.TotalTimePlayed;
+			if (SeparateABCSideTimes(instance) <= 0)
+			{
+				newTimePlayed = totalTime;
+			}
 			if (journalDataType == JournalDataType.Default)
+			{
+				return totalTime;
+			}
+
+			if(journalDataType == JournalDataType.SeparateTimes)
 			{
 				return newTimePlayed;
 			}
 
-			long oldTimePlayed = 0;
-			List<CustomAreaStats> customAreaStats = LoadJournalSnapshot();
 			if (customAreaStats == null)
-				return 0;
+				return -1;
 
 			CustomAreaStats areaStats = customAreaStats[index + offset];
-			foreach (long modeTime in areaStats.TimePlayed)
+			long oldTimePlayed = areaStats.TimePlayed[mode];
+
+			if (SeparateABCSideTimes(instance) <= 0)
 			{
-				oldTimePlayed += modeTime;
+				oldTimePlayed = 0;
+				foreach(long time in areaStats.TimePlayed)
+				{
+					oldTimePlayed += time;
+				}
 			}
-			
+
 			if(journalDataType == JournalDataType.Saved)
 			{
 				return oldTimePlayed;	
@@ -225,32 +487,37 @@ namespace Celeste.Mod.izumisQOL
 			{
 				return newTimePlayed - oldTimePlayed;
 			}
-			return 0;
+			return -1;
 		}
 
-		private static int GetDeathsAtIndexFromDataType(int index, int mode, ref int unlockedModes, SaveData instance)
+		private static int GetDeathsAtIndexFromDataType(int index, JournalDataType journalDataType, int mode, ref int unlockedModes, SaveData instance, List<CustomAreaStats> customAreaStats)
 		{
 			int offset = GetInterludeOffset(index, instance, out AreaStats area);
 
 			if(area == null)
-				return 0;
+				return -1;
 
-			int newDeaths;
-			newDeaths = area.Modes[mode].Deaths;
-			int modesForThisArea = AreaData.Get(area).Mode.Length;
+			AreaData areaData = AreaData.Get(area);
+			int modesForThisArea = areaData.Mode.Length;
 			if (modesForThisArea < unlockedModes)
 			{
 				unlockedModes = modesForThisArea;
 			}
+			if (!areaData.HasMode((AreaMode)mode))
+			{
+				return -1;
+			}
 
-			if (journalDataType == JournalDataType.Default)
+			int newDeaths;
+			newDeaths = area.Modes[mode].Deaths;
+
+			if (journalDataType == JournalDataType.Default || journalDataType == JournalDataType.SeparateTimes)
 			{
 				return newDeaths;
 			}
 
-			List<CustomAreaStats> customAreaStats = LoadJournalSnapshot();
 			if (customAreaStats == null)
-				return 0;
+				return -1;
 
 			CustomAreaStats areaStats = customAreaStats[index + offset];
 			int oldDeaths = areaStats.Deaths[mode];
@@ -264,15 +531,42 @@ namespace Celeste.Mod.izumisQOL
 			{
 				return newDeaths - oldDeaths;
 			}
-			return 0;
+			return -1;
 		}
 
-		private static Color GetColorFromDataType()
+		private static Color GetColorFromDataType(JournalDataType journalDataType)
 		{
-			if (journalDataType == JournalDataType.Saved) return Color.Green;
-			if (journalDataType == JournalDataType.Difference) return Color.Red;
-			if (journalDataType == JournalDataType.Default) return journalProgressPage != null ? journalProgressPage.TextColor : Color.White;
+			if (journalDataType == JournalDataType.Saved)
+				return Color.Green;
+			if (journalDataType == JournalDataType.Difference)
+				return Color.Red;
+			if (journalDataType == JournalDataType.Default || journalDataType == JournalDataType.SeparateTimes)
+				return journalProgressPage != null ? journalProgressPage.TextColor : Color.White;
 			return Color.White;
+		}
+
+		private static string GetDataTypeText(JournalDataType journalDataType)
+		{
+			return journalDataType switch
+			{
+				JournalDataType.Default => Dialog.Clean("journal_progress"),
+				JournalDataType.SeparateTimes => "ABC-Side Times",
+				JournalDataType.Saved => "Saved",
+				JournalDataType.Difference => "Difference",
+				_ => "error",
+			};
+		}
+
+		private static float GetHeaderTextSizeFromDataType(JournalDataType journalDataType)
+		{
+			return journalDataType switch
+			{
+				JournalDataType.Default => 1f,
+				JournalDataType.SeparateTimes => 0.6f,
+				JournalDataType.Saved => 1.4f,
+				JournalDataType.Difference => 0.85f,
+				_ => 1f
+			};
 		}
 
 		private static long GetTotalModTime()
@@ -282,42 +576,32 @@ namespace Celeste.Mod.izumisQOL
 				return 0;
 
 			long totalTime = 0;
-			instance.GetLevelSetStats().AreasIncludingCeleste.ForEach(area => totalTime += area.TotalTimePlayed);
+			instance.LevelSetStats.AreasIncludingCeleste.ForEach(area => totalTime += area.TotalTimePlayed);
 			return totalTime;
 		}
 
 		private static int GetTotalModDeaths()
 		{
-			SaveData Instance = SaveData.Instance;
-			if (Instance == null)
+			SaveData instance = SaveData.Instance;
+			if (instance == null)
 				return 0;
 
 			int totalDeaths = 0;
-			Instance.GetLevelSetStats().AreasIncludingCeleste.ForEach(area => totalDeaths += area.TotalDeaths);
+			instance.LevelSetStats.AreasIncludingCeleste.ForEach(area => totalDeaths += area.TotalDeaths);
 			return totalDeaths;
 		}
 
-		public static void OuiJournalProgressCtor(On.Celeste.OuiJournalProgress.orig_ctor orig, OuiJournalProgress self, OuiJournal journal)
+		private static void AddModTotalToJournal(OuiJournalProgress journalProgressPage, OuiJournalPage.Table table)
 		{
-			orig(self, journal);
-
 			if (!ModSettings.ShowModTimeInJournal)
 				return;
 
-			inJournal = true;
-
-			journalProgressPage = self;
-
-			DynamicData journalProgressDynData = DynamicData.For(self);
-			OuiJournalPage.Table table = journalProgressDynData.Get<OuiJournalPage.Table>("table");
-			
-
-			OuiJournalPage.Row row = table.AddRow().Add(new OuiJournalPage.TextCell("Mod Totals", new Vector2(1f, 0.5f), 0.7f, self.TextColor)).Add(null)
+			OuiJournalPage.Row row = table.AddRow().Add(new OuiJournalPage.TextCell("Mod Totals", new Vector2(1f, 0.5f), 0.7f, journalProgressPage.TextColor)).Add(null)
 				.Add(null)
 				.Add(null)
 				.Add(null)
 				.Add(null);
-			row.Add(new OuiJournalPage.TextCell(Dialog.Deaths(GetTotalModDeaths()), self.TextJustify, 0.6f, self.TextColor)
+			row.Add(new OuiJournalPage.TextCell(Dialog.Deaths(GetTotalModDeaths()), journalProgressPage.TextJustify, 0.6f, journalProgressPage.TextColor)
 			{
 				SpreadOverColumns = SaveData.Instance.UnlockedModes
 			});
@@ -325,8 +609,26 @@ namespace Celeste.Mod.izumisQOL
 			{
 				row.Add(null);
 			}
-			row.Add(new OuiJournalPage.TextCell(Dialog.Time(GetTotalModTime()), self.TextJustify, 0.6f, self.TextColor));
+			row.Add(ModTotalsTimeCell = new OuiJournalPage.TextCell(Dialog.Time(GetTotalModTime()), journalProgressPage.TextJustify, 0.6f, journalProgressPage.TextColor));
 			table.AddRow();
+		}
+
+		public static void OuiJournalProgressCtor(On.Celeste.OuiJournalProgress.orig_ctor orig, OuiJournalProgress self, OuiJournal journal)
+		{
+			orig(self, journal);
+
+			if (!ModSettings.BetterJournalEnabled)
+				return;
+
+			journalProgressPage = self;
+
+			DynamicData journalProgressDynData = DynamicData.For(self);
+			OuiJournalPage.Table table = journalProgressDynData.Get<OuiJournalPage.Table>("table");
+
+			table.AddColumn(new OuiJournalPage.EmptyCell(100f))
+				.AddColumn(new OuiJournalPage.EmptyCell(100f));
+
+			AddModTotalToJournal(self, table);
 		}
 
 		public static void OnJournalRedraw(On.Celeste.OuiJournalProgress.orig_Redraw orig, OuiJournalProgress self, VirtualRenderTarget buffer)
@@ -338,33 +640,36 @@ namespace Celeste.Mod.izumisQOL
 		public static void OnJournalClose(On.Celeste.OuiJournal.orig_Close orig, OuiJournal self)
 		{
 			journalDataType = JournalDataType.Default;
-			inJournal = false;
+			journalProgressPage = null;
+			JournalSnapshot = null;
 
 			orig(self);
 		}
 
-		private static void SaveJournalSnapshot()
+		private static bool SaveJournalSnapshot()
 		{
 			SaveData instance = SaveData.Instance;
 			if (instance == null)
-				return;
+				return false;
 
 			List<CustomAreaStats> customAreaStats = new();
-			List<AreaStats> areaStats = instance.GetLevelSetStats().AreasIncludingCeleste;
+			List<AreaStats> areaStats = instance.LevelSetStats.AreasIncludingCeleste;
 			areaStats.ForEach(area => customAreaStats.Add(new CustomAreaStats(area.Modes)));
 
 			string levelSet = areaStats[0].LevelSet.Replace("/", "").Replace("\n", "");
 			string path = journalStatsPath + instance.FileSlot + "_" + levelSet + ".txt";
-			Log("Attempting to save journal to: " + path);
 			try
 			{
 				FileStream fileStream = File.Create(path);
 				using StreamWriter writer = new(fileStream);
 				YamlHelper.Serializer.Serialize(writer, customAreaStats, typeof(List<CustomAreaStats>));
+				Log("Saved journal to: " + path);
+				return true;
 			}
 			catch (Exception ex)
 			{
 				Log(ex);
+				return false;
 			}
 		}
 
@@ -376,25 +681,31 @@ namespace Celeste.Mod.izumisQOL
 
 			List<CustomAreaStats> customAreaStats = null;
 
-			string levelSet = instance.GetLevelSetStats().AreasIncludingCeleste[0].LevelSet.Replace("/", "").Replace("\n", "");
-			string path = journalStatsPath + instance.FileSlot + "_" + levelSet + ".txt";
-			Log("Reading journal snapshot from: " + path);
-
 			try
 			{
-				if (!File.Exists(path))
+				if (!JournalStatFileExists(instance, out string path))
 				{
+					Log("Could not read from: " + path);
 					return null;
 				}
+
 				FileStream fileStream = File.OpenRead(path);
 				using StreamReader reader = new(fileStream);
 				customAreaStats = (List<CustomAreaStats>)YamlHelper.Deserializer.Deserialize(reader, typeof(List<CustomAreaStats>));
+				Log("Successfully read journal snapshot from: " + path);
 			}
 			catch (Exception ex)
 			{
-				ex.Log();
+				Log(ex, LogLevel.Error);
 			}
 			return customAreaStats;
+		}
+
+		private static bool JournalStatFileExists(SaveData instance, out string path)
+		{
+			string levelSet = instance.LevelSetStats.AreasIncludingCeleste[0].LevelSet.Replace("/", "").Replace("\n", "");
+			path = journalStatsPath + instance.FileSlot + "_" + levelSet + ".txt";
+			return File.Exists(path);
 		}
 
 		private struct CustomAreaStats
