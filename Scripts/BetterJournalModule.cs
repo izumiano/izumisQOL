@@ -8,6 +8,7 @@ using Monocle;
 using MonoMod.Utils;
 using Microsoft.Xna.Framework;
 using System.IO;
+using System.Collections;
 
 namespace Celeste.Mod.izumisQOL
 {
@@ -25,6 +26,7 @@ namespace Celeste.Mod.izumisQOL
 
 		private static JournalDataType journalDataType = JournalDataType.Default;
 
+		private static OuiJournal ouiJournal;
 		private static OuiJournalProgress journalProgressPage;
 		private static VirtualRenderTarget renderTarget;
 
@@ -62,13 +64,18 @@ namespace Celeste.Mod.izumisQOL
 			}
 		}
 
-		private static bool InJournal
-		{
-			get
-			{
-				return journalProgressPage != null;
-			}
-		}
+		private static bool InJournal => journalProgressPage != null;
+		//private static bool OnJournalProgressPage 
+		//{ 
+		//	get
+		//	{
+		//		if(ouiJournal == null)
+		//		{
+		//			return false;
+		//		}
+		//		return ouiJournal.Page == journalProgressPage;
+		//	} 
+		//}
 
 		public static void Init()
 		{
@@ -80,9 +87,11 @@ namespace Celeste.Mod.izumisQOL
 			Directory.CreateDirectory(journalStatsPath);
 		}
 
-		public static void Update()
+		public static void OnJournalUpdate(On.Celeste.OuiJournal.orig_Update orig, OuiJournal self)
 		{
-			if (!ModSettings.BetterJournalEnabled || !InJournal)
+			orig(self);
+
+			if (!ModSettings.BetterJournalEnabled)
 				return;
 
 			if (ModSettings.ButtonSaveJournal.Pressed)
@@ -97,22 +106,21 @@ namespace Celeste.Mod.izumisQOL
 					}
 				}
 			}
-			if(InJournal)
+
+			JournalDataTypeInput(self);
+		}
+
+		private static void JournalDataTypeInput(OuiJournal self)
+		{
+			if (!InJournal || self.Page != journalProgressPage)
+				return;
+
+			int input = Input.MenuUp.Pressed ? 1 : (Input.MenuDown.Pressed ? -1 : 0); // 1 if up is pressed, -1 if down is pressed, 0 if nothing
+			if (input != 0)
 			{
-				if (Input.MenuUp.Pressed)
+				if (ChangeCurrentJournalDataType(input))
 				{
-					if (ChangeCurrentJournalDataType(1))
-					{
-						journalDataType.Log("type");
-						UpdateJournalData();
-					}
-				}
-				if (Input.MenuDown.Pressed)
-				{
-					if (ChangeCurrentJournalDataType(-1))
-					{
-						UpdateJournalData();
-					}
+					UpdateJournalData();
 				}
 			}
 		}
@@ -631,7 +639,7 @@ namespace Celeste.Mod.izumisQOL
 			AddModTotalToJournal(self, table);
 		}
 
-		public static void OnJournalRedraw(On.Celeste.OuiJournalProgress.orig_Redraw orig, OuiJournalProgress self, VirtualRenderTarget buffer)
+		public static void OnJournalProgressRedraw(On.Celeste.OuiJournalProgress.orig_Redraw orig, OuiJournalProgress self, VirtualRenderTarget buffer)
 		{
 			renderTarget = buffer;
 			orig(self, buffer);

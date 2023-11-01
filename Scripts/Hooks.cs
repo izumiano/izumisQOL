@@ -16,8 +16,9 @@ namespace Celeste.Mod.izumisQOL
 		internal static void Load()
 		{
 			On.Monocle.Engine.Update += Update;
+			On.Celeste.OuiJournal.Update += BetterJournalModule.OnJournalUpdate;
 			On.Celeste.OuiJournalProgress.ctor += BetterJournalModule.OuiJournalProgressCtor;
-			On.Celeste.OuiJournalProgress.Redraw += BetterJournalModule.OnJournalRedraw;
+			On.Celeste.OuiJournalProgress.Redraw += BetterJournalModule.OnJournalProgressRedraw;
 			On.Celeste.OuiJournal.Close += BetterJournalModule.OnJournalClose;
 
 			KeybindModule.Init();
@@ -28,8 +29,9 @@ namespace Celeste.Mod.izumisQOL
 		internal static void Unload()
 		{
 			On.Monocle.Engine.Update -= Update;
+			On.Celeste.OuiJournal.Update -= BetterJournalModule.OnJournalUpdate;
 			On.Celeste.OuiJournalProgress.ctor -= BetterJournalModule.OuiJournalProgressCtor;
-			On.Celeste.OuiJournalProgress.Redraw -= BetterJournalModule.OnJournalRedraw;
+			On.Celeste.OuiJournalProgress.Redraw -= BetterJournalModule.OnJournalProgressRedraw;
 			On.Celeste.OuiJournal.Close -= BetterJournalModule.OnJournalClose;
 
 			ModSettings.ButtonsSwapKeybinds.Clear();
@@ -40,7 +42,7 @@ namespace Celeste.Mod.izumisQOL
 			orig(self, gameTime);
 
 			KeybindModule.Update();
-			BetterJournalModule.Update();
+			//BetterJournalModule.Update();
 		}
 	}
 }
