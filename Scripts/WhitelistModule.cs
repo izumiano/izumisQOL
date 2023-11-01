@@ -11,14 +11,20 @@ namespace Celeste.Mod.izumisQOL
 
 		public static void Init()
 		{
-			SetUpDirectory();
+			ModSettings.ResetWhitelist();
+			if (!SetUpDirectory())
+			{
+				Log("Failed setting up whitelist directory", LogLevel.Error);
+				return;
+			}
 
 			LoadWhitelistFiles();
 		}
 
-		private static void SetUpDirectory()
+		private static bool SetUpDirectory()
 		{
 			Directory.CreateDirectory(whitelistsPath);
+			return Directory.Exists(whitelistsPath);
 		}
 
 		private static void LoadWhitelistFiles()
@@ -116,14 +122,15 @@ namespace Celeste.Mod.izumisQOL
 			}
 		}
 
-		public static void WriteToEverestBlacklist(string name)
+		public static bool WriteToEverestBlacklist(string name)
 		{
 			try
 			{
 				if (!File.Exists(whitelistsPath + "/" + name + ".txt"))
 				{
 					Log(whitelistsPath + "/" + name + ".txt" + " does not exist", LogLevel.Info);
-					return;
+					Tooltip.Show(name + " does not exist");
+					return false;
 				}
 
 				string[] whitelistLines = File.ReadAllLines(whitelistsPath + "/" + name + ".txt");
@@ -188,10 +195,13 @@ namespace Celeste.Mod.izumisQOL
 					}
 					return blacklistLine + "\n";
 				}
+				return true;
 			}
 			catch(Exception ex)
 			{
 				Log(ex, LogLevel.Warn);
+				Tooltip.Show("Failed to write to blacklist.");
+				return false;
 			}
 		}
 

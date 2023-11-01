@@ -15,12 +15,14 @@ namespace Celeste.Mod.izumisQOL
 	{
 		public bool EnableHotkeys { get; set; } = true;
 
+		// ButtonBinds
 		public ButtonBinding ButtonSaveJournal { get; set; } = new();
 
 		public ButtonBinding ButtonLoadKeybind { get; set; } = new();
 
 		public List<ButtonBinding> ButtonsSwapKeybinds { get; set; } = new();
 
+		// KeybindModule settings
 		private readonly List<string> KeybindNames = new();
 
 		[SettingIgnore]
@@ -50,6 +52,7 @@ namespace Celeste.Mod.izumisQOL
 			}
 		}
 
+		// WhitelistModule settings
 		private readonly List<string> WhitelistNames = new();
 
 		[SettingIgnore]
@@ -71,10 +74,13 @@ namespace Celeste.Mod.izumisQOL
 			}
 		}
 		public bool WhitelistIsExclusive = true;
+		private bool showRestartButton = false;
 
+		// BetterJournal settings
 		public bool BetterJournalEnabled { get; set; } = false;
 		public bool ShowModTimeInJournal = false;
 		public bool SeparateABCSideTimes = true;
+
 
 		private bool verboseLogging = false;
 		[SettingSubText("Enable to get more debug info.")]
@@ -235,6 +241,8 @@ namespace Celeste.Mod.izumisQOL
 			if (inGame)
 				return;
 
+			WhitelistModule.Init();
+
 			TextMenuExt.SubMenu subMenu = new("Whitelist Settings", false);
 
 			TextMenu.Item menuItem;
@@ -248,15 +256,38 @@ namespace Celeste.Mod.izumisQOL
 			});
 			subMenu.AddDescription(menu, CurrentWhitelistSlider, "The currently selected whitelist.");
 
+			TextMenu.Button restartButton = new TextMenu.Button("Restart");
+			restartButton.Pressed(
+				delegate
+				{
+					Everest.QuickFullRestart();
+				}
+			);
+
 			subMenu.Add(menuItem = new TextMenu.Button("Apply Current Whitelist"));
 			menuItem.Pressed(
 				delegate
 				{
-					WhitelistModule.WriteToEverestBlacklist(WhitelistNames[CurrentWhitelistSlot]);
+					if (WhitelistModule.WriteToEverestBlacklist(WhitelistNames[CurrentWhitelistSlot]))
+					{
+						if (!showRestartButton)
+						{
+							subMenu.Insert(5, restartButton);
+							subMenu.InsertDescription(menu, restartButton, "Restart Celeste");
+							restartButton.SelectWiggler.Start();
+						}
+						showRestartButton = true;
+					}
 				}
 			);
 			subMenu.AddDescription(menu, menuItem, "Apply the currently selected whitelist.");
 			subMenu.NeedsRelaunch(menu, menuItem);
+
+			if (showRestartButton)
+			{
+				subMenu.Add(restartButton);
+				subMenu.AddDescription(menu, restartButton, "Restart Celeste");
+			}
 
 			subMenu.Add(menuItem = new TextMenu.Button("Save Current Whitelist"));
 			menuItem.Pressed(
@@ -394,6 +425,11 @@ namespace Celeste.Mod.izumisQOL
 		public void ChangeWhitelistName(int index, string name)
 		{
 			WhitelistNames[index] = name;
+		}
+
+		public void ResetWhitelist()
+		{
+			WhitelistNames.Clear();
 		}
 
 		public void AddKeybindName(string name)

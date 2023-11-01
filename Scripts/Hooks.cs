@@ -22,7 +22,7 @@ namespace Celeste.Mod.izumisQOL
 			On.Celeste.OuiJournal.Close += BetterJournalModule.OnJournalClose;
 
 			KeybindModule.Init();
-			WhitelistModule.Init();
+			//WhitelistModule.Init();
 			BetterJournalModule.Init();
 		}
 
@@ -42,7 +42,6 @@ namespace Celeste.Mod.izumisQOL
 			orig(self, gameTime);
 
 			KeybindModule.Update();
-			//BetterJournalModule.Update();
 		}
 	}
 }

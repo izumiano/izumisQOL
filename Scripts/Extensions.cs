@@ -14,22 +14,40 @@ using Monocle;
 public static class Extensions
 {
 	public static void AddDescription(this TextMenuExt.SubMenu subMenu, TextMenu containingMenu, TextMenu.Item subMenuItem, string description)
+	{
+		TextMenuExt.EaseInSubHeaderExt descriptionText = new TextMenuExt.EaseInSubHeaderExt(description, initiallyVisible: false, containingMenu)
 		{
-			TextMenuExt.EaseInSubHeaderExt descriptionText = new TextMenuExt.EaseInSubHeaderExt(description, initiallyVisible: false, containingMenu)
-			{
-				TextColor = Color.Gray,
-				HeightExtra = 0f
-			};
-			subMenu.Add(descriptionText);
-			subMenuItem.OnEnter = (Action)Delegate.Combine(subMenuItem.OnEnter, (Action)delegate
-			{
-				descriptionText.FadeVisible = true;
-			});
-			subMenuItem.OnLeave = (Action)Delegate.Combine(subMenuItem.OnLeave, (Action)delegate
-			{
-				descriptionText.FadeVisible = false;
-			});
-		}
+			TextColor = Color.Gray,
+			HeightExtra = 0f
+		};
+		subMenu.Add(descriptionText);
+		subMenuItem.OnEnter = (Action)Delegate.Combine(subMenuItem.OnEnter, (Action)delegate
+		{
+			descriptionText.FadeVisible = true;
+		});
+		subMenuItem.OnLeave = (Action)Delegate.Combine(subMenuItem.OnLeave, (Action)delegate
+		{
+			descriptionText.FadeVisible = false;
+		});
+	}
+
+	public static void InsertDescription(this TextMenuExt.SubMenu subMenu, TextMenu containingMenu, TextMenu.Item subMenuItem, string description)
+	{
+		TextMenuExt.EaseInSubHeaderExt descriptionText = new TextMenuExt.EaseInSubHeaderExt(description, initiallyVisible: false, containingMenu)
+		{
+			TextColor = Color.Gray,
+			HeightExtra = 0f
+		};
+		subMenu.Insert(subMenu.IndexOf(subMenuItem) + 1, descriptionText);
+		subMenuItem.OnEnter = (Action)Delegate.Combine(subMenuItem.OnEnter, (Action)delegate
+		{
+			descriptionText.FadeVisible = true;
+		});
+		subMenuItem.OnLeave = (Action)Delegate.Combine(subMenuItem.OnLeave, (Action)delegate
+		{
+			descriptionText.FadeVisible = false;
+		});
+	}
 
 	public static void NeedsRelaunch(this TextMenuExt.SubMenu subMenu, TextMenu containingMenu, TextMenu.Item subMenuItem)
 		{
