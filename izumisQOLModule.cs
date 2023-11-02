@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Monocle;
 using FMOD.Studio;
 using Celeste.Mod.izumisQOL.Menu;
+using Celeste.Mod.izumisQOL.ModIntegration;
 
 namespace Celeste.Mod.izumisQOL
 {
@@ -46,6 +47,7 @@ namespace Celeste.Mod.izumisQOL
 		// Optional, do anything requiring either the Celeste or mod content here.
 		public override void LoadContent(bool firstLoad)
 		{
+			CollabUtils2Integration.Load();
 		}
 
 		// Unload the entirety of your mod's content. Free up any native resources.

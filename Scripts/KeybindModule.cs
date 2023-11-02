@@ -264,6 +264,13 @@ namespace Celeste.Mod.izumisQOL
 					return false;
 				}
 
+				string oldPath = keybindsPath + "/" + origName + ".celeste";
+				if (!File.Exists(oldPath))
+				{
+					Log(oldPath + " does not exist");
+					return false;
+				}
+
 				string origNameIndex = "";
 				for(int i = 0; i < origName.Length; i++)
 				{
@@ -278,7 +285,7 @@ namespace Celeste.Mod.izumisQOL
 					Tooltip.Show(newName + " already exists");
 					return false;
 				}
-				File.Move(keybindsPath + "/" + origName + ".celeste", newPath);
+				File.Move(oldPath, newPath);
 				Tooltip.Show("Imported: " + newName + " from clipboard");
 				return true;
 			}

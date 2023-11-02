@@ -23,7 +23,7 @@ namespace Celeste.Mod.izumisQOL
 		public List<ButtonBinding> ButtonsSwapKeybinds { get; set; } = new();
 
 		// KeybindModule settings
-		private readonly List<string> KeybindNames = new();
+		private readonly List<string> keybindNames = new();
 
 		[SettingIgnore]
 		private TextMenu.Slider CurrentKeybindSlider { get; set; }
@@ -53,7 +53,7 @@ namespace Celeste.Mod.izumisQOL
 		}
 
 		// WhitelistModule settings
-		private readonly List<string> WhitelistNames = new();
+		private readonly List<string> whitelistNames = new();
 
 		[SettingIgnore]
 		private TextMenu.Slider CurrentWhitelistSlider { get; set; }
@@ -62,9 +62,9 @@ namespace Celeste.Mod.izumisQOL
 		{
 			get
 			{
-				if(currentWhitelistSlot > WhitelistNames.Count - 1)
+				if(currentWhitelistSlot > whitelistNames.Count - 1)
 				{
-					currentWhitelistSlot = WhitelistNames.Count - 1;
+					currentWhitelistSlot = whitelistNames.Count - 1;
 				}
 				return currentWhitelistSlot;
 			} 
@@ -107,7 +107,7 @@ namespace Celeste.Mod.izumisQOL
 
 			Global.Log("keybindSettings.Count=" + KeybindModule.KeybindSettings.Count);
 
-			subMenu.Add(CurrentKeybindSlider = new TextMenu.Slider("Current Keybind Slot", i => KeybindNames[i], 0, KeybindNames.Count - 1, CurrentKeybindSlot)
+			subMenu.Add(CurrentKeybindSlider = new TextMenu.Slider("Current Keybind Slot", i => GetKeybindName(i), 0, keybindNames.Count - 1, CurrentKeybindSlot)
 			{
 				OnValueChange = delegate (int val)
 				{
@@ -134,7 +134,7 @@ namespace Celeste.Mod.izumisQOL
 				delegate
 				{
 					Global.Log("Copying to: " + CurrentKeybindSlider.Index);
-					Tooltip.Show("Copying current keybinds to " + KeybindNames[CurrentKeybindSlider.Index]);
+					Tooltip.Show("Copying current keybinds to " + GetKeybindName(CurrentKeybindSlider.Index));
 
 					KeybindModule.SaveKeybinds(CurrentKeybindSlider.Index);
 				}
@@ -155,9 +155,9 @@ namespace Celeste.Mod.izumisQOL
 				delegate
 				{
 					string clipboardText = TextInput.GetClipboardText();
-					if (!string.IsNullOrEmpty(clipboardText) && KeybindModule.RenameFile(CurrentKeybindSlot + "_" + KeybindNames[CurrentKeybindSlot], clipboardText))
+					if (!string.IsNullOrEmpty(clipboardText) && KeybindModule.RenameFile(CurrentKeybindSlot + "_" + GetKeybindName(CurrentKeybindSlot), clipboardText))
 					{
-						KeybindNames[CurrentKeybindSlot] = clipboardText;
+						ChangeKeybindName(CurrentKeybindSlot, clipboardText);
 						CurrentKeybindSlider.Values.Insert(CurrentKeybindSlot + 1, Tuple.Create(clipboardText, CurrentKeybindSlot));
 						CurrentKeybindSlider.Values.RemoveAt(CurrentKeybindSlot);
 						CurrentKeybindSlider.SelectWiggler.Start();
@@ -174,7 +174,7 @@ namespace Celeste.Mod.izumisQOL
 
 					KeybindModule.SaveKeybinds(val);
 
-					CurrentKeybindSlider.Add(KeybindNames[val], val);
+					CurrentKeybindSlider.Add(GetKeybindName(val), val);
 					CurrentKeybindSlider.SelectWiggler.Start();
 
 					Tooltip.Show("Adding new keybind slot");
@@ -189,10 +189,10 @@ namespace Celeste.Mod.izumisQOL
 			menuItem.Pressed(
 				delegate
 				{
-					if(KeybindNames.Count > 1)
+					if(keybindNames.Count > 1)
 					{
 						int keybindSlot = CurrentKeybindSlider.Index;
-						Tooltip.Add(tooltips: new TooltipInfo("Removed " + KeybindNames[keybindSlot]), clearQueue: true);
+						Tooltip.Add(tooltips: new TooltipInfo("Removed " + GetKeybindName(keybindSlot)), clearQueue: true);
 
 						if (keybindSlot >= CurrentKeybindSlider.Values.Count - 1)
 						{
@@ -206,12 +206,12 @@ namespace Celeste.Mod.izumisQOL
 						}
 
 						KeybindModule.RemoveKeybindSlot(CurrentKeybindSlider.Index);
-						KeybindNames.RemoveAt(CurrentKeybindSlider.Index);
+						keybindNames.RemoveAt(CurrentKeybindSlider.Index);
 
 						CurrentKeybindSlider.Values.Clear();
-						for(int i = 0; i < KeybindNames.Count; i++)
+						for(int i = 0; i < keybindNames.Count; i++)
 						{
-							CurrentKeybindSlider.Values.Add(new(KeybindNames[i], i));
+							CurrentKeybindSlider.Values.Add(new(GetKeybindName(i), i));
 						}
 						CurrentKeybindSlider.Index = keybindSlot;
 
@@ -247,7 +247,7 @@ namespace Celeste.Mod.izumisQOL
 
 			TextMenu.Item menuItem;
 
-			subMenu.Add(CurrentWhitelistSlider = new TextMenu.Slider("Current Whitelist", i => WhitelistNames[i], 0, WhitelistNames.Count - 1, CurrentWhitelistSlot)
+			subMenu.Add(CurrentWhitelistSlider = new TextMenu.Slider("Current Whitelist", i => GetWhitelistName(i), 0, whitelistNames.Count - 1, CurrentWhitelistSlot)
 			{
 				OnValueChange = delegate(int val)
 				{
@@ -268,7 +268,7 @@ namespace Celeste.Mod.izumisQOL
 			menuItem.Pressed(
 				delegate
 				{
-					if (WhitelistModule.WriteToEverestBlacklist(WhitelistNames[CurrentWhitelistSlot]))
+					if (WhitelistModule.WriteToEverestBlacklist(GetWhitelistName(CurrentWhitelistSlot)))
 					{
 						if (!showRestartButton)
 						{
@@ -293,7 +293,7 @@ namespace Celeste.Mod.izumisQOL
 			menuItem.Pressed(
 				delegate
 				{
-					WhitelistModule.SaveCurrentWhitelist(WhitelistNames[CurrentWhitelistSlot], CurrentWhitelistSlot);
+					WhitelistModule.SaveCurrentWhitelist(GetWhitelistName(CurrentWhitelistSlot), CurrentWhitelistSlot);
 				}
 			);
 			subMenu.AddDescription(menu, menuItem, "Save the currently enabled mods to this whitelist.");
@@ -312,9 +312,10 @@ namespace Celeste.Mod.izumisQOL
 				delegate
 				{
 					string clipboardText = TextInput.GetClipboardText();
-					if(!string.IsNullOrEmpty(clipboardText) && WhitelistModule.RenameFile(WhitelistNames[CurrentWhitelistSlot], clipboardText))
+
+					if(!string.IsNullOrEmpty(clipboardText) && WhitelistModule.RenameFile(GetWhitelistName(CurrentWhitelistSlot), clipboardText))
 					{
-						WhitelistNames[CurrentWhitelistSlot] = clipboardText;
+						ChangeWhitelistName(CurrentWhitelistSlot, clipboardText);
 						CurrentWhitelistSlider.Values.Insert(CurrentWhitelistSlot + 1, Tuple.Create(clipboardText, CurrentWhitelistSlot));
 						CurrentWhitelistSlider.Values.RemoveAt(CurrentWhitelistSlot);
 						CurrentWhitelistSlider.SelectWiggler.Start();
@@ -328,8 +329,8 @@ namespace Celeste.Mod.izumisQOL
 				delegate
 				{
 					WhitelistModule.AddWhitelist();
-					int val = WhitelistNames.Count - 1;
-					CurrentWhitelistSlider.Add(WhitelistNames[val], val);
+					int val = whitelistNames.Count - 1;
+					CurrentWhitelistSlider.Add(GetWhitelistName(val), val);
 					CurrentWhitelistSlider.SelectWiggler.Start();
 
 					Tooltip.Show("Added whitelist");
@@ -341,13 +342,13 @@ namespace Celeste.Mod.izumisQOL
 			menuItem.Pressed(
 				delegate
 				{
-					if (WhitelistNames.Count > 1)
+					if (whitelistNames.Count > 1)
 					{
 						CurrentWhitelistSlot.Log("Current key bind slot");
 						CurrentWhitelistSlider.Index.Log("Slider index");
 
 						int whitelistSlot = CurrentWhitelistSlider.Index;
-						Tooltip.Show("Removed " + WhitelistNames[whitelistSlot]);
+						Tooltip.Show("Removed " + GetWhitelistName(whitelistSlot));
 
 						if (whitelistSlot >= CurrentWhitelistSlider.Values.Count - 1)
 						{
@@ -362,13 +363,13 @@ namespace Celeste.Mod.izumisQOL
 							whitelistSlot = 0;
 						}
 
-						WhitelistModule.RemoveWhitelist(WhitelistNames[CurrentWhitelistSlider.Index]);
-						WhitelistNames.RemoveAt(CurrentWhitelistSlider.Index);
+						WhitelistModule.RemoveWhitelist(GetWhitelistName(CurrentWhitelistSlider.Index));
+						whitelistNames.RemoveAt(CurrentWhitelistSlider.Index);
 
 						CurrentWhitelistSlider.Values.Clear();
-						for (int i = 0; i < WhitelistNames.Count; i++)
+						for (int i = 0; i < whitelistNames.Count; i++)
 						{
-							CurrentWhitelistSlider.Values.Add(new(WhitelistNames[i], i));
+							CurrentWhitelistSlider.Values.Add(new(GetWhitelistName(i), i));
 						}
 						CurrentWhitelistSlider.Index = whitelistSlot;
 
@@ -411,12 +412,23 @@ namespace Celeste.Mod.izumisQOL
 			return CurrentKeybindSlider;
 		}
 
+		private string GetWhitelistName(int index)
+		{
+			if(index > whitelistNames.Count - 1 || index < 0)
+			{
+				Global.Log("index: " + index + " out of bounds for whitelistNames");
+				Tooltip.Show("Failed getting whitelist name.");
+				return null;
+			}
+			return whitelistNames[index];
+		}
+
 		public void AddWhitelistName(string name)
 		{
-			if (!WhitelistNames.Contains(name))
+			if (!whitelistNames.Contains(name))
 			{
 				Global.Log(name);
-				WhitelistNames.Add(name);
+				whitelistNames.Add(name);
 				return;
 			}
 			Global.Log(name + " is already another whitelist's name", LogLevel.Info);
@@ -424,27 +436,50 @@ namespace Celeste.Mod.izumisQOL
 
 		public void ChangeWhitelistName(int index, string name)
 		{
-			WhitelistNames[index] = name;
+			if (index > whitelistNames.Count - 1 || index < 0)
+			{
+				Global.Log("index: " + index + " out of bounds for whitelistNames");
+				Tooltip.Show("Failed changing whitelist name.");
+				return;
+			}
+			whitelistNames[index] = name;
 		}
 
 		public void ResetWhitelist()
 		{
-			WhitelistNames.Clear();
+			whitelistNames.Clear();
 		}
 
 		public void AddKeybindName(string name)
 		{
-			KeybindNames.Add(name);
+			keybindNames.Add(name);
+		}
+
+		private string GetKeybindName(int index)
+		{
+			if (index > keybindNames.Count - 1 || index < 0)
+			{
+				Global.Log("index: " + index + " out of bounds for keybindNames");
+				Tooltip.Show("Failed getting keybind name.");
+				return null;
+			}
+			return keybindNames[index];
 		}
 
 		public void ChangeKeybindName(int index, string name)
 		{
-			KeybindNames[index] = name;
+			if (index > keybindNames.Count - 1 || index < 0)
+			{
+				Global.Log("index: " + index + " out of bounds for keybindNames");
+				Tooltip.Show("Failed changing keybind name.");
+				return;
+			}
+			keybindNames[index] = name;
 		}
 
 		public List<string> GetKeybindNames()
 		{
-			return KeybindNames;
+			return keybindNames;
 		}
 	}
 }

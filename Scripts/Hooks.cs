@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
-using Celeste;
-using Celeste.Mod.Core;
+﻿using Microsoft.Xna.Framework;
 using Monocle;
-using System.IO;
+using Celeste.Mod.izumisQOL.ModIntegration;
 
 namespace Celeste.Mod.izumisQOL
 {
@@ -16,22 +9,23 @@ namespace Celeste.Mod.izumisQOL
 		internal static void Load()
 		{
 			On.Monocle.Engine.Update += Update;
-			On.Celeste.OuiJournal.Update += BetterJournalModule.OnJournalUpdate;
+			On.Celeste.OuiJournal.Update += BetterJournalModule.Update;
 			On.Celeste.OuiJournalProgress.ctor += BetterJournalModule.OuiJournalProgressCtor;
-			On.Celeste.OuiJournalProgress.Redraw += BetterJournalModule.OnJournalProgressRedraw;
+			On.Celeste.OuiJournalPage.Redraw += BetterJournalModule.OnJournalPageRedraw;
+			Everest.Events.Journal.OnEnter += BetterJournalModule.OnJournalEnter;
 			On.Celeste.OuiJournal.Close += BetterJournalModule.OnJournalClose;
 
 			KeybindModule.Init();
-			//WhitelistModule.Init();
 			BetterJournalModule.Init();
 		}
 
 		internal static void Unload()
 		{
 			On.Monocle.Engine.Update -= Update;
-			On.Celeste.OuiJournal.Update -= BetterJournalModule.OnJournalUpdate;
+			On.Celeste.OuiJournal.Update -= BetterJournalModule.Update;
 			On.Celeste.OuiJournalProgress.ctor -= BetterJournalModule.OuiJournalProgressCtor;
-			On.Celeste.OuiJournalProgress.Redraw -= BetterJournalModule.OnJournalProgressRedraw;
+			On.Celeste.OuiJournalPage.Redraw -= BetterJournalModule.OnJournalPageRedraw;
+			Everest.Events.Journal.OnEnter -= BetterJournalModule.OnJournalEnter;
 			On.Celeste.OuiJournal.Close -= BetterJournalModule.OnJournalClose;
 
 			ModSettings.ButtonsSwapKeybinds.Clear();

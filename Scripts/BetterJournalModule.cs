@@ -9,6 +9,7 @@ using MonoMod.Utils;
 using Microsoft.Xna.Framework;
 using System.IO;
 using System.Collections;
+using Celeste.Mod.izumisQOL.ModIntegration;
 
 namespace Celeste.Mod.izumisQOL
 {
@@ -24,11 +25,67 @@ namespace Celeste.Mod.izumisQOL
 			Difference
 		}
 
-		private static JournalDataType journalDataType = JournalDataType.Default;
+		//private static JournalDataType journalDataType = JournalDataType.Default;
+		private static JournalDataType CurrJournalDataType
+		{
+			get
+			{
+				if(journalDataTypes.TryGetValue(JournalProgressPage, out JournalDataType journalDataType))
+				{
+					return journalDataType;
+				}
+				return JournalDataType.Default;
+			}
+			set
+			{
+				if(JournalProgressPage != null)
+				{
+					if (!journalDataTypes.ContainsKey(JournalProgressPage))
+					{
+							journalDataTypes.Add(JournalProgressPage, value);
+					}
+					else
+					{
+						journalDataTypes[JournalProgressPage] = value;
+					}
+				}
+				else
+				{
+					Log("Journal Progress Page was null", LogLevel.Warn);
+				}
+			}
+		}
+		private static readonly Dictionary<OuiJournalPage, JournalDataType> journalDataTypes = new();
 
-		private static OuiJournal ouiJournal;
-		private static OuiJournalProgress journalProgressPage;
-		private static VirtualRenderTarget renderTarget;
+		private static OuiJournal journal;
+		private static OuiJournalPage JournalProgressPage
+		{
+			get
+			{
+				if(journal == null)
+				{
+					return null;
+				}
+				if(journal.PageIndex > journal.Pages.Count - 1 || journal.PageIndex < 0)
+				{
+					return null;
+				}
+				return journal.Page;
+			}
+		}
+
+		private static readonly Dictionary<OuiJournalPage, VirtualRenderTarget> renderTargets = new();
+		private static VirtualRenderTarget RenderTarget
+		{
+			get
+			{
+				if(renderTargets.TryGetValue(JournalProgressPage, out VirtualRenderTarget renderTarget))
+				{
+					return renderTarget;
+				}
+				return null;
+			}
+		}
 
 		private static OuiJournalPage.TextCell ModTotalsTimeCell;
 
@@ -56,7 +113,7 @@ namespace Celeste.Mod.izumisQOL
 				SaveData instance = SaveData.Instance;
 				if (instance == null)
 					return 1;
-				if(SeparateABCSideTimes(instance) <= 0 || journalDataType == JournalDataType.Default)
+				if(SeparateABCSideTimes(instance) <= 0 || CurrJournalDataType == JournalDataType.Default)
 				{
 					return 1;
 				}
@@ -64,18 +121,9 @@ namespace Celeste.Mod.izumisQOL
 			}
 		}
 
-		private static bool InJournal => journalProgressPage != null;
-		//private static bool OnJournalProgressPage 
-		//{ 
-		//	get
-		//	{
-		//		if(ouiJournal == null)
-		//		{
-		//			return false;
-		//		}
-		//		return ouiJournal.Page == journalProgressPage;
-		//	} 
-		//}
+		private static bool InJournal => JournalProgressPage != null;
+		private static bool ProgressPageIsCollabUtils2 => CollabUtils2Integration.IsProgressPage(JournalProgressPage);
+
 
 		public static void Init()
 		{
@@ -87,12 +135,18 @@ namespace Celeste.Mod.izumisQOL
 			Directory.CreateDirectory(journalStatsPath);
 		}
 
-		public static void OnJournalUpdate(On.Celeste.OuiJournal.orig_Update orig, OuiJournal self)
+		public static void Update(On.Celeste.OuiJournal.orig_Update orig, OuiJournal self)
 		{
 			orig(self);
 
+			if(JournalProgressPage != null)
+			{
+				CollabUtils2Integration.IsProgressPage(JournalProgressPage);
+			}
+
 			if (!ModSettings.BetterJournalEnabled)
 				return;
+
 
 			if (ModSettings.ButtonSaveJournal.Pressed)
 			{
@@ -107,15 +161,7 @@ namespace Celeste.Mod.izumisQOL
 				}
 			}
 
-			JournalDataTypeInput(self);
-		}
-
-		private static void JournalDataTypeInput(OuiJournal self)
-		{
-			if (!InJournal || self.Page != journalProgressPage)
-				return;
-
-			int input = Input.MenuUp.Pressed ? 1 : (Input.MenuDown.Pressed ? -1 : 0); // 1 if up is pressed, -1 if down is pressed, 0 if nothing
+			int input = JournalDataTypeInput(self);
 			if (input != 0)
 			{
 				if (ChangeCurrentJournalDataType(input))
@@ -123,6 +169,255 @@ namespace Celeste.Mod.izumisQOL
 					UpdateJournalData();
 				}
 			}
+		}
+
+		private static void UpdateJournalData()
+		{
+			SaveData instance = SaveData.Instance;
+			if (instance == null)
+				return;
+
+			try
+			{
+				bool isCollabUtils2Page = false;
+				int firstIndexOnPage = 0;
+				int mapsOnThisCollabUtils2Page = -1;
+				if (CollabUtils2Integration.IsProgressPage(JournalProgressPage))
+				{
+					isCollabUtils2Page = true;
+					mapsOnThisCollabUtils2Page = CollabUtils2Integration.MapsOnPage(JournalProgressPage, journal, instance, out firstIndexOnPage);
+				}
+				else if(JournalProgressPage.GetType() != typeof(OuiJournalProgress))
+				{
+					return;
+				}
+
+				DynamicData journalProgressDynData = DynamicData.For(JournalProgressPage);
+				OuiJournalPage.Table table = journalProgressDynData.Get<OuiJournalPage.Table>("table");
+				DynamicData tableDynData = DynamicData.For(table);
+
+				List<OuiJournalPage.Row> rows = tableDynData.Get<List<OuiJournalPage.Row>>("rows");
+
+				SetupDefaultTableData();
+
+				if (JournalSnapshot == null && (int)CurrJournalDataType > 1)
+				{
+					return;
+				}
+
+				int lastUnmoddedRow = isCollabUtils2Page ? mapsOnThisCollabUtils2Page + 2 : GetLastUnmoddedRowIndex(rows);
+				int abcSeparation = SeparateABCSideTimes(instance);
+				int rowOffset = 0;
+				for (int i = 1; i < lastUnmoddedRow - 1; i++)
+				{
+					if (isCollabUtils2Page)
+					{
+						GetInterludeOffset(firstIndexOnPage + i - 1, instance, out AreaStats area, true);
+						if (CollabUtils2Integration.IsHeartSide(AreaData.Get(area).SID))
+						{
+							rowOffset = 1;
+						}
+						else
+						{
+							rowOffset = 0;
+						}
+					}
+
+					OuiJournalPage.Row row = rows[i + rowOffset]; // go up an additional row if were on the heartside to skip the ui line between regular levels and the heartside
+					InitializeColumns(row);
+					List<OuiJournalPage.Cell> entries = row.Entries;
+					try
+					{
+						ReplaceTime(0);
+
+						void ReplaceTime(int mode)
+						{
+							OuiJournalPage.Cell cell = new OuiJournalPage.EmptyCell(100f);
+
+							int entriesIndex = entries.Count + mode + instance.UnlockedModes - 6;
+							if(entriesIndex > entries.Count - 1 || entriesIndex < 0)
+							{
+								return;
+							}
+							long time = GetTimeAtIndexFromDataType(firstIndexOnPage + i - 1, CurrJournalDataType, mode, out int modesForThisArea, instance, JournalSnapshot, isCollabUtils2Page);
+
+							if (!ProgressPageIsCollabUtils2 && mode > abcSeparation)
+							{
+
+								GetInterludeOffset(i - 1, instance, out AreaStats area);
+								AreaData areaData = AreaData.Get(area);
+								if (!areaData.HasMode((AreaMode)mode))
+								{
+									cell = new OuiJournalPage.EmptyCell(0);
+								}
+							}
+							else if (mode <= abcSeparation || CurrJournalDataType != JournalDataType.Default)
+							{
+								if (time == 0)
+								{
+									cell = new OuiJournalPage.IconCell("dot");
+								}
+								else
+								{
+									string timeDialog = time > 0 ? Dialog.Time(time) : "-";
+									timeDialog = (CurrJournalDataType == JournalDataType.Difference && time > 0) ? "+" + timeDialog : timeDialog;
+									cell = new OuiJournalPage.TextCell(timeDialog, JournalProgressPage.TextJustify, 0.5f, GetColorFromDataType(CurrJournalDataType));
+								}
+							}
+
+							cell.SpreadOverColumns = (int)Math.Round(TimeColumnSpread / (float)modesForThisArea, MidpointRounding.AwayFromZero);
+
+							entries[entriesIndex] = cell;
+
+							if (modesForThisArea > mode + 1)
+							{
+								ReplaceTime(mode + 1);
+							}
+						}
+					}
+					catch (Exception ex)
+					{
+						Log(ex, LogLevel.Error);
+					}
+
+					try
+					{
+						int unlocked = ProgressPageIsCollabUtils2 ? 1 : instance.UnlockedModes;
+						ReplaceDeathCount(0);
+
+						void ReplaceDeathCount(int mode)
+						{
+							int unlockedCopy = unlocked;
+							int entriesIndex = entries.Count + mode + instance.UnlockedModes - unlockedCopy - 6 + (ProgressPageIsCollabUtils2 ? -1 : 0);
+							if(entriesIndex > entries.Count - 1 || entriesIndex < 0)
+							{
+								return;
+							}
+
+							int deaths = GetDeathsAtIndexFromDataType(firstIndexOnPage + i - 1, CurrJournalDataType, mode, ref unlocked, instance, JournalSnapshot, isCollabUtils2Page);
+
+							OuiJournalPage.Cell cell;
+							if(deaths <= 0 && ProgressPageIsCollabUtils2)
+							{
+								cell = new OuiJournalPage.IconCell("dot")
+								{
+									SpreadOverColumns = unlocked == unlockedCopy ? 1 : unlockedCopy
+								};
+							}
+							else
+							{
+								string deathDialog = deaths > -1 ? Dialog.Deaths(deaths) : "-";
+								deathDialog = (CurrJournalDataType == JournalDataType.Difference && deaths > -1) ? "+" + deathDialog : deathDialog;
+								cell = new OuiJournalPage.TextCell(deathDialog, JournalProgressPage.TextJustify, 0.5f, GetColorFromDataType(CurrJournalDataType))
+								{
+									SpreadOverColumns = unlocked == unlockedCopy ? 1 : unlockedCopy
+								};
+							}
+
+							entries[entriesIndex] = cell;
+
+							if (unlocked > mode + 1)
+							{
+								ReplaceDeathCount(mode + 1);
+							}
+						}
+					}
+					catch (Exception ex)
+					{
+						Log(ex, LogLevel.Error);
+					}
+				}
+
+				if (RenderTarget != null)
+				{
+					JournalProgressPage.Redraw(RenderTarget);
+				}
+				else
+				{
+					Log("Could not find render target for journal progress page", LogLevel.Warn);
+				}
+
+				void InitializeColumns(OuiJournalPage.Row row)
+				{
+					if (isCollabUtils2Page)
+						return;
+					while (row.Count < 12)
+					{
+						row.Add(new OuiJournalPage.EmptyCell(0f));
+					}
+				}
+
+				// Sets up the time column, the header and the default total time cell in the vanilla journal
+				void SetupDefaultTableData()
+				{
+					#region Header
+					float width = 0;
+					if (ProgressPageIsCollabUtils2)
+					{
+						bool displayIcons = (from area in AreaData.Areas
+											 where !area.Interlude_Safe
+											 select area.Icon).Distinct().Count() > 1;
+						width = displayIcons ? 360f : 420f;
+					}
+					rows[0].Entries[0] = new OuiJournalPage.TextCell(GetDataTypeText(CurrJournalDataType), new Vector2(0f, 0.5f), GetHeaderTextSizeFromDataType(CurrJournalDataType, isCollabUtils2Page), Color.Black * 0.7f, width);
+					#endregion
+
+					if (!isCollabUtils2Page)
+					{
+						#region Top Row Time Columns
+						List<OuiJournalPage.Cell> entries = table.Header.Entries;
+						if (CurrJournalDataType == JournalDataType.Default || SeparateABCSideTimes(instance) <= 0)
+						{
+							entries[entries.Count - 3] = new OuiJournalPage.IconCell("time", 220f);
+							entries[entries.Count - 2] = new OuiJournalPage.EmptyCell(100f);
+						}
+						else if (instance.UnlockedModes > 2)
+						{
+							entries[entries.Count - 3] = new OuiJournalPage.EmptyCell(100f);
+							entries[entries.Count - 2] = new OuiJournalPage.IconCell("time", 100f);
+						}
+						#endregion
+
+						if (ModTotalsTimeCell != null)
+						{
+							ModTotalsTimeCell.SpreadOverColumns = TimeColumnSpread;
+							DynamicData.For(ModTotalsTimeCell).Set("forceWidth", CurrJournalDataType != JournalDataType.Default);
+						}
+
+						#region Default Total Time Cell
+						int totalTimeRowIndex = GetLastUnmoddedRowIndex(rows);
+						if (totalTimeRowIndex < rows.Count - 1 && totalTimeRowIndex >= 0)
+						{
+							OuiJournalPage.Row defaultTotalTimeRow = rows[totalTimeRowIndex];
+							if (defaultTotalTimeRow != null)
+							{
+								OuiJournalPage.Cell totalTimeCell = defaultTotalTimeRow.Entries[defaultTotalTimeRow.Entries.Count - 1];
+								totalTimeCell.SpreadOverColumns = TimeColumnSpread;
+								DynamicData.For(totalTimeCell).Set("forceWidth", CurrJournalDataType != JournalDataType.Default);
+							}
+							else
+							{
+								Log("Could not find total time row", LogLevel.Error);
+							}
+						}
+						#endregion
+					}
+				}
+
+			}
+			catch (Exception ex)
+			{
+				Log(ex);
+			}
+		}
+
+		private static int JournalDataTypeInput(OuiJournal self)
+		{
+			if (!InJournal || (self.Page.GetType() != typeof(OuiJournalProgress) && !CollabUtils2Integration.IsProgressPage(self.Page)))
+				return 0;
+
+			int input = Input.MenuUp.Pressed ? 1 : (Input.MenuDown.Pressed ? -1 : 0); // 1 if up is pressed, -1 if down is pressed, 0 if nothing
+			return input;
 		}
 
 		private static bool ChangeCurrentJournalDataType(int dir)
@@ -133,14 +428,14 @@ namespace Celeste.Mod.izumisQOL
 				return false;
 			}
 
-			int newLocation = (int)journalDataType + dir;
+			int newLocation = (int)CurrJournalDataType + dir;
 			JournalDataType newType = (JournalDataType)newLocation;
 			if (JournalSnapshot == null)
 			{
 				int abcSeparation = SeparateABCSideTimes(instance, newType);
 				if (newLocation > 1 || newLocation == 0)
 				{
-					journalDataType = JournalDataType.Default;
+					CurrJournalDataType = JournalDataType.Default;
 					return true;
 				}
 				if (newLocation < 0)
@@ -150,7 +445,7 @@ namespace Celeste.Mod.izumisQOL
 				if (newType == JournalDataType.SeparateTimes && abcSeparation > 0)
 				{
 					Log(newType);
-					journalDataType = newType;
+					CurrJournalDataType = newType;
 					return true;
 				}
 				return false;
@@ -158,19 +453,19 @@ namespace Celeste.Mod.izumisQOL
 
 			if (newLocation < 0)
 			{
-				journalDataType = JournalDataType.Difference;
+				CurrJournalDataType = JournalDataType.Difference;
 				return true;
 			}
 			if(newLocation > 3)
 			{
-				journalDataType = JournalDataType.Default;
+				CurrJournalDataType = JournalDataType.Default;
 				return true;
 			}
 			if (newType == JournalDataType.SeparateTimes && SeparateABCSideTimes(instance, newType) <= 0)
 			{
 				newType = (JournalDataType)(newLocation + dir);
 			}
-			journalDataType = newType;
+			CurrJournalDataType = newType;
 			return true;
 		}
 
@@ -193,174 +488,8 @@ namespace Celeste.Mod.izumisQOL
 			{
 				newType = (JournalDataType)(newLocation + 1);
 			}
-			BetterJournalModule.journalDataType = newType;
+			CurrJournalDataType = newType;
 			return true;
-		}
-
-		private static void UpdateJournalData()
-		{
-			SaveData instance = SaveData.Instance;
-			if (instance == null)
-				return;
-
-			DynamicData journalProgressDynData = DynamicData.For(journalProgressPage);
-			OuiJournalPage.Table table = journalProgressDynData.Get<OuiJournalPage.Table>("table");
-			DynamicData tableDynData = DynamicData.For(table);
-
-			List<OuiJournalPage.Row> rows = tableDynData.Get<List<OuiJournalPage.Row>>("rows");
-
-			SetupModdedTableData();
-
-			if(JournalSnapshot == null && (int)journalDataType > 1)
-			{
-				Log("here");
-				return;
-			}
-
-			int lastUnmoddedRow = GetLastUnmoddedRowIndex(rows);
-			int abcSeparation = SeparateABCSideTimes(instance);
-			for (int i = 1; i < lastUnmoddedRow - 1; i++)
-			{
-				OuiJournalPage.Row row1 = rows[i];
-				InitializeColumns(row1);
-				List<OuiJournalPage.Cell> entries = row1.Entries;
-				try
-				{
-					ReplaceTime(0);
-
-					void ReplaceTime(int mode)
-					{
-						OuiJournalPage.Cell cell = new OuiJournalPage.EmptyCell(100f);
-
-						long time = GetTimeAtIndexFromDataType(i - 1, journalDataType, mode, out int modesForThisArea, instance, JournalSnapshot);
-						if(mode > abcSeparation)
-						{
-							GetInterludeOffset(i - 1, instance, out AreaStats area);
-							AreaData areaData = AreaData.Get(area);
-							if (!areaData.HasMode((AreaMode)mode))
-							{
-								cell = new OuiJournalPage.EmptyCell(0);
-							}
-						}
-						else if(mode <= abcSeparation || journalDataType != JournalDataType.Default)
-						{
-							if (time == 0)
-							{
-								cell = new OuiJournalPage.IconCell("dot");
-							}
-							else
-							{
-								string timeDialog = time > 0 ? Dialog.Time(time) : "-";
-								timeDialog = (journalDataType == JournalDataType.Difference && time > 0) ? "+" + timeDialog : timeDialog;
-								cell = new OuiJournalPage.TextCell(timeDialog, journalProgressPage.TextJustify, 0.5f, GetColorFromDataType(journalDataType));
-							}
-						}
-
-						cell.SpreadOverColumns = (int)Math.Round(TimeColumnSpread / (float)modesForThisArea, MidpointRounding.AwayFromZero);
-
-						entries[entries.Count + mode + instance.UnlockedModes - 6] = cell;
-
-						if (modesForThisArea > mode + 1)
-						{
-							ReplaceTime(mode + 1);
-						}
-					}
-				}
-				catch (Exception ex)
-				{
-					Log(ex, LogLevel.Error);
-				}
-
-				try
-				{
-					int unlocked = instance.UnlockedModes;
-					ReplaceDeathCount(0);
-
-					void ReplaceDeathCount(int mode)
-					{
-						int unlockedCopy = unlocked;
-						int deaths = GetDeathsAtIndexFromDataType(i - 1, journalDataType, mode, ref unlocked, instance, JournalSnapshot);
-						string deathDialog = deaths > -1 ? Dialog.Deaths(deaths) : "-";
-						deathDialog = (journalDataType == JournalDataType.Difference && deaths > -1) ? "+" + deathDialog : deathDialog;
-
-						entries[entries.Count + mode + instance.UnlockedModes - unlockedCopy - 6] = new OuiJournalPage.TextCell(deathDialog, journalProgressPage.TextJustify, 0.5f, GetColorFromDataType(journalDataType))
-						{
-							SpreadOverColumns = unlocked == unlockedCopy ? 1 : unlockedCopy
-						};
-
-						if(unlocked > mode + 1)
-						{
-							ReplaceDeathCount(mode + 1);
-						}
-					}
-				}
-				catch (Exception ex)
-				{
-					Log(ex, LogLevel.Error);
-				}
-			}
-
-			if (renderTarget != null)
-			{
-				journalProgressPage.Redraw(renderTarget);
-			}
-			else
-			{
-				Log("Could not find render target for journal progress page", LogLevel.Warn);
-			}
-
-			void InitializeColumns(OuiJournalPage.Row row)
-			{
-				while(row.Count < 12)
-				{
-					row.Add(new OuiJournalPage.EmptyCell(0f));
-				}
-			}
-
-			void SetupModdedTableData()
-			{
-				#region Top Row Time Columns
-				List<OuiJournalPage.Cell> entries = table.Header.Entries;
-				if (journalDataType == JournalDataType.Default || SeparateABCSideTimes(instance) <= 0)
-				{
-					entries[entries.Count - 3] = new OuiJournalPage.IconCell("time", 220f);
-					entries[entries.Count - 2] = new OuiJournalPage.EmptyCell(100f);
-				}
-				else if(instance.UnlockedModes > 2)
-				{
-					entries[entries.Count - 3] = new OuiJournalPage.EmptyCell(100f);
-					entries[entries.Count - 2] = new OuiJournalPage.IconCell("time", 100f);
-				}
-				#endregion
-
-				#region Header
-				rows[0].Entries[0] = new OuiJournalPage.TextCell(GetDataTypeText(journalDataType), new Vector2(0f, 0.5f), GetHeaderTextSizeFromDataType(journalDataType), Color.Black * 0.7f);
-				#endregion
-
-				if (ModTotalsTimeCell != null)
-				{
-					ModTotalsTimeCell.SpreadOverColumns = TimeColumnSpread;
-					DynamicData.For(ModTotalsTimeCell).Set("forceWidth", journalDataType != JournalDataType.Default);
-				}
-
-				#region Default Total Time Cell
-				int totalTimeRowIndex = GetLastUnmoddedRowIndex(rows);
-				if(totalTimeRowIndex < rows.Count - 1 && totalTimeRowIndex >= 0)
-				{
-					OuiJournalPage.Row defaultTotalTimeRow = rows[totalTimeRowIndex];
-					if(defaultTotalTimeRow != null)
-					{
-						OuiJournalPage.Cell totalTimeCell = defaultTotalTimeRow.Entries[defaultTotalTimeRow.Entries.Count - 1];
-						totalTimeCell.SpreadOverColumns = TimeColumnSpread;
-						DynamicData.For(totalTimeCell).Set("forceWidth", journalDataType != JournalDataType.Default);
-					}
-					else
-					{
-						Log("Could not find total time row", LogLevel.Error);
-					}
-				}
-				#endregion
-			}
 		}
 
 		/// <summary>
@@ -368,12 +497,15 @@ namespace Celeste.Mod.izumisQOL
 		/// </summary>
 		private static int SeparateABCSideTimes(SaveData instance, JournalDataType? journalDataType = null)
 		{
-			if(!journalDataType.HasValue)
+			if (ProgressPageIsCollabUtils2 || !ModSettings.SeparateABCSideTimes)
+				return 0;
+
+			if (!journalDataType.HasValue)
 			{
-				journalDataType = BetterJournalModule.journalDataType;
+				journalDataType = BetterJournalModule.CurrJournalDataType;
 			}
 
-			if (!ModSettings.SeparateABCSideTimes || journalDataType.Value == JournalDataType.Default)
+			if (journalDataType.Value == JournalDataType.Default)
 				return 0;
 			
 			List<AreaStats> areas = instance.LevelSetStats.AreasIncludingCeleste;
@@ -413,10 +545,17 @@ namespace Celeste.Mod.izumisQOL
 			return val;
 		}
 
-		private static int GetInterludeOffset(int index, SaveData instance, out AreaStats area)
+		private static int GetInterludeOffset(int index, SaveData instance, out AreaStats area, bool isCollabUtils2 = false)
 		{
+			List<AreaStats> areas;
+			if (isCollabUtils2)
+			{
+				areas = CollabUtils2Integration.GetSortedCollabAreaStats(instance, journal);
+				area = areas[index];
+				return 0;
+			}
 			int offset = 0;
-			List<AreaStats> areas = instance.LevelSetStats.AreasIncludingCeleste;
+			areas = instance.LevelSetStats.AreasIncludingCeleste;
 			for (int i = 0; i < areas.Count - 1; i++)
 			{
 				if (AreaData.Get(areas[i]).Interlude_Safe)
@@ -438,12 +577,12 @@ namespace Celeste.Mod.izumisQOL
 			return offset;
 		}
 
-		private static long GetTimeAtIndexFromDataType(int index, JournalDataType journalDataType, int mode, out int modesForThisArea, SaveData instance, List<CustomAreaStats> customAreaStats)
+		private static long GetTimeAtIndexFromDataType(int index, JournalDataType journalDataType, int mode, out int modesForThisArea, SaveData instance, List<CustomAreaStats> customAreaStats, bool isCollabUtils2)
 		{
-			int offset = GetInterludeOffset(index, instance, out AreaStats area);
+			int offset = GetInterludeOffset(index, instance, out AreaStats area, isCollabUtils2);
 
 			AreaData areaData = AreaData.Get(area);
-			modesForThisArea = areaData.Mode.Length;
+			modesForThisArea = isCollabUtils2 ? 1 : areaData.Mode.Length;
 			if (!areaData.HasMode((AreaMode)mode))
 			{
 				return -1;
@@ -498,15 +637,15 @@ namespace Celeste.Mod.izumisQOL
 			return -1;
 		}
 
-		private static int GetDeathsAtIndexFromDataType(int index, JournalDataType journalDataType, int mode, ref int unlockedModes, SaveData instance, List<CustomAreaStats> customAreaStats)
+		private static int GetDeathsAtIndexFromDataType(int index, JournalDataType journalDataType, int mode, ref int unlockedModes, SaveData instance, List<CustomAreaStats> customAreaStats, bool isCollabUtils2)
 		{
-			int offset = GetInterludeOffset(index, instance, out AreaStats area);
+			int offset = GetInterludeOffset(index, instance, out AreaStats area, isCollabUtils2);
 
 			if(area == null)
 				return -1;
 
 			AreaData areaData = AreaData.Get(area);
-			int modesForThisArea = areaData.Mode.Length;
+			int modesForThisArea = isCollabUtils2 ? 1 : areaData.Mode.Length;
 			if (modesForThisArea < unlockedModes)
 			{
 				unlockedModes = modesForThisArea;
@@ -549,7 +688,7 @@ namespace Celeste.Mod.izumisQOL
 			if (journalDataType == JournalDataType.Difference)
 				return Color.Red;
 			if (journalDataType == JournalDataType.Default || journalDataType == JournalDataType.SeparateTimes)
-				return journalProgressPage != null ? journalProgressPage.TextColor : Color.White;
+				return JournalProgressPage != null ? JournalProgressPage.TextColor : Color.White;
 			return Color.White;
 		}
 
@@ -558,15 +697,18 @@ namespace Celeste.Mod.izumisQOL
 			return journalDataType switch
 			{
 				JournalDataType.Default => Dialog.Clean("journal_progress"),
-				JournalDataType.SeparateTimes => "ABC-Side Times",
-				JournalDataType.Saved => "Saved",
-				JournalDataType.Difference => "Difference",
-				_ => "error",
+				JournalDataType.SeparateTimes => "ABC-SIDE TIMES",
+				JournalDataType.Saved => "SAVED",
+				JournalDataType.Difference => "DIFFERENCE",
+				_ => "_ERROR_",
 			};
 		}
 
-		private static float GetHeaderTextSizeFromDataType(JournalDataType journalDataType)
+		private static float GetHeaderTextSizeFromDataType(JournalDataType journalDataType, bool isCollabUtils2)
 		{
+			if (isCollabUtils2)
+				return 1f;
+
 			return journalDataType switch
 			{
 				JournalDataType.Default => 1f,
@@ -628,8 +770,6 @@ namespace Celeste.Mod.izumisQOL
 			if (!ModSettings.BetterJournalEnabled)
 				return;
 
-			journalProgressPage = self;
-
 			DynamicData journalProgressDynData = DynamicData.For(self);
 			OuiJournalPage.Table table = journalProgressDynData.Get<OuiJournalPage.Table>("table");
 
@@ -639,17 +779,38 @@ namespace Celeste.Mod.izumisQOL
 			AddModTotalToJournal(self, table);
 		}
 
-		public static void OnJournalProgressRedraw(On.Celeste.OuiJournalProgress.orig_Redraw orig, OuiJournalProgress self, VirtualRenderTarget buffer)
+		public static void OnJournalPageRedraw(On.Celeste.OuiJournalPage.orig_Redraw orig, OuiJournalPage self, VirtualRenderTarget buffer)
 		{
-			renderTarget = buffer;
 			orig(self, buffer);
+			if(self.GetType() == typeof(OuiJournalProgress) || CollabUtils2Integration.IsProgressPage(self))
+			{
+				if(self != null)
+				{
+					if (!renderTargets.ContainsKey(self))
+					{
+							renderTargets.Add(self, buffer);
+						return;
+					}
+					renderTargets[self] = buffer;
+				}
+				else
+				{
+					Log("Journal Progress Page was null", LogLevel.Warn);
+				}
+			}
+		}
+
+		public static void OnJournalEnter(OuiJournal journal, Oui from)
+		{
+			BetterJournalModule.journal = journal;
 		}
 
 		public static void OnJournalClose(On.Celeste.OuiJournal.orig_Close orig, OuiJournal self)
 		{
-			journalDataType = JournalDataType.Default;
-			journalProgressPage = null;
+			CurrJournalDataType = JournalDataType.Default;
 			JournalSnapshot = null;
+			journal = null;
+			renderTargets.Clear();
 
 			orig(self);
 		}
@@ -661,7 +822,16 @@ namespace Celeste.Mod.izumisQOL
 				return false;
 
 			List<CustomAreaStats> customAreaStats = new();
-			List<AreaStats> areaStats = instance.LevelSetStats.AreasIncludingCeleste;
+			List<AreaStats> areaStats;
+			if (!ProgressPageIsCollabUtils2)
+			{
+				areaStats = instance.LevelSetStats.AreasIncludingCeleste;
+			}
+			else
+			{
+				areaStats = CollabUtils2Integration.GetSortedCollabAreaStats(instance, journal);
+			}
+
 			areaStats.ForEach(area => customAreaStats.Add(new CustomAreaStats(area.Modes)));
 
 			string levelSet = areaStats[0].LevelSet.Replace("/", "").Replace("\n", "");
@@ -711,7 +881,16 @@ namespace Celeste.Mod.izumisQOL
 
 		private static bool JournalStatFileExists(SaveData instance, out string path)
 		{
-			string levelSet = instance.LevelSetStats.AreasIncludingCeleste[0].LevelSet.Replace("/", "").Replace("\n", "");
+			string levelSet;
+			if (ProgressPageIsCollabUtils2)
+			{
+				levelSet = (journal.Overworld == null) ? null : new DynData<Overworld>(journal.Overworld).Get<AreaData>("collabInGameForcedArea").LevelSet;
+			}
+			else
+			{
+				levelSet = instance.LevelSetStats.AreasIncludingCeleste[0].LevelSet;
+			}
+			levelSet = levelSet.Replace("/", "").Replace("\n", "");
 			path = journalStatsPath + instance.FileSlot + "_" + levelSet + ".txt";
 			return File.Exists(path);
 		}
