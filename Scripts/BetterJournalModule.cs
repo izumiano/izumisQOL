@@ -152,7 +152,7 @@ namespace Celeste.Mod.izumisQOL
 			{
 				if (SaveJournalSnapshot())
 				{
-					Tooltip.Show("Saved journal info.");
+					Tooltip.Show("Saved journal info.", position: Tooltip.DisplayPosition.TopLeft);
 					JournalSnapshot = null;
 					if (ChangeCurrentJournalDataType(JournalDataType.Default))
 					{

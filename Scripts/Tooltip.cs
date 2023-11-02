@@ -9,6 +9,14 @@ using System;
 [Tracked(false)]
 public class Tooltip : Entity
 {
+	public enum DisplayPosition
+	{
+		BottomLeft,
+		TopLeft,
+		BottomRight,
+		TopRight
+	}
+
 	private readonly string message;
 
 	private float alpha;
@@ -17,16 +25,28 @@ public class Tooltip : Entity
 
 	private readonly float duration;
 
-	private static readonly Queue<TooltipInfo> tooltipQueue = new();
+	private static readonly Queue<Info> tooltipQueue = new();
 
-	private Tooltip(string message, float duration = 1f)
+	private Tooltip(string message, float duration, DisplayPosition position)
 	{
 		this.message = message;
 		this.duration = duration;
 		Vector2 messageSize = ActiveFont.Measure(message);
-		Position = new Vector2(25f, Engine.Height - messageSize.Y - 12.5f);
+		Position = GetScreenPositionFromDisplayEnum(position, messageSize);
 		Tag = (int)Tags.HUD | (int)Tags.Global | (int)Tags.FrozenUpdate | (int)Tags.PauseUpdate | (int)Tags.TransitionUpdate;
 		Add(new Coroutine(Show()));
+	}
+
+	private Vector2 GetScreenPositionFromDisplayEnum(DisplayPosition position, Vector2 messageSize)
+	{
+		return position switch
+		{
+			DisplayPosition.BottomLeft => new Vector2(25f, Engine.Height - messageSize.Y - 12.5f),
+			DisplayPosition.TopLeft => new Vector2(25f, 12.5f),
+			DisplayPosition.BottomRight => new Vector2(Engine.Width - messageSize.X - 25f, Engine.Height - messageSize.Y - 12.5f),
+			DisplayPosition.TopRight => new Vector2(Engine.Width - messageSize.X - 25f, 12.5f),
+			_ => Vector2.Zero
+		};
 	}
 
 	private IEnumerator Show()
@@ -77,16 +97,16 @@ public class Tooltip : Entity
 			{
 				entity.RemoveSelf();
 			});
-			TooltipInfo info = tooltipQueue.Dequeue();
-			scene.Add(new Tooltip(info.message, info.duration));
+			Info info = tooltipQueue.Dequeue();
+			scene.Add(new Tooltip(info.message, info.duration, info.position));
 		}
 	}
 
-	public static void Show(params TooltipInfo[] tooltips)
+	public static void Show(params Info[] tooltips)
 	{
 		if(tooltips.Length == 1)
 		{
-			Show(tooltips[0].message, tooltips[0].duration);
+			Show(tooltips[0].message, tooltips[0].duration, tooltips[0].position);
 			return;
 		}
 
@@ -97,21 +117,21 @@ public class Tooltip : Entity
 		Display();
 	}
 
-	public static void Show(string message, float duration = 1f)
+	public static void Show(string message, float duration = 1f, DisplayPosition position = DisplayPosition.BottomLeft)
 	{
-		tooltipQueue.Enqueue(new TooltipInfo(message, duration));
+		tooltipQueue.Enqueue(new Info(message, duration, position));
 		Display();
 	}
 
-	public static void Add(params TooltipInfo[] tooltips)
+	public static void Add(params Info[] tooltips)
 	{
-		foreach (TooltipInfo tooltip in tooltips)
+		foreach (Info tooltip in tooltips)
 		{
 			tooltipQueue.Enqueue(tooltip);
 		}
 	}
 
-	public static void Add(bool clearQueue = true, params TooltipInfo[] tooltips)
+	public static void Add(bool clearQueue = true, params Info[] tooltips)
 	{
 		if (clearQueue)
 		{
@@ -120,25 +140,27 @@ public class Tooltip : Entity
 		Add(tooltips);
 	}
 
-	public static void Add(string message, bool clearQueue = true, float duration = 1f)
+	public static void Add(string message, bool clearQueue = true, float duration = 1f, DisplayPosition position = DisplayPosition.BottomLeft)
 	{
 		if (clearQueue)
 		{
 			tooltipQueue.Clear();
 		}
-		tooltipQueue.Enqueue(new TooltipInfo(message, duration));
+		tooltipQueue.Enqueue(new Info(message, duration, position));
 	}
-}
-
-public struct TooltipInfo
-{
-	public string message;
-	public float duration;
-
-	public TooltipInfo(string message, float duration = 1f)
+	public struct Info
 	{
-		this.message = message;
-		this.duration = duration;
+		public string message;
+		public DisplayPosition position;
+		public float duration;
+
+		public Info(string message, float duration = 1f, DisplayPosition position = DisplayPosition.BottomLeft)
+		{
+			this.message = message;
+			this.position = position;
+			this.duration = duration;
+		}
 	}
 }
+
 

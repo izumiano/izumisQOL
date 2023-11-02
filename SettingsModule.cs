@@ -192,7 +192,7 @@ namespace Celeste.Mod.izumisQOL
 					if(keybindNames.Count > 1)
 					{
 						int keybindSlot = CurrentKeybindSlider.Index;
-						Tooltip.Add(tooltips: new TooltipInfo("Removed " + GetKeybindName(keybindSlot)), clearQueue: true);
+						Tooltip.Add(tooltips: new Tooltip.Info("Removed " + GetKeybindName(keybindSlot)), clearQueue: true);
 
 						if (keybindSlot >= CurrentKeybindSlider.Values.Count - 1)
 						{
