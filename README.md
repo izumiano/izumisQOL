@@ -7,6 +7,8 @@ Swapping between multiple customizable keybind configurations
 
 A whitelisting tool for mods
 
+The ability to save what your journal stats are at one point and compare them with what they are currently
+
 Showing an individual mod's time and death totals in the journal
 
 (EXPERIMENTAL) Swapping modded keybind settings
@@ -30,6 +32,12 @@ The whitelister lets you set up multiple lists of mods you want enabled. To use 
 To add another whitelist configuration press 'Add', then in your mod settings enable the mods you want in this whitelist. After that make sure you have the correct whitelist selected and press 'Save Current Whitelist'.
 
 If you now press 'Apply Current Whitelist', the next time you open celeste only the mods in that whitelist will be enabled. If you would rather want the whitelist to keep your current mods enabled and only add the ones in the whitelist set 'Is Exclusive' to 'Off'.
+
+Save Journal Snapshot:
+
+The journal snapshot tool lets you save the information in the (vanilla and collabutils2) journal to later compare with. If you have something saved it will then let you swap between viewing the regular journal, showing a-, b- and c-side info seperately (if you have the option enabled), showing the info you saved and showing the difference between what you saved and what it is currently.
+
+To use it first bind a button to 'Save journal snapshot' in the mod settings. Then open the journal(must be either the vanilla journal or a collabutils2 journal like the one in strawberry jam) and press the button you bound. Once you've done that you should be able to press up or down while in the journal to scroll through the different journal modes.
 
 (Experimental) Mod Keybind Swapper:
 
