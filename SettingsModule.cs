@@ -62,15 +62,24 @@ namespace Celeste.Mod.izumisQOL
 		{
 			get
 			{
-				if(currentWhitelistSlot > whitelistNames.Count - 1)
-				{
-					currentWhitelistSlot = whitelistNames.Count - 1;
-				}
 				return currentWhitelistSlot;
 			} 
 			set
 			{
-				currentWhitelistSlot = value;
+				if(value > whitelistNames.Count - 1)
+				{
+					Global.Log("tried to set currentWhitelistSlot to value outside array size, setting to .Count", LogLevel.Warn);
+					currentWhitelistSlot = whitelistNames.Count - 1;
+				}
+				else if(value < 0)
+				{
+					Global.Log("tried to set currentWhitelistSlot to value outside array size, setting to 0", LogLevel.Warn);
+					currentWhitelistSlot = 0;
+				}
+				else
+				{
+					currentWhitelistSlot = value;
+				}
 			}
 		}
 		public bool WhitelistIsExclusive = true;
@@ -256,10 +265,11 @@ namespace Celeste.Mod.izumisQOL
 			});
 			subMenu.AddDescription(menu, CurrentWhitelistSlider, "The currently selected whitelist.");
 
-			TextMenu.Button restartButton = new TextMenu.Button("Restart");
+			TextMenu.Button restartButton = new("Restart");
 			restartButton.Pressed(
 				delegate
 				{
+					izumisQOL.Instance.SaveSettings();
 					Everest.QuickFullRestart();
 				}
 			);
@@ -268,7 +278,7 @@ namespace Celeste.Mod.izumisQOL
 			menuItem.Pressed(
 				delegate
 				{
-					if (WhitelistModule.WriteToEverestBlacklist(GetWhitelistName(CurrentWhitelistSlot)))
+					if (WhitelistModule.WriteToEverestBlacklist(GetWhitelistName(CurrentWhitelistSlot).Log("name")))
 					{
 						if (!showRestartButton)
 						{

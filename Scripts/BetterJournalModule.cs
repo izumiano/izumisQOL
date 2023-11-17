@@ -147,6 +147,13 @@ namespace Celeste.Mod.izumisQOL
 			if (!ModSettings.BetterJournalEnabled)
 				return;
 
+			InputHandler(self);
+		}
+
+		private static void InputHandler(OuiJournal journal)
+		{
+			if (!ModSettings.EnableHotkeys)
+				return;
 
 			if (ModSettings.ButtonSaveJournal.Pressed)
 			{
@@ -161,7 +168,7 @@ namespace Celeste.Mod.izumisQOL
 				}
 			}
 
-			int input = JournalDataTypeInput(self);
+			int input = JournalDataTypeInput(journal);
 			if (input != 0)
 			{
 				if (ChangeCurrentJournalDataType(input))
