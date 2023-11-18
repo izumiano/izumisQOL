@@ -7,10 +7,11 @@ using YamlDotNet.Serialization;
 using Monocle;
 using Celeste.Mod.izumisQOL.Menu;
 using Microsoft.Xna.Framework;
+using Celeste.Mod.izumisQOL.UI;
 
 namespace Celeste.Mod.izumisQOL
 {
-	[SettingName("modoptions_izumisQOL_title")]
+	[SettingName("MODOPTIONS_IZUMISQOL_TITLE")]
 	public class SettingsModule : EverestModuleSettings
 	{
 		public bool EnableHotkeys { get; set; } = true;
@@ -83,16 +84,17 @@ namespace Celeste.Mod.izumisQOL
 			}
 		}
 		public bool WhitelistIsExclusive = true;
-		private bool showRestartButton = false;
 
 		// BetterJournal settings
 		public bool BetterJournalEnabled { get; set; } = false;
 		public bool ShowModTimeInJournal = false;
 		public bool SeparateABCSideTimes = true;
 
+		public bool ShowRestartButtonInMainMenu { get; set; } = false;
 
 		private bool verboseLogging = false;
-		[SettingSubText("Enable to get more debug info.")]
+		//[SettingSubText("Enable to get more debug info.")]
+		[SettingIgnore]
 		public bool VerboseLogging 
 		{
 			get
@@ -107,6 +109,7 @@ namespace Celeste.Mod.izumisQOL
 #endif
 			}
 		}
+
 
 		public void CreateCurrentKeybindSlotEntry(TextMenu menu, bool inGame)
 		{
@@ -265,14 +268,7 @@ namespace Celeste.Mod.izumisQOL
 			});
 			subMenu.AddDescription(menu, CurrentWhitelistSlider, "The currently selected whitelist.");
 
-			TextMenu.Button restartButton = new("Restart");
-			restartButton.Pressed(
-				delegate
-				{
-					izumisQOL.Instance.SaveSettings();
-					Everest.QuickFullRestart();
-				}
-			);
+			ToggleableRestartButton restartButton = ToggleableRestartButton.New("restartForApplyWhitelist");
 
 			subMenu.Add(menuItem = new TextMenu.Button("Apply Current Whitelist"));
 			menuItem.Pressed(
@@ -280,24 +276,14 @@ namespace Celeste.Mod.izumisQOL
 				{
 					if (WhitelistModule.WriteToEverestBlacklist(GetWhitelistName(CurrentWhitelistSlot).Log("name")))
 					{
-						if (!showRestartButton)
-						{
-							subMenu.Insert(5, restartButton);
-							subMenu.InsertDescription(menu, restartButton, "Restart Celeste");
-							restartButton.SelectWiggler.Start();
-						}
-						showRestartButton = true;
+						restartButton.Show(5, menu, subMenu);
 					}
 				}
 			);
 			subMenu.AddDescription(menu, menuItem, "Apply the currently selected whitelist.");
 			subMenu.NeedsRelaunch(menu, menuItem);
 
-			if (showRestartButton)
-			{
-				subMenu.Add(restartButton);
-				subMenu.AddDescription(menu, restartButton, "Restart Celeste");
-			}
+			restartButton.AddToMenuIfIsShown(menu, subMenu);
 
 			subMenu.Add(menuItem = new TextMenu.Button("Save Current Whitelist"));
 			menuItem.Pressed(
@@ -413,6 +399,36 @@ namespace Celeste.Mod.izumisQOL
 			{
 				OnValueChange = (val) => SeparateABCSideTimes = val
 			});
+
+			menu.Add(subMenu);
+		}
+
+		public void CreateShowRestartButtonInMainMenuEntry(TextMenu menu, bool inGame)
+		{
+			TextMenuExt.SubMenu subMenu = new("Other Settings", false);
+			TextMenu.Item menuItem;
+
+			ToggleableRestartButton restartButton = ToggleableRestartButton.New("restartForMenuRestartButton");
+
+			subMenu.Add(menuItem = new TextMenu.OnOff("Show Restart Button In Main Menu", ShowRestartButtonInMainMenu)
+			{
+				OnValueChange = 
+				delegate(bool val)
+				{
+					restartButton.Show(3, menu, subMenu);
+					ShowRestartButtonInMainMenu = val;
+				}
+			});
+			subMenu.AddDescription(menu, menuItem, "Enable to show a restart button in the main menu.");
+			subMenu.NeedsRelaunch(menu, menuItem);
+
+			restartButton.AddToMenuIfIsShown(menu, subMenu);
+
+			subMenu.Add(menuItem = new TextMenu.OnOff("Verbose Logging", VerboseLogging)
+			{
+				OnValueChange = (val) => VerboseLogging = val
+			});
+			subMenu.AddDescription(menu, menuItem, "Enable to get more debug info.");
 
 			menu.Add(subMenu);
 		}
