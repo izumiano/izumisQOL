@@ -54,16 +54,16 @@ namespace Celeste.Mod.izumisQOL
 				if (File.Exists(newPath))
 				{
 					Log(newPath + " already exists", LogLevel.Info);
-					Tooltip.Show(newName + " already exists");
+					Tooltip.Show(newName + " " + Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELIST_EXISTS"));
 					return false;
 				}
 				File.Move(whitelistsPath + "/" + origName + ".txt", newPath);
-				Tooltip.Show("Imported: " + newName + " from clipboard");
+				Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_IMPORTED1") + " " + newName + " " + Dialog.Clean("MODOPTIONS_IZUMISQOL_IMPORTED2"));
 				return true;
 			}
 			catch (Exception ex)
 			{
-				Tooltip.Show("Invalid text in clipboard");
+				Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_ERROR_INVALIDCLIPBOARD"));
 				Log(ex, LogLevel.Warn);
 				return false;
 			}
@@ -100,7 +100,7 @@ namespace Celeste.Mod.izumisQOL
 			{
 				if (!File.Exists(whitelistsPath + "/" + fileName + ".txt"))
 				{
-					Tooltip.Show(fileName + " does not exist");
+					Tooltip.Show(fileName + " " + Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTERROR_DOESNOTEXIST"));
 					Log(whitelistsPath + "/" + fileName + ".txt" + " does not exist", LogLevel.Info);
 					return;
 				}
@@ -114,7 +114,7 @@ namespace Celeste.Mod.izumisQOL
 				File.WriteAllText(whitelistsPath + "/" + fileName + ".txt", whitelistString);
 				ModSettings.ChangeWhitelistName(index, fileName);
 
-				Tooltip.Show("Saved to " + fileName);
+				Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELIST_SAVEDTO") + " " + fileName);
 			}
 			catch(Exception ex)
 			{
@@ -129,7 +129,7 @@ namespace Celeste.Mod.izumisQOL
 				if (!File.Exists(whitelistsPath + "/" + name + ".txt"))
 				{
 					Log(whitelistsPath + "/" + name + ".txt" + " does not exist", LogLevel.Info);
-					Tooltip.Show(name + " does not exist");
+					Tooltip.Show(name + " " + Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTERROR_DOESNOTEXIST"));
 					return false;
 				}
 
@@ -200,7 +200,7 @@ namespace Celeste.Mod.izumisQOL
 			catch(Exception ex)
 			{
 				Log(ex, LogLevel.Warn);
-				Tooltip.Show("Failed to write to blacklist.");
+				Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTERROR_FAILEDWRITE"));
 				return false;
 			}
 		}

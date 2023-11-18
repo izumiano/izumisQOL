@@ -25,7 +25,6 @@ namespace Celeste.Mod.izumisQOL
 			Difference
 		}
 
-		//private static JournalDataType journalDataType = JournalDataType.Default;
 		private static JournalDataType CurrJournalDataType
 		{
 			get
@@ -159,7 +158,7 @@ namespace Celeste.Mod.izumisQOL
 			{
 				if (SaveJournalSnapshot())
 				{
-					Tooltip.Show("Saved journal info.", position: Tooltip.DisplayPosition.TopLeft);
+					Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_BETTERJOURNAL_SAVED"), position: Tooltip.DisplayPosition.TopLeft);
 					JournalSnapshot = null;
 					if (ChangeCurrentJournalDataType(JournalDataType.Default))
 					{
@@ -509,7 +508,7 @@ namespace Celeste.Mod.izumisQOL
 
 			if (!journalDataType.HasValue)
 			{
-				journalDataType = BetterJournalModule.CurrJournalDataType;
+				journalDataType = CurrJournalDataType;
 			}
 
 			if (journalDataType.Value == JournalDataType.Default)
@@ -704,9 +703,9 @@ namespace Celeste.Mod.izumisQOL
 			return journalDataType switch
 			{
 				JournalDataType.Default => Dialog.Clean("journal_progress"),
-				JournalDataType.SeparateTimes => "ABC-SIDE TIMES",
-				JournalDataType.Saved => "SAVED",
-				JournalDataType.Difference => "DIFFERENCE",
+				JournalDataType.SeparateTimes => Dialog.Clean("MODOPTIONS_IZUMISQOL_BETTERJOURNAL_SEPARATEABCSIDE"),
+				JournalDataType.Saved => Dialog.Clean("MODOPTIONS_IZUMISQOL_BETTERJOURNAL_SAVED"),
+				JournalDataType.Difference => Dialog.Clean("MODOPTIONS_IZUMISQOL_BETTERJOURNAL_DIFFERENCE"),
 				_ => "_ERROR_",
 			};
 		}
@@ -753,7 +752,8 @@ namespace Celeste.Mod.izumisQOL
 			if (!ModSettings.ShowModTimeInJournal)
 				return;
 
-			OuiJournalPage.Row row = table.AddRow().Add(new OuiJournalPage.TextCell("Mod Totals", new Vector2(1f, 0.5f), 0.7f, journalProgressPage.TextColor)).Add(null)
+			OuiJournalPage.Row row = table.AddRow().Add(new OuiJournalPage.TextCell(Dialog.Clean("MODOPTIONS_IZUMISQOL_BETTERJOURNAL_MODTOTALS"), new Vector2(1f, 0.5f), 0.7f, journalProgressPage.TextColor))
+				.Add(null)
 				.Add(null)
 				.Add(null)
 				.Add(null)

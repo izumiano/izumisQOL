@@ -39,7 +39,7 @@ namespace Celeste.Mod.izumisQOL
 				}
 				else
 				{
-					Tooltip.Show("Slot " + (buttonPressed + 1) + " selected");
+					Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDS_SLOTSELECTED1") + " " + (buttonPressed + 1) + " " + Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDS_SLOTSELECTED2"));
 				}
 			}
 
@@ -282,16 +282,16 @@ namespace Celeste.Mod.izumisQOL
 				if (File.Exists(newPath))
 				{
 					Log(newPath + " already exists", LogLevel.Info);
-					Tooltip.Show(newName + " already exists");
+					Tooltip.Show(newName + " " + Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDS_EXISTS"));
 					return false;
 				}
 				File.Move(oldPath, newPath);
-				Tooltip.Show("Imported: " + newName + " from clipboard");
+				Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_IMPORTED1") + " " + newName + " " + Dialog.Clean("MODOPTIONS_IZUMISQOL_IMPORTED2"));
 				return true;
 			}
 			catch (Exception ex)
 			{
-				Tooltip.Show("Invalid text in clipboard");
+				Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_ERROR_INVALIDCLIPBOARD"));
 				Log(ex, LogLevel.Warn);
 				return false;
 			}
@@ -302,11 +302,11 @@ namespace Celeste.Mod.izumisQOL
 			if(keybindID >= ModSettings.GetKeybindNames().Count)
 			{
 				Log(keybindID + " exceeded the size of keybindNames");
-				Tooltip.Show("Failed applying keybind id: " + keybindID);
+				Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDERROR_APPLYING") + " " + keybindID);
 				return;
 			}
 			Log("Applying keybind: " + ModSettings.GetKeybindNames()[keybindID]);
-			Tooltip.Show("Applying keybind: " + ModSettings.GetKeybindNames()[keybindID]);
+			Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDS_APPLYING") + " " + ModSettings.GetKeybindNames()[keybindID]);
 
 			CopyFromKeybindSwapperToKeybinds(keybindID);
 
