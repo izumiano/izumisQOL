@@ -8,6 +8,7 @@ using System.Diagnostics;
 
 using Celeste;
 using Celeste.Mod;
+using Celeste.Mod.izumisQOL.UI;
 
 using Monocle;
 
