@@ -2,8 +2,6 @@
 using Monocle;
 using Celeste.Mod.izumisQOL.ModIntegration;
 
-using System.Collections.Generic;
-
 namespace Celeste.Mod.izumisQOL
 {
 	public class Hooks : Global
@@ -16,7 +14,6 @@ namespace Celeste.Mod.izumisQOL
 			On.Celeste.OuiJournalPage.Redraw += BetterJournalModule.OnJournalPageRedraw;
 			Everest.Events.Journal.OnEnter += BetterJournalModule.OnJournalEnter;
 			On.Celeste.OuiJournal.Close += BetterJournalModule.OnJournalClose;
-			Everest.Events.MainMenu.OnCreateButtons += UI.General.OnCreateButtons;
 
 			KeybindModule.Init();
 			BetterJournalModule.Init();
@@ -30,7 +27,6 @@ namespace Celeste.Mod.izumisQOL
 			On.Celeste.OuiJournalPage.Redraw -= BetterJournalModule.OnJournalPageRedraw;
 			Everest.Events.Journal.OnEnter -= BetterJournalModule.OnJournalEnter;
 			On.Celeste.OuiJournal.Close -= BetterJournalModule.OnJournalClose;
-			Everest.Events.MainMenu.OnCreateButtons -= UI.General.OnCreateButtons;
 
 			ModSettings.ButtonsSwapKeybinds.Clear();
 		}

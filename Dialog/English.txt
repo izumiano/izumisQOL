@@ -1,2 +1,1 @@
-﻿MODOPTIONS_IZUMISQOL_TITLE= izumi's quality of life
-MODOPTIONS_IZUMISQOL_RESTART=Restart
+﻿modoptions_izumisQOL_title= izumi's quality of life

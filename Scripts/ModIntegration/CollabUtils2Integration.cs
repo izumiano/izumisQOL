@@ -86,8 +86,8 @@ namespace Celeste.Mod.izumisQOL.ModIntegration
 				{
 					AreaData areaData2 = AreaData.Get(a);
 					AreaData areaData3 = AreaData.Get(b);
-					bool flag = IsHeartSide(a.SID);
-					bool flag2 = IsHeartSide(b.SID);
+					bool flag = IsHeartSide(a.GetSID());
+					bool flag2 = IsHeartSide(b.GetSID());
 					if (flag && !flag2)
 					{
 						return 1;
