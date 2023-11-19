@@ -63,6 +63,14 @@ namespace Celeste.Mod.izumisQOL
 		{
 			get
 			{
+				if(currentWhitelistSlot < 0)
+				{
+					currentWhitelistSlot = 0;
+				}
+				else if(currentWhitelistSlot > whitelistNames.Count - 1)
+				{
+					currentWhitelistSlot = whitelistNames.Count - 1;
+				}
 				return currentWhitelistSlot;
 			} 
 			set
