@@ -35,25 +35,22 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="$(CelestePrefix)\Celeste.exe">
-            <Private>false</Private>
+        <Reference Include="Celeste">
+          <HintPath>..\..\legacyRef\Celeste.exe</HintPath>
         </Reference>
-        <Reference Include="$(CelestePrefix)\MMHOOK_Celeste.dll">
-            <Private>false</Private>
+        <Reference Include="FNA">
+          <HintPath>..\..\legacyRef\FNA.dll</HintPath>
+        </Reference>
+        <Reference Include="MMHOOK_Celeste">
+          <HintPath>..\..\legacyRef\MMHOOK_Celeste.dll</HintPath>
         </Reference>
         <Reference Include="YamlDotNet">
-          <HintPath>..\..\YamlDotNet.dll</HintPath>
+          <HintPath>..\..\legacyRef\YamlDotNet.dll</HintPath>
         </Reference>
     </ItemGroup>
 
     <Choose>
-        <When Condition="'$(CelesteType)' == 'FNA'">
-            <ItemGroup>
-                <Reference Include="$(CelestePrefix)\FNA.dll">
-                    <Private>false</Private>
-                </Reference>
-            </ItemGroup>
-        </When>
+        <When Condition="'$(CelesteType)' == 'FNA'" />
 
         <When Condition="'$(CelesteType)' == 'XNA'">
             <ItemGroup>

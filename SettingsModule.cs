@@ -63,27 +63,19 @@ namespace Celeste.Mod.izumisQOL
 		{
 			get
 			{
-				if(currentWhitelistSlot < 0)
-				{
-					currentWhitelistSlot = 0;
-				}
-				else if(currentWhitelistSlot > whitelistNames.Count - 1)
-				{
-					currentWhitelistSlot = whitelistNames.Count - 1;
-				}
 				return currentWhitelistSlot;
 			} 
 			set
 			{
-				if(value > whitelistNames.Count - 1)
-				{
-					Global.Log("tried to set currentWhitelistSlot to value outside array size, setting to .Count", LogLevel.Warn);
-					currentWhitelistSlot = whitelistNames.Count - 1;
-				}
-				else if(value < 0)
+				if(value < 0)
 				{
 					Global.Log("tried to set currentWhitelistSlot to value outside array size, setting to 0", LogLevel.Warn);
 					currentWhitelistSlot = 0;
+				}
+				else if(value > whitelistNames.Count - 1)
+				{
+					Global.Log("tried to set currentWhitelistSlot to value outside array size, setting to .Count", LogLevel.Warn);
+					currentWhitelistSlot = whitelistNames.Count > 0 ? whitelistNames.Count - 1 : 0;
 				}
 				else
 				{
@@ -446,7 +438,7 @@ namespace Celeste.Mod.izumisQOL
 			if(index > whitelistNames.Count - 1 || index < 0)
 			{
 				Global.Log("index: " + index + " out of bounds for whitelistNames");
-				Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTERROR_GETNAME"));
+				Tooltip.Add(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTERROR_GETNAME"));
 				return null;
 			}
 			return whitelistNames[index];

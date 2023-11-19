@@ -158,7 +158,7 @@ namespace Celeste.Mod.izumisQOL
 			{
 				if (SaveJournalSnapshot())
 				{
-					Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_BETTERJOURNAL_SAVED"), position: Tooltip.DisplayPosition.TopLeft);
+					Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_BETTERJOURNAL_SAVED_TOOLTIP"), position: Tooltip.DisplayPosition.TopLeft);
 					JournalSnapshot = null;
 					if (ChangeCurrentJournalDataType(JournalDataType.Default))
 					{

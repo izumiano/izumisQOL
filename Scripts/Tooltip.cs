@@ -84,7 +84,7 @@ public class Tooltip : Entity
 		ActiveFont.DrawOutline(message, Position, Vector2.Zero, Vector2.One, Color.White * alpha, 2f, Color.Black * alpha * alpha * alpha);
 	}
 
-	private static void Display()
+	public static void Display()
 	{
 		Scene scene = Engine.Scene;
 		if (scene != null)
