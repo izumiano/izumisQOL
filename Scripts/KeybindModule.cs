@@ -334,7 +334,7 @@ namespace Celeste.Mod.izumisQOL
 					bool doSave = true;
 
 					PropertyInfo[] properties = module.SettingsType.GetProperties();
-					ModKeybindsSaveType settingsSave = new ModKeybindsSaveType();
+					ModKeybindsSaveType settingsSave = new();
 					foreach (PropertyInfo prop in properties)
 					{
 						SettingInGameAttribute attribInGame;
@@ -387,7 +387,7 @@ namespace Celeste.Mod.izumisQOL
 					if (doSave)
 					{
 						FileStream fileStream2 = File.Create(keybindsPath + "\\" + keybindID + "_modsettings-" + module.Metadata.Name + ".celeste");
-						using StreamWriter writer = new StreamWriter(fileStream2);
+						using StreamWriter writer = new(fileStream2);
 						YamlHelper.Serializer.Serialize(writer, settingsSave, typeof(ModKeybindsSaveType));
 					}
 					else
@@ -426,7 +426,7 @@ namespace Celeste.Mod.izumisQOL
 				try
 				{
 					FileStream fileStream = File.OpenRead(modPath);
-					using StreamReader reader = new StreamReader(fileStream);
+					using StreamReader reader = new(fileStream);
 					ModKeybindsSaveType modKeybindsSaveType = (ModKeybindsSaveType)YamlHelper.Deserializer.Deserialize(reader, typeof(ModKeybindsSaveType));
 
 					object settings = module._Settings;

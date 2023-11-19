@@ -72,11 +72,6 @@ namespace Celeste.Mod.izumisQOL
 					Global.Log("tried to set currentWhitelistSlot to value outside array size, setting to 0", LogLevel.Warn);
 					currentWhitelistSlot = 0;
 				}
-				else if(value > whitelistNames.Count - 1)
-				{
-					Global.Log("tried to set currentWhitelistSlot to value outside array size, setting to .Count", LogLevel.Warn);
-					currentWhitelistSlot = whitelistNames.Count > 0 ? whitelistNames.Count - 1 : 0;
-				}
 				else
 				{
 					currentWhitelistSlot = value;
@@ -258,6 +253,10 @@ namespace Celeste.Mod.izumisQOL
 
 			TextMenu.Item menuItem;
 
+			if(CurrentWhitelistSlot > whitelistNames.Count - 1)
+			{
+				CurrentWhitelistSlot = whitelistNames.Count - 1;
+			}
 			subMenu.Add(CurrentWhitelistSlider = new TextMenu.Slider(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_CURRENTWHITELIST"), i => GetWhitelistName(i), 0, whitelistNames.Count - 1, CurrentWhitelistSlot)
 			{
 				OnValueChange = delegate(int val)

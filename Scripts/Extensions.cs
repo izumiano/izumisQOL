@@ -16,7 +16,7 @@ public static class Extensions
 {
 	public static void AddDescription(this TextMenuExt.SubMenu subMenu, TextMenu containingMenu, TextMenu.Item subMenuItem, string description)
 	{
-		TextMenuExt.EaseInSubHeaderExt descriptionText = new TextMenuExt.EaseInSubHeaderExt(description, initiallyVisible: false, containingMenu)
+		TextMenuExt.EaseInSubHeaderExt descriptionText = new(description, initiallyVisible: false, containingMenu)
 		{
 			TextColor = Color.Gray,
 			HeightExtra = 0f
@@ -34,7 +34,7 @@ public static class Extensions
 
 	public static void InsertDescription(this TextMenuExt.SubMenu subMenu, TextMenu containingMenu, TextMenu.Item subMenuItem, string description)
 	{
-		TextMenuExt.EaseInSubHeaderExt descriptionText = new TextMenuExt.EaseInSubHeaderExt(description, initiallyVisible: false, containingMenu)
+		TextMenuExt.EaseInSubHeaderExt descriptionText = new(description, initiallyVisible: false, containingMenu)
 		{
 			TextColor = Color.Gray,
 			HeightExtra = 0f
@@ -52,7 +52,7 @@ public static class Extensions
 
 	public static void NeedsRelaunch(this TextMenuExt.SubMenu subMenu, TextMenu containingMenu, TextMenu.Item subMenuItem)
 		{
-			TextMenuExt.EaseInSubHeaderExt needsRelaunchText = new TextMenuExt.EaseInSubHeaderExt(Dialog.Clean("MODOPTIONS_NEEDSRELAUNCH"), initiallyVisible: false, containingMenu)
+			TextMenuExt.EaseInSubHeaderExt needsRelaunchText = new(Dialog.Clean("MODOPTIONS_NEEDSRELAUNCH"), initiallyVisible: false, containingMenu)
 			{
 				TextColor = Color.OrangeRed,
 				HeightExtra = 0f
