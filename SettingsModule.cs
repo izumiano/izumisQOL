@@ -85,6 +85,11 @@ namespace Celeste.Mod.izumisQOL
 		public bool ShowModTimeInJournal = false;
 		public bool SeparateABCSideTimes = true;
 
+		// GamepadPauser settings
+		public bool GamepadPauserEnabled { get; set; } = false;
+		public int PauseAfterFramesGamepadInactive = 10;
+
+		// Other settings
 		public bool ShowRestartButtonInMainMenu { get; set; } = false;
 
 		private bool verboseLogging = false;
@@ -394,6 +399,26 @@ namespace Celeste.Mod.izumisQOL
 				OnValueChange = (val) => SeparateABCSideTimes = val
 			});
 			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_BETTERJOURNALSETTINGS_SEPARATEABCSIDE_DESC"));
+
+			menu.Add(subMenu);
+		}
+
+		public void CreateGamepadPauserEnabledEntry(TextMenu menu, bool inGame)
+		{
+			TextMenuExt.SubMenu subMenu = new(Dialog.Clean("MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_GAMEPADPASUESETTINGS"), false);
+			TextMenu.Item menuItem;
+
+			subMenu.Add(menuItem = new TextMenu.OnOff(Dialog.Clean("MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_ENABLE"), GamepadPauserEnabled)
+			{
+				OnValueChange = (bool val) => GamepadPauserEnabled = val
+			});
+			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_ENABLE_DESC"));
+
+			subMenu.Add(menuItem = new TextMenu.Slider(Dialog.Clean("MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_PAUSEFRAMESINACTIVE"), i => i.ToString(), 3, 30, PauseAfterFramesGamepadInactive)
+			{
+				OnValueChange = (int val) => PauseAfterFramesGamepadInactive = val
+			});
+			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_PAUSEFRAMESINACTIVE_DESC"));
 
 			menu.Add(subMenu);
 		}
