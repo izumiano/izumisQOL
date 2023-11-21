@@ -255,6 +255,7 @@ namespace Celeste.Mod.izumisQOL
 
 			if(CurrentWhitelistSlot > whitelistNames.Count - 1)
 			{
+				Global.Log("CurrentWhitelistSlot > whitelistNames.Count - 1");
 				CurrentWhitelistSlot = whitelistNames.Count - 1;
 			}
 			subMenu.Add(CurrentWhitelistSlider = new TextMenu.Slider(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_CURRENTWHITELIST"), i => GetWhitelistName(i), 0, whitelistNames.Count - 1, CurrentWhitelistSlot)
