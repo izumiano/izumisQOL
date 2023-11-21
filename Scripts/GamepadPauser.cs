@@ -15,73 +15,161 @@ namespace Celeste.Mod.izumisQOL
 	public class GamepadPauser : Global
 	{
 		private static int sameCount = 0;
-
-		public static void Update()
+		private static int SameCount
 		{
-			if (!ModSettings.GamepadPauserEnabled)
-				return;
-
-			if(Engine.Scene is Level level && level.CanPause)
+			get
 			{
-				if(!HasControllerChanged(out bool controllerConnected))
+				return sameCount;
+			}
+			set
+			{
+				if(value > ModSettings.PauseAfterFramesGamepadInactive)
 				{
-					sameCount++.Log();
+					sameCount = ModSettings.PauseAfterFramesGamepadInactive + 1;
 				}
 				else
 				{
-					sameCount = 0;
-				}
-
-				if(!controllerConnected || sameCount > ModSettings.PauseAfterFramesGamepadInactive)
-				{
-					sameCount = 0;
-					level.Pause();
+					sameCount = value;
 				}
 			}
 		}
 
 		private static Vector2 prevLeftJoy = new();
 		private static Vector2 prevRightJoy = new();
-		private static bool HasControllerChanged(out bool controllerConnected)
+
+		private static bool gamepadInitialized = false;
+		private static bool hasSetInitGamepadState = false;
+
+		public static void Update()
 		{
+			if (!ModSettings.GamepadPauserEnabled)
+				return;
+
 			GamePadState gamepadState = MInput.GamePads[Input.Gamepad].CurrentState;
 			GamePadState prevGamepadState = MInput.GamePads[Input.Gamepad].PreviousState;
 
-			controllerConnected = gamepadState.IsConnected;
+			bool controllerDisconnecteded = !gamepadState.IsConnected && prevGamepadState.IsConnected;
+			if (controllerDisconnecteded)
+			{
+				Log("un-init");
+				hasSetInitGamepadState = false;
+			}
+			if (!gamepadState.IsConnected)
+			{
+				//Log("yasss");
+				gamepadInitialized = false;
+			}
 
-			Vector2 leftJoystickPosition;
-			Vector2 rightJoystickPosition;
+			if (Engine.Scene is Level level && level.CanPause)
+			{
+				if (controllerDisconnecteded)
+				{
+					SameCount = 0;
+					level.Pause();
+				}
 
+				if (gamepadState.IsConnected)
+				{
+					CheckGamepadInitialization(gamepadState);
+					if (gamepadInitialized)
+					{
+						if(!HasControllerChanged(gamepadState, prevGamepadState, ref prevLeftJoy, ref prevRightJoy, out bool gotSDLJoystick))
+						{
+							SameCount++/*.Log()*/;
+						}
+						else
+						{
+							SameCount = 0;
+						}
+
+						if (!gotSDLJoystick)
+						{
+							gamepadInitialized = false;
+							hasSetInitGamepadState = false;
+						}
+
+						if (SameCount > ModSettings.PauseAfterFramesGamepadInactive)
+						{
+							SameCount = 0;
+							level.Pause();
+						}
+					}
+				}
+			}
+		}
+
+		private static Vector2 initLeftJoystick = new();
+		private static Vector2 initRightJoystick = new();
+		private static void CheckGamepadInitialization(GamePadState gamepadState)
+		{
+			if (!gamepadInitialized)
+			{
+				if (!hasSetInitGamepadState)
+				{
+					hasSetInitGamepadState = GetSDLJoysticks(out initLeftJoystick, out initRightJoystick);
+					Log("nowa");
+				}
+				else if (GetSDLJoysticks(out Vector2 l, out Vector2 r) && HasJoystickChanged(l, r, initLeftJoystick, initRightJoystick))
+				{
+					Log("inits");
+					gamepadInitialized = true;
+				}
+			}
+		}
+
+		private static bool GetSDLJoysticks(out Vector2 left, out Vector2 right)
+		{
 			IntPtr intPtr = IntPtr.Zero;
 			int i = 0;
-			while(intPtr == IntPtr.Zero && i < 500)
+			while (intPtr == IntPtr.Zero && i < 100)
 			{
 				intPtr = SDL.SDL_GameControllerFromInstanceID(i);
 				i++;
 			}
-			//i.Log("i");
 
 			if (intPtr != IntPtr.Zero)
 			{
-				leftJoystickPosition = new Vector2(SDL.SDL_GameControllerGetAxis(intPtr, SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_LEFTX) / 32767f, SDL.SDL_GameControllerGetAxis(intPtr, SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_LEFTY) / -32767f);
-				rightJoystickPosition = new Vector2(SDL.SDL_GameControllerGetAxis(intPtr, SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_RIGHTX) / 32767f, SDL.SDL_GameControllerGetAxis(intPtr, SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_RIGHTY) / -32767f);
+				left = new Vector2(SDL.SDL_GameControllerGetAxis(intPtr, SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_LEFTX) / 32767f, SDL.SDL_GameControllerGetAxis(intPtr, SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_LEFTY) / -32767f);
+				right = new Vector2(SDL.SDL_GameControllerGetAxis(intPtr, SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_RIGHTX) / 32767f, SDL.SDL_GameControllerGetAxis(intPtr, SDL.SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_RIGHTY) / -32767f);
+				return left != Vector2.Zero || right != Vector2.Zero;
 			}
 			else
 			{
-				Log("Couldn't get SDL controller pointer", LogLevel.Warn);
+				Log("Couldn't get SDL gamepad pointer", LogLevel.Warn);
+				left = Vector2.Zero;
+				right = Vector2.Zero;
+				return false;
+			}
+		}
+
+		private static bool HasJoystickChanged(Vector2 leftJoystickPosition, Vector2 rightJoystickPosition, Vector2 prevLeftJoystick, Vector2 prevRightJoystick)
+		{
+			if (leftJoystickPosition != prevLeftJoystick || rightJoystickPosition != prevRightJoystick)
+			{
+				return true;
+			}
+			return false;
+		}
+
+		private static bool HasControllerChanged(GamePadState gamepadState, GamePadState prevGamepadState, ref Vector2 prevLeftJoystick, ref Vector2 prevRightJoystick, out bool gotSDLJoystick)
+		{
+			gotSDLJoystick = GetSDLJoysticks(out Vector2 leftJoystickPosition, out Vector2 rightJoystickPosition);
+			if (!gotSDLJoystick)
+			{
+				Log("wrong");
 				leftJoystickPosition = gamepadState.ThumbSticks.Left;
 				rightJoystickPosition = gamepadState.ThumbSticks.Right;
 			}
 
-			if (leftJoystickPosition != prevLeftJoy || rightJoystickPosition != prevRightJoy)
+			if(HasJoystickChanged(leftJoystickPosition, rightJoystickPosition, prevLeftJoystick, prevRightJoystick))
 			{
-				prevLeftJoy = leftJoystickPosition.Log();
-				prevRightJoy = rightJoystickPosition;
+				//Log("joy");
+				prevLeftJoystick = leftJoystickPosition/*.Log()*/;
+				prevRightJoystick = rightJoystickPosition;
 				return true;
 			}
-			prevLeftJoy = leftJoystickPosition.Log();
-			prevRightJoy = rightJoystickPosition;
-
+			prevLeftJoystick = leftJoystickPosition/*.Log()*/;
+			prevRightJoystick = rightJoystickPosition;
 			if (prevGamepadState.Buttons != gamepadState.Buttons)
 			{
 				Log("buttons");
@@ -102,10 +190,7 @@ namespace Celeste.Mod.izumisQOL
 				Log("connection");
 				return true;
 			}
-			if(leftJoystickPosition == Vector2.Zero && rightJoystickPosition == Vector2.Zero)
-			{
-				return true;
-			}
+			//Log("now");
 			return false;
 		}
 	}
