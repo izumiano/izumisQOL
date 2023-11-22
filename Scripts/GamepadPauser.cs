@@ -63,6 +63,7 @@ namespace Celeste.Mod.izumisQOL
 			{
 				if (controllerDisconnecteded)
 				{
+					Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_GAMEAPADPAUSE_DISCONNECT_TOOLTIP"), 2);
 					SameCount = 0;
 					level.Pause();
 				}
@@ -89,6 +90,7 @@ namespace Celeste.Mod.izumisQOL
 
 						if (SameCount > ModSettings.PauseAfterFramesGamepadInactive)
 						{
+							Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_GAMEAPADPAUSE_FREEZE_TOOLTIP"), 2);
 							SameCount = 0;
 							level.Pause();
 						}
