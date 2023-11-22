@@ -56,11 +56,10 @@ namespace Celeste.Mod.izumisQOL
 			}
 			if (!gamepadState.IsConnected)
 			{
-				//Log("yasss");
 				gamepadInitialized = false;
 			}
 
-			if (Engine.Scene is Level level && level.CanPause)
+			if (Engine.Scene is Level level && level.CanPause && !BetterJournalModule.InJournal)
 			{
 				if (controllerDisconnecteded)
 				{
@@ -75,7 +74,7 @@ namespace Celeste.Mod.izumisQOL
 					{
 						if(!HasControllerChanged(gamepadState, prevGamepadState, ref prevLeftJoy, ref prevRightJoy, out bool gotSDLJoystick))
 						{
-							SameCount++/*.Log()*/;
+							SameCount++;
 						}
 						else
 						{
@@ -163,12 +162,11 @@ namespace Celeste.Mod.izumisQOL
 
 			if(HasJoystickChanged(leftJoystickPosition, rightJoystickPosition, prevLeftJoystick, prevRightJoystick))
 			{
-				//Log("joy");
-				prevLeftJoystick = leftJoystickPosition/*.Log()*/;
+				prevLeftJoystick = leftJoystickPosition;
 				prevRightJoystick = rightJoystickPosition;
 				return true;
 			}
-			prevLeftJoystick = leftJoystickPosition/*.Log()*/;
+			prevLeftJoystick = leftJoystickPosition;
 			prevRightJoystick = rightJoystickPosition;
 			if (prevGamepadState.Buttons != gamepadState.Buttons)
 			{
@@ -190,7 +188,6 @@ namespace Celeste.Mod.izumisQOL
 				Log("connection");
 				return true;
 			}
-			//Log("now");
 			return false;
 		}
 	}
