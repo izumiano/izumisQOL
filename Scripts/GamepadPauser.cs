@@ -190,6 +190,11 @@ namespace Celeste.Mod.izumisQOL
 				Log("connection");
 				return true;
 			}
+			if(leftJoystickPosition == Vector2.Zero || rightJoystickPosition == Vector2.Zero)
+			{
+				Log("joystick at zero");
+				return true;
+			}
 			return false;
 		}
 	}
