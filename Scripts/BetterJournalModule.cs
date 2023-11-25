@@ -419,7 +419,7 @@ namespace Celeste.Mod.izumisQOL
 
 		private static int JournalDataTypeInput(OuiJournal self)
 		{
-			if (!InJournal || self?.Page() is OuiJournalProgress && !CollabUtils2Integration.IsCU2ProgressPage(self?.Page()))
+			if (!InJournal || (self?.Page() is not OuiJournalProgress && !CollabUtils2Integration.IsCU2ProgressPage(self?.Page())))
 				return 0;
 
 			int input = Input.MenuUp.Pressed ? 1 : (Input.MenuDown.Pressed ? -1 : 0); // 1 if up is pressed, -1 if down is pressed, 0 if nothing

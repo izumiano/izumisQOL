@@ -73,12 +73,12 @@ namespace Celeste.Mod.izumisQOL
 		{
 			if (buttonBinding != null && buttonBinding.Button == null && buttonBinding.Binding != null)
 			{
-				buttonBinding.Button = new VirtualButton(buttonBinding.Binding, Input.Gamepad, 0.08f, 0.2f);
+				buttonBinding.Button = new(buttonBinding.Binding, Input.Gamepad, 0.08f, 0.2f);
 				buttonBinding.Button.AutoConsumeBuffer = true;
 			}
 		}
 
-		protected override void CreateModMenuSectionKeyBindings(TextMenu menu, bool inGame, EventInstance snapshot)
+		public override void CreateModMenuSectionKeyBindings(TextMenu menu, bool inGame, EventInstance snapshot)
 		{
 			menu.Add(new TextMenu.Button(Dialog.Clean("options_keyconfig")).Pressed(delegate
 			{

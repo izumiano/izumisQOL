@@ -19,7 +19,6 @@ namespace Celeste.Mod.izumisQOL.ModIntegration
 
 		private static EverestModule collabUtils2Module;
 		private static MethodInfo isHeartSide_MethodInfo;
-		private static FieldInfo showOnlyDiscovered_FieldInfo;
 
 		public static void Load()
 		{
@@ -34,7 +33,6 @@ namespace Celeste.Mod.izumisQOL.ModIntegration
 
 				ProgressPageType = collabUtils2Module.GetType().Module.GetType("Celeste.Mod.CollabUtils2.UI.OuiJournalCollabProgressInLobby");
 				isHeartSide_MethodInfo = collabUtils2Module.GetType().Module.GetType("Celeste.Mod.CollabUtils2.LobbyHelper").GetMethod("IsHeartSide", BindingFlags.Static | BindingFlags.Public);
-				showOnlyDiscovered_FieldInfo = collabUtils2Module.GetType().Module.GetType("Celeste.Mod.CollabUtils2.Triggers.JournalTrigger").GetField("showOnlyDiscovered", BindingFlags.Static | BindingFlags.NonPublic);
 			}
 		}
 
@@ -101,11 +99,6 @@ namespace Celeste.Mod.izumisQOL.ModIntegration
 			}
 
 			return areaStats;
-		}
-
-		public static bool ShowOnlyDiscovered(OuiJournalPage journalPage)
-		{
-			return (bool)showOnlyDiscovered_FieldInfo.GetValue(journalPage);
 		}
 
 		public static int ProgressPageAmount(OuiJournal journal)
