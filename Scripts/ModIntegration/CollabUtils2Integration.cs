@@ -43,13 +43,13 @@ namespace Celeste.Mod.izumisQOL.ModIntegration
 		/// </summary>
 		/// <param name="page"></param>
 		/// <returns></returns>
-		public static bool IsProgressPage(OuiJournalPage page)
+		public static bool IsCU2ProgressPage(OuiJournalPage page)
 		{
 			if (!Loaded)
 			{
 				return false;
 			}
-			return page.GetType() == ProgressPageType;
+			return page?.GetType() == ProgressPageType;
 		}
 
 		public static bool IsHeartSide(string sid)

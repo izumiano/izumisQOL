@@ -40,6 +40,7 @@ namespace Celeste.Mod.izumisQOL
 			orig(self, gameTime);
 
 			KeybindModule.Update();
+			GamepadPauser.Update();
 		}
 	}
 }

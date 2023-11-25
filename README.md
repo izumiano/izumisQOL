@@ -11,6 +11,10 @@ The ability to save what your journal stats are at one point and compare them wi
 
 Showing an individual mod's time and death totals in the journal
 
+Automatic pausing when your controller disconnects/freezes
+
+An optional restart button in the main menu
+
 (EXPERIMENTAL) Swapping modded keybind settings
 
 Usage Instructions:

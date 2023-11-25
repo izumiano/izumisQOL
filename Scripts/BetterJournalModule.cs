@@ -69,7 +69,7 @@ namespace Celeste.Mod.izumisQOL
 				{
 					return null;
 				}
-				return journal.Page;
+				return journal.Page();
 			}
 		}
 
@@ -120,8 +120,8 @@ namespace Celeste.Mod.izumisQOL
 			}
 		}
 
-		private static bool InJournal => JournalProgressPage != null;
-		private static bool ProgressPageIsCollabUtils2 => CollabUtils2Integration.IsProgressPage(JournalProgressPage);
+		public static bool InJournal => JournalProgressPage != null;
+		private static bool ProgressPageIsCollabUtils2 => CollabUtils2Integration.IsCU2ProgressPage(JournalProgressPage);
 
 
 		public static void Init()
@@ -140,7 +140,7 @@ namespace Celeste.Mod.izumisQOL
 
 			if(JournalProgressPage != null)
 			{
-				CollabUtils2Integration.IsProgressPage(JournalProgressPage);
+				CollabUtils2Integration.IsCU2ProgressPage(JournalProgressPage);
 			}
 
 			if (!ModSettings.BetterJournalEnabled)
@@ -188,7 +188,7 @@ namespace Celeste.Mod.izumisQOL
 				bool isCollabUtils2Page = false;
 				int firstIndexOnPage = 0;
 				int mapsOnThisCollabUtils2Page = -1;
-				if (CollabUtils2Integration.IsProgressPage(JournalProgressPage))
+				if (CollabUtils2Integration.IsCU2ProgressPage(JournalProgressPage))
 				{
 					isCollabUtils2Page = true;
 					mapsOnThisCollabUtils2Page = CollabUtils2Integration.MapsOnPage(JournalProgressPage, journal, instance, out firstIndexOnPage);
@@ -419,7 +419,7 @@ namespace Celeste.Mod.izumisQOL
 
 		private static int JournalDataTypeInput(OuiJournal self)
 		{
-			if (!InJournal || (self.Page.GetType() != typeof(OuiJournalProgress) && !CollabUtils2Integration.IsProgressPage(self.Page)))
+			if (!InJournal || self?.Page() is OuiJournalProgress && !CollabUtils2Integration.IsCU2ProgressPage(self?.Page()))
 				return 0;
 
 			int input = Input.MenuUp.Pressed ? 1 : (Input.MenuDown.Pressed ? -1 : 0); // 1 if up is pressed, -1 if down is pressed, 0 if nothing
@@ -789,7 +789,7 @@ namespace Celeste.Mod.izumisQOL
 		public static void OnJournalPageRedraw(On.Celeste.OuiJournalPage.orig_Redraw orig, OuiJournalPage self, VirtualRenderTarget buffer)
 		{
 			orig(self, buffer);
-			if(self.GetType() == typeof(OuiJournalProgress) || CollabUtils2Integration.IsProgressPage(self))
+			if(self.GetType() == typeof(OuiJournalProgress) || CollabUtils2Integration.IsCU2ProgressPage(self))
 			{
 				if(self != null)
 				{

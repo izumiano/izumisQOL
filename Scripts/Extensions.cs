@@ -14,6 +14,16 @@ using Monocle;
 
 public static class Extensions
 {
+	public static OuiJournalPage Page(this OuiJournal journal)
+	{
+		if(journal == null || journal.PageIndex > journal.Pages.Count - 1 || journal.PageIndex < 0)
+		{
+			Log("Could not get the current journal page", LogLevel.Warn);
+			return null;
+		}
+		return journal.Page;
+	}
+
 	public static void AddDescription(this TextMenuExt.SubMenu subMenu, TextMenu containingMenu, TextMenu.Item subMenuItem, string description)
 	{
 		TextMenuExt.EaseInSubHeaderExt descriptionText = new(description, initiallyVisible: false, containingMenu)
