@@ -18,8 +18,8 @@ namespace Celeste.Mod.izumisQOL
 			On.Celeste.OuiJournal.Close += BetterJournalModule.OnJournalClose;
 			Everest.Events.MainMenu.OnCreateButtons += UI.General.OnCreateButtons;
 
-			KeybindModule.Init();
-			BetterJournalModule.Init();
+			KeybindModule.Load();
+			BetterJournalModule.Load();
 		}
 
 		internal static void Unload()

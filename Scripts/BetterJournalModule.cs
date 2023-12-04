@@ -124,7 +124,7 @@ namespace Celeste.Mod.izumisQOL
 		private static bool ProgressPageIsCollabUtils2 => CollabUtils2Integration.IsCU2ProgressPage(JournalProgressPage);
 
 
-		public static void Init()
+		public static void Load()
 		{
 			SetUpDirectory();
 		}

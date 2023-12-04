@@ -15,10 +15,8 @@ namespace Celeste.Mod.izumisQOL
 		public static List<Settings> KeybindSettings = new();
 		private static readonly string keybindsPath = BaseDirectory + "Saves\\izumisQOL\\keybinds";
 
-		public static void Init()
+		public static void Load()
 		{
-			//ModSettings = izumisQOL.ModSettings;
-
 			SetUpDirectory();
 
 			LoadKeybindFiles();
@@ -482,6 +480,7 @@ namespace Celeste.Mod.izumisQOL
 				return;
 			Log("Swapper to keybinds");
 			ChangeKeybindsFromAToB(KeybindSettings[keybindID], Settings.Instance, keybindID);
+			UserIO.SaveHandler(file: false, settings: true);
 		}
 
 		public static void CopyFromKeybindsToKeybindSwapper(int keybindID)

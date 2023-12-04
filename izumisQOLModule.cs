@@ -42,6 +42,7 @@ namespace Celeste.Mod.izumisQOL
 		// Optional, initialize anything after Celeste has initialized itself properly.
 		public override void Initialize()
 		{
+
 		}
 
 		// Optional, do anything requiring either the Celeste or mod content here.
