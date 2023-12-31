@@ -1,5 +1,5 @@
 - Name: izumisQOL
-  Version: 1.4.2
+  Version: 1.4.3
   DLL: bin/izumisQOL.dll
   Dependencies:
     - Name: Everest

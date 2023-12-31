@@ -249,14 +249,18 @@ namespace Celeste.Mod.izumisQOL
 
 		public void CreateCurrentWhitelistSlotEntry(TextMenu menu, bool inGame)
 		{
+			TextMenuExt.SubMenu subMenu = new(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_WHITELISTSETTINGS"), false);
+			TextMenu.Item menuItem;
+
 			if (inGame)
+			{
+				menuItem = new TextMenu.SubHeader(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_ONLYINMAINMENU"), topPadding: false);
+				subMenu.Add(menuItem);
+				menu.Add(subMenu);
 				return;
+			}
 
 			WhitelistModule.Init();
-
-			TextMenuExt.SubMenu subMenu = new(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_WHITELISTSETTINGS"), false);
-
-			TextMenu.Item menuItem;
 
 			if(CurrentWhitelistSlot > whitelistNames.Count - 1)
 			{
