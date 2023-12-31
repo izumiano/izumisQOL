@@ -37,7 +37,7 @@ namespace Celeste.Mod.izumisQOL
 				}
 				else
 				{
-					Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDS_SLOTSELECTED1") + " " + (buttonPressed + 1) + " " + Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDS_SLOTSELECTED2"));
+					Tooltip.Show("MODOPTIONS_IZUMISQOL_KEYBINDS_SLOTSELECTED1".AsDialog() + " " + (buttonPressed + 1) + " " + "MODOPTIONS_IZUMISQOL_KEYBINDS_SLOTSELECTED2".AsDialog());
 				}
 			}
 
@@ -280,16 +280,16 @@ namespace Celeste.Mod.izumisQOL
 				if (File.Exists(newPath))
 				{
 					Log(newPath + " already exists", LogLevel.Info);
-					Tooltip.Show(newName + " " + Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDS_EXISTS"));
+					Tooltip.Show(newName + " " + "MODOPTIONS_IZUMISQOL_KEYBINDS_EXISTS".AsDialog());
 					return false;
 				}
 				File.Move(oldPath, newPath);
-				Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_IMPORTED1") + " " + newName + " " + Dialog.Clean("MODOPTIONS_IZUMISQOL_IMPORTED2"));
+				Tooltip.Show("MODOPTIONS_IZUMISQOL_IMPORTED1".AsDialog() + " " + newName + " " + "MODOPTIONS_IZUMISQOL_IMPORTED2".AsDialog());
 				return true;
 			}
 			catch (Exception ex)
 			{
-				Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_ERROR_INVALIDCLIPBOARD"));
+				Tooltip.Show("MODOPTIONS_IZUMISQOL_ERROR_INVALIDCLIPBOARD".AsDialog());
 				Log(ex, LogLevel.Warn);
 				return false;
 			}
@@ -300,11 +300,11 @@ namespace Celeste.Mod.izumisQOL
 			if(keybindID >= ModSettings.GetKeybindNames().Count)
 			{
 				Log(keybindID + " exceeded the size of keybindNames");
-				Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDERROR_APPLYING") + " " + keybindID);
+				Tooltip.Show("MODOPTIONS_IZUMISQOL_KEYBINDERROR_APPLYING".AsDialog() + " " + keybindID);
 				return;
 			}
 			Log("Applying keybind: " + ModSettings.GetKeybindNames()[keybindID]);
-			Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDS_APPLYING") + " " + ModSettings.GetKeybindNames()[keybindID]);
+			Tooltip.Show("MODOPTIONS_IZUMISQOL_KEYBINDS_APPLYING".AsDialog() + " " + ModSettings.GetKeybindNames()[keybindID]);
 
 			CopyFromKeybindSwapperToKeybinds(keybindID);
 

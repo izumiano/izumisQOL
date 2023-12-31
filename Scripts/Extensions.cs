@@ -24,6 +24,11 @@ public static class Extensions
 		return journal.Page;
 	}
 
+	public static string AsDialog(this string dialogID)
+	{
+		return Dialog.Clean(dialogID);
+	}
+
 	public static void AddDescription(this TextMenuExt.SubMenu subMenu, TextMenu containingMenu, TextMenu.Item subMenuItem, string description)
 	{
 		TextMenuExt.EaseInSubHeaderExt descriptionText = new(description, initiallyVisible: false, containingMenu)
@@ -62,7 +67,7 @@ public static class Extensions
 
 	public static void NeedsRelaunch(this TextMenuExt.SubMenu subMenu, TextMenu containingMenu, TextMenu.Item subMenuItem)
 		{
-			TextMenuExt.EaseInSubHeaderExt needsRelaunchText = new(Dialog.Clean("MODOPTIONS_NEEDSRELAUNCH"), initiallyVisible: false, containingMenu)
+			TextMenuExt.EaseInSubHeaderExt needsRelaunchText = new("MODOPTIONS_NEEDSRELAUNCH".AsDialog(), initiallyVisible: false, containingMenu)
 			{
 				TextColor = Color.OrangeRed,
 				HeightExtra = 0f

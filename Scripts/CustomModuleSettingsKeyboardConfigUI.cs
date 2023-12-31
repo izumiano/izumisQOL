@@ -20,7 +20,7 @@ namespace Celeste.Mod.izumisQOL.Menu
 				return;
 			}
 			Clear();
-			Add(new Header(Dialog.Clean("KEY_CONFIG_TITLE")));
+			Add(new Header("KEY_CONFIG_TITLE".AsDialog()));
 			Add(new InputMappingInfo(controllerMode: false));
 			object settings = Module._Settings;
 			string typeName = Module.SettingsType.Name.ToLowerInvariant();
@@ -75,7 +75,7 @@ namespace Celeste.Mod.izumisQOL.Menu
 				}
 			}
 			Add(new SubHeader(""));
-			Add(new Button(Dialog.Clean("KEY_CONFIG_RESET"))
+			Add(new Button("KEY_CONFIG_RESET".AsDialog())
 			{
 				IncludeWidthInMeasurement = false,
 				AlwaysCenter = true,

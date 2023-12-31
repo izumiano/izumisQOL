@@ -112,13 +112,13 @@ namespace Celeste.Mod.izumisQOL
 
 		public void CreateCurrentKeybindSlotEntry(TextMenu menu, bool inGame)
 		{
-			TextMenuExt.SubMenu subMenu = new(Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_BINDINGSETTINGS"), false);
+			TextMenuExt.SubMenu subMenu = new("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_BINDINGSETTINGS".AsDialog(), false);
 
 			TextMenu.Item menuItem;
 
 			Global.Log("keybindSettings.Count=" + KeybindModule.KeybindSettings.Count);
 
-			subMenu.Add(CurrentKeybindSlider = new TextMenu.Slider(Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_CURRENTKEYBINDSLOT"), i => GetKeybindName(i), 0, keybindNames.Count - 1, CurrentKeybindSlot)
+			subMenu.Add(CurrentKeybindSlider = new TextMenu.Slider("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_CURRENTKEYBINDSLOT".AsDialog(), i => GetKeybindName(i), 0, keybindNames.Count - 1, CurrentKeybindSlot)
 			{
 				OnValueChange = delegate (int val)
 				{
@@ -129,39 +129,39 @@ namespace Celeste.Mod.izumisQOL
 					}
 				}
 			});
-			subMenu.AddDescription(menu, CurrentKeybindSlider, Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_CURRENTKEYBINDSLOT_DESC") + "\n\n" + Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_CURRENTKEYBINDSLOT_DESCNOTE"));
+			subMenu.AddDescription(menu, CurrentKeybindSlider, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_CURRENTKEYBINDSLOT_DESC".AsDialog() + "\n\n" + "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_CURRENTKEYBINDSLOT_DESCNOTE".AsDialog());
 
-			subMenu.Add(menuItem = new TextMenu.OnOff(Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_AUTOLOADKEYBINDS"), AutoLoadKeybinds)
+			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_AUTOLOADKEYBINDS".AsDialog(), AutoLoadKeybinds)
 			{
 				OnValueChange = delegate(bool val)
 				{
 					AutoLoadKeybinds = val;
 				}
 			});
-			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_AUTOLOADKEYBINDS_DESC"));
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_AUTOLOADKEYBINDS_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new TextMenu.Button(Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_COPYKEYBINDS")));
+			subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_COPYKEYBINDS".AsDialog()));
 			menuItem.Pressed(
 				delegate
 				{
 					Global.Log("Copying to: " + CurrentKeybindSlider.Index);
-					Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_COPYKEYBINDS_TOOLTIP") + " " + GetKeybindName(CurrentKeybindSlider.Index));
+					Tooltip.Show("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_COPYKEYBINDS_TOOLTIP".AsDialog() + " " + GetKeybindName(CurrentKeybindSlider.Index));
 
 					KeybindModule.SaveKeybinds(CurrentKeybindSlider.Index);
 				}
 			);
-			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_COPYKEYBINDS_DESC"));
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_COPYKEYBINDS_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new TextMenu.Button(Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_LOAD")));
+			subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_LOAD".AsDialog()));
 			menuItem.Pressed(
 				delegate
 				{
 					KeybindModule.ApplyKeybinds(CurrentKeybindSlider.Index);
 				}
 			);
-			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_LOAD_DESC"));
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_LOAD_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new TextMenu.Button(Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_IMPORTCLIPBOARD")));
+			subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_IMPORTCLIPBOARD".AsDialog()));
 			menuItem.Pressed(
 				delegate
 				{
@@ -175,9 +175,9 @@ namespace Celeste.Mod.izumisQOL
 					}
 				}
 			);
-			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_IMPORTCLIPBOARD_DESC"));
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_IMPORTCLIPBOARD_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new TextMenu.Button(Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_ADD")));
+			subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_ADD".AsDialog()));
 			menuItem.Pressed(
 				delegate
 				{
@@ -188,22 +188,22 @@ namespace Celeste.Mod.izumisQOL
 					CurrentKeybindSlider.Add(GetKeybindName(val), val);
 					CurrentKeybindSlider.SelectWiggler.Start();
 
-					Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_ADD_TOOLTIP"));
+					Tooltip.Show("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_ADD_TOOLTIP".AsDialog());
 
 					ButtonsSwapKeybinds.Add(new ButtonBinding());
 					izumisQOL.InitializeButtonBinding(ButtonsSwapKeybinds[val]);
 				}
 			);
-			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_ADD_DESC"));
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_ADD_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new TextMenu.Button(Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_REMOVE")));
+			subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_REMOVE".AsDialog()));
 			menuItem.Pressed(
 				delegate
 				{
 					if(keybindNames.Count > 1)
 					{
 						int keybindSlot = CurrentKeybindSlider.Index;
-						Tooltip.Add(tooltips: new Tooltip.Info(Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_REMOVE_TOOLTIP") + " " + GetKeybindName(keybindSlot)), clearQueue: true);
+						Tooltip.Add(tooltips: new Tooltip.Info("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_REMOVE_TOOLTIP".AsDialog() + " " + GetKeybindName(keybindSlot)), clearQueue: true);
 
 						if (keybindSlot >= CurrentKeybindSlider.Values.Count - 1)
 						{
@@ -242,19 +242,19 @@ namespace Celeste.Mod.izumisQOL
 					Global.Log("only 1 item in slider");
 				}
 			);
-			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_REMOVE_DESC"));
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_REMOVE_DESC".AsDialog());
 
 			menu.Add(subMenu);
 		}
 
 		public void CreateCurrentWhitelistSlotEntry(TextMenu menu, bool inGame)
 		{
-			TextMenuExt.SubMenu subMenu = new(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_WHITELISTSETTINGS"), false);
+			TextMenuExt.SubMenu subMenu = new("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_WHITELISTSETTINGS".AsDialog(), false);
 			TextMenu.Item menuItem;
 
 			if (inGame)
 			{
-				menuItem = new TextMenu.SubHeader(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_ONLYINMAINMENU"), topPadding: false);
+				menuItem = new TextMenu.SubHeader("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_ONLYINMAINMENU".AsDialog(), topPadding: false);
 				subMenu.Add(menuItem);
 				menu.Add(subMenu);
 				return;
@@ -267,18 +267,18 @@ namespace Celeste.Mod.izumisQOL
 				Global.Log("CurrentWhitelistSlot > whitelistNames.Count - 1");
 				CurrentWhitelistSlot = whitelistNames.Count - 1;
 			}
-			subMenu.Add(CurrentWhitelistSlider = new TextMenu.Slider(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_CURRENTWHITELIST"), i => GetWhitelistName(i), 0, whitelistNames.Count - 1, CurrentWhitelistSlot)
+			subMenu.Add(CurrentWhitelistSlider = new TextMenu.Slider("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_CURRENTWHITELIST".AsDialog(), i => GetWhitelistName(i), 0, whitelistNames.Count - 1, CurrentWhitelistSlot)
 			{
 				OnValueChange = delegate(int val)
 				{
 					CurrentWhitelistSlot = val;
 				}
 			});
-			subMenu.AddDescription(menu, CurrentWhitelistSlider, Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_CURRENTWHITELIST_DESC"));
+			subMenu.AddDescription(menu, CurrentWhitelistSlider, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_CURRENTWHITELIST_DESC".AsDialog());
 
 			ToggleableRestartButton restartButton = ToggleableRestartButton.New("restartForApplyWhitelist");
 
-			subMenu.Add(menuItem = new TextMenu.Button(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_APPLY")));
+			subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_APPLY".AsDialog()));
 			menuItem.Pressed(
 				delegate
 				{
@@ -288,30 +288,30 @@ namespace Celeste.Mod.izumisQOL
 					}
 				}
 			);
-			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_APPLY_DESC"));
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_APPLY_DESC".AsDialog());
 			subMenu.NeedsRelaunch(menu, menuItem);
 
 			restartButton.AddToMenuIfIsShown(menu, subMenu);
 
-			subMenu.Add(menuItem = new TextMenu.Button(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_SAVE")));
+			subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_SAVE".AsDialog()));
 			menuItem.Pressed(
 				delegate
 				{
 					WhitelistModule.SaveCurrentWhitelist(GetWhitelistName(CurrentWhitelistSlot), CurrentWhitelistSlot);
 				}
 			);
-			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_SAVE_DESC"));
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_SAVE_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new TextMenu.OnOff(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXCLUSIVE"), WhitelistIsExclusive)
+			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXCLUSIVE".AsDialog(), WhitelistIsExclusive)
 			{
 				OnValueChange = delegate(bool val)
 				{
 					WhitelistIsExclusive = val;
 				}
 			});
-			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXCLUSIVE_DESC"));
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXCLUSIVE_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new TextMenu.Button(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_IMPORTCLIPBOARD")));
+			subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_IMPORTCLIPBOARD".AsDialog()));
 			menuItem.Pressed(
 				delegate
 				{
@@ -326,9 +326,9 @@ namespace Celeste.Mod.izumisQOL
 					}
 				}
 			);
-			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_IMPORTCLIPBOARD_DESC"));
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_IMPORTCLIPBOARD_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new TextMenu.Button(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_ADD")));
+			subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_ADD".AsDialog()));
 			menuItem.Pressed(
 				delegate
 				{
@@ -337,19 +337,19 @@ namespace Celeste.Mod.izumisQOL
 					CurrentWhitelistSlider.Add(GetWhitelistName(val), val);
 					CurrentWhitelistSlider.SelectWiggler.Start();
 
-					Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_ADD_TOOLTIP"));
+					Tooltip.Show("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_ADD_TOOLTIP".AsDialog());
 				}
 			);
-			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_ADD_DESC"));
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_ADD_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new TextMenu.Button(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_REMOVE")));
+			subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_REMOVE".AsDialog()));
 			menuItem.Pressed(
 				delegate
 				{
 					if (whitelistNames.Count > 1)
 					{
 						int whitelistSlot = CurrentWhitelistSlider.Index;
-						Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_REMOVE_TOOLTIP") + " " + GetWhitelistName(whitelistSlot));
+						Tooltip.Show("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_REMOVE_TOOLTIP".AsDialog() + " " + GetWhitelistName(whitelistSlot));
 
 						if (whitelistSlot >= CurrentWhitelistSlider.Values.Count - 1)
 						{
@@ -377,64 +377,64 @@ namespace Celeste.Mod.izumisQOL
 					}
 				}
 			);
-			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_REMOVE_DESC"));
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_REMOVE_DESC".AsDialog());
 
 			menu.Add(subMenu);
 		}
 
 		public void CreateBetterJournalEnabledEntry(TextMenu menu, bool inGame)
 		{
-			TextMenuExt.SubMenu subMenu = new(Dialog.Clean("MODOPTIONS_IZUMISQOL_BETTERJOURNALSETTINGS_SETTINGS"), false);
+			TextMenuExt.SubMenu subMenu = new("MODOPTIONS_IZUMISQOL_BETTERJOURNALSETTINGS_SETTINGS".AsDialog(), false);
 			TextMenu.Item menuItem;
 
-			subMenu.Add(menuItem = new TextMenu.OnOff(Dialog.Clean("MODOPTIONS_IZUMISQOL_BETTERJOURNALSETTINGS_ENABLED"), BetterJournalEnabled)
+			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_BETTERJOURNALSETTINGS_ENABLED".AsDialog(), BetterJournalEnabled)
 			{
 				OnValueChange = (val) => BetterJournalEnabled = val
 			});
 
-			subMenu.Add(menuItem = new TextMenu.OnOff(Dialog.Clean("MODOPTIONS_IZUMISQOL_BETTERJOURNALSETTINGS_MODTIMEINJOURNAL"), ShowModTimeInJournal)
+			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_BETTERJOURNALSETTINGS_MODTIMEINJOURNAL".AsDialog(), ShowModTimeInJournal)
 			{
 				OnValueChange = (val) => ShowModTimeInJournal = val
 			});
-			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_BETTERJOURNALSETTINGS_MODTIMEINJOURNAL_DESC"));
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_BETTERJOURNALSETTINGS_MODTIMEINJOURNAL_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new TextMenu.OnOff(Dialog.Clean("MODOPTIONS_IZUMISQOL_BETTERJOURNALSETTINGS_SEPARATEABCSIDE"), SeparateABCSideTimes)
+			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_BETTERJOURNALSETTINGS_SEPARATEABCSIDE".AsDialog(), SeparateABCSideTimes)
 			{
 				OnValueChange = (val) => SeparateABCSideTimes = val
 			});
-			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_BETTERJOURNALSETTINGS_SEPARATEABCSIDE_DESC"));
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_BETTERJOURNALSETTINGS_SEPARATEABCSIDE_DESC".AsDialog());
 
 			menu.Add(subMenu);
 		}
 
 		public void CreateGamepadPauserEnabledEntry(TextMenu menu, bool inGame)
 		{
-			TextMenuExt.SubMenu subMenu = new(Dialog.Clean("MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_GAMEPADPASUESETTINGS"), false);
+			TextMenuExt.SubMenu subMenu = new("MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_GAMEPADPASUESETTINGS".AsDialog(), false);
 			TextMenu.Item menuItem;
 
-			subMenu.Add(menuItem = new TextMenu.OnOff(Dialog.Clean("MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_ENABLE"), GamepadPauserEnabled)
+			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_ENABLE".AsDialog(), GamepadPauserEnabled)
 			{
 				OnValueChange = (bool val) => GamepadPauserEnabled = val
 			});
-			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_ENABLE_DESC"));
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_ENABLE_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new TextMenu.Slider(Dialog.Clean("MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_PAUSEFRAMESINACTIVE"), i => i.ToString(), 3, 30, PauseAfterFramesGamepadInactive)
+			subMenu.Add(menuItem = new TextMenu.Slider("MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_PAUSEFRAMESINACTIVE".AsDialog(), i => i.ToString(), 3, 30, PauseAfterFramesGamepadInactive)
 			{
 				OnValueChange = (int val) => PauseAfterFramesGamepadInactive = val
 			});
-			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_PAUSEFRAMESINACTIVE_DESC"));
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_PAUSEFRAMESINACTIVE_DESC".AsDialog());
 
 			menu.Add(subMenu);
 		}
 
 		public void CreateShowRestartButtonInMainMenuEntry(TextMenu menu, bool inGame)
 		{
-			TextMenuExt.SubMenu subMenu = new(Dialog.Clean("MODOPTIONS_IZUMISQOL_OTHERSETTINGS_OTHERSETTINGS"), false);
+			TextMenuExt.SubMenu subMenu = new("MODOPTIONS_IZUMISQOL_OTHERSETTINGS_OTHERSETTINGS".AsDialog(), false);
 			TextMenu.Item menuItem;
 
 			ToggleableRestartButton restartButton = ToggleableRestartButton.New("restartForMenuRestartButton");
 
-			subMenu.Add(menuItem = new TextMenu.OnOff(Dialog.Clean("MODOPTIONS_IZUMISQOL_OTHERSETTINGS_SHOWRESTARTINMAINMENU"), ShowRestartButtonInMainMenu)
+			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_OTHERSETTINGS_SHOWRESTARTINMAINMENU".AsDialog(), ShowRestartButtonInMainMenu)
 			{
 				OnValueChange = 
 				delegate(bool val)
@@ -443,16 +443,16 @@ namespace Celeste.Mod.izumisQOL
 					ShowRestartButtonInMainMenu = val;
 				}
 			});
-			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_OTHERSETTINGS_SHOWRESTARTINMAINMENU_DESC"));
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OTHERSETTINGS_SHOWRESTARTINMAINMENU_DESC".AsDialog());
 			subMenu.NeedsRelaunch(menu, menuItem);
 
 			restartButton.AddToMenuIfIsShown(menu, subMenu);
 
-			subMenu.Add(menuItem = new TextMenu.OnOff(Dialog.Clean("MODOPTIONS_IZUMISQOL_OTHERSETTINGS_VERBOSELOGGING"), VerboseLogging)
+			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_OTHERSETTINGS_VERBOSELOGGING".AsDialog(), VerboseLogging)
 			{
 				OnValueChange = (val) => VerboseLogging = val
 			});
-			subMenu.AddDescription(menu, menuItem, Dialog.Clean("MODOPTIONS_IZUMISQOL_OTHERSETTINGS_VERBOSELOGGING_DESC"));
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OTHERSETTINGS_VERBOSELOGGING_DESC".AsDialog());
 
 			menu.Add(subMenu);
 		}
@@ -467,7 +467,7 @@ namespace Celeste.Mod.izumisQOL
 			if(index > whitelistNames.Count - 1 || index < 0)
 			{
 				Global.Log("index: " + index + " out of bounds for whitelistNames");
-				Tooltip.Add(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTERROR_GETNAME"));
+				Tooltip.Add("MODOPTIONS_IZUMISQOL_WHITELISTERROR_GETNAME".AsDialog());
 				return null;
 			}
 			return whitelistNames[index];
@@ -489,7 +489,7 @@ namespace Celeste.Mod.izumisQOL
 			if (index > whitelistNames.Count - 1 || index < 0)
 			{
 				Global.Log("index: " + index + " out of bounds for whitelistNames");
-				Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTERROR_NAMECHANGE"));
+				Tooltip.Show("MODOPTIONS_IZUMISQOL_WHITELISTERROR_NAMECHANGE".AsDialog());
 				return;
 			}
 			whitelistNames[index] = name;
@@ -510,7 +510,7 @@ namespace Celeste.Mod.izumisQOL
 			if (index > keybindNames.Count - 1 || index < 0)
 			{
 				Global.Log("index: " + index + " out of bounds for keybindNames");
-				Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDERROR_GETNAME"));
+				Tooltip.Show("MODOPTIONS_IZUMISQOL_KEYBINDERROR_GETNAME".AsDialog());
 				return null;
 			}
 			return keybindNames[index];
@@ -521,7 +521,7 @@ namespace Celeste.Mod.izumisQOL
 			if (index > keybindNames.Count - 1 || index < 0)
 			{
 				Global.Log("index: " + index + " out of bounds for keybindNames");
-				Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_KEYBINDERROR_NAMECHANGE"));
+				Tooltip.Show("MODOPTIONS_IZUMISQOL_KEYBINDERROR_NAMECHANGE".AsDialog());
 				return;
 			}
 			keybindNames[index] = name;

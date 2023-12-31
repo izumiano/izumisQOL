@@ -98,7 +98,7 @@ namespace Celeste.Mod.izumisQOL.UI
 
 	public class ToggleableRestartButton : ToggleableButton
 	{
-		private ToggleableRestartButton(string id, bool visibleByDefault = false) : base(Dialog.Clean("MODOPTIONS_IZUMISQOL_RESTART"), id, Dialog.Clean("MODOPTIONS_IZUMISQOL_RESTARTDESC"), visibleByDefault) 
+		private ToggleableRestartButton(string id, bool visibleByDefault = false) : base("MODOPTIONS_IZUMISQOL_RESTART".AsDialog(), id, "MODOPTIONS_IZUMISQOL_RESTARTDESC".AsDialog(), visibleByDefault) 
 		{
 			OnPressed = delegate
 			{

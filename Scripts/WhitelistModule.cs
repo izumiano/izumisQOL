@@ -54,16 +54,16 @@ namespace Celeste.Mod.izumisQOL
 				if (File.Exists(newPath))
 				{
 					Log(newPath + " already exists", LogLevel.Info);
-					Tooltip.Show(newName + " " + Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELIST_EXISTS"));
+					Tooltip.Show(newName + " " + "MODOPTIONS_IZUMISQOL_WHITELIST_EXISTS".AsDialog());
 					return false;
 				}
 				File.Move(whitelistsPath + "/" + origName + ".txt", newPath);
-				Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_IMPORTED1") + " " + newName + " " + Dialog.Clean("MODOPTIONS_IZUMISQOL_IMPORTED2"));
+				Tooltip.Show("MODOPTIONS_IZUMISQOL_IMPORTED1".AsDialog() + " " + newName + " " + "MODOPTIONS_IZUMISQOL_IMPORTED2".AsDialog());
 				return true;
 			}
 			catch (Exception ex)
 			{
-				Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_ERROR_INVALIDCLIPBOARD"));
+				Tooltip.Show("MODOPTIONS_IZUMISQOL_ERROR_INVALIDCLIPBOARD".AsDialog());
 				Log(ex, LogLevel.Warn);
 				return false;
 			}
@@ -100,7 +100,7 @@ namespace Celeste.Mod.izumisQOL
 			{
 				if (!File.Exists(whitelistsPath + "/" + fileName + ".txt"))
 				{
-					Tooltip.Show(fileName + " " + Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTERROR_DOESNOTEXIST"));
+					Tooltip.Show(fileName + " " + "MODOPTIONS_IZUMISQOL_WHITELISTERROR_DOESNOTEXIST".AsDialog());
 					Log(whitelistsPath + "/" + fileName + ".txt" + " does not exist", LogLevel.Info);
 					return;
 				}
@@ -114,7 +114,7 @@ namespace Celeste.Mod.izumisQOL
 				File.WriteAllText(whitelistsPath + "/" + fileName + ".txt", whitelistString);
 				ModSettings.ChangeWhitelistName(index, fileName);
 
-				Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELIST_SAVEDTO") + " " + fileName);
+				Tooltip.Show("MODOPTIONS_IZUMISQOL_WHITELIST_SAVEDTO".AsDialog() + " " + fileName);
 			}
 			catch(Exception ex)
 			{
@@ -129,7 +129,7 @@ namespace Celeste.Mod.izumisQOL
 				if (!File.Exists(whitelistsPath + "/" + name + ".txt"))
 				{
 					Log(whitelistsPath + "/" + name + ".txt" + " does not exist", LogLevel.Info);
-					Tooltip.Show(name + " " + Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTERROR_DOESNOTEXIST"));
+					Tooltip.Show(name + " " + "MODOPTIONS_IZUMISQOL_WHITELISTERROR_DOESNOTEXIST".AsDialog());
 					return false;
 				}
 
@@ -200,7 +200,7 @@ namespace Celeste.Mod.izumisQOL
 			catch(Exception ex)
 			{
 				Log(ex, LogLevel.Warn);
-				Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_WHITELISTERROR_FAILEDWRITE"));
+				Tooltip.Show("MODOPTIONS_IZUMISQOL_WHITELISTERROR_FAILEDWRITE".AsDialog());
 				return false;
 			}
 		}

@@ -81,7 +81,7 @@ namespace Celeste.Mod.izumisQOL
 
 		public override void CreateModMenuSectionKeyBindings(TextMenu menu, bool inGame, EventInstance snapshot)
 		{
-			menu.Add(new TextMenu.Button(Dialog.Clean("options_keyconfig")).Pressed(delegate
+			menu.Add(new TextMenu.Button("options_keyconfig".AsDialog()).Pressed(delegate
 			{
 				menu.Focused = false;
 				Engine.Scene.Add(CreateCustomKeyboardConfigUI(menu));
@@ -90,7 +90,7 @@ namespace Celeste.Mod.izumisQOL
 					Engine.Scene.Entities.UpdateLists();
 				};
 			}));
-			menu.Add(new TextMenu.Button(Dialog.Clean("options_btnconfig")).Pressed(delegate
+			menu.Add(new TextMenu.Button("options_btnconfig".AsDialog()).Pressed(delegate
 			{
 				menu.Focused = false;
 				Engine.Scene.Add(CreateCustomButtonConfigUI(menu));

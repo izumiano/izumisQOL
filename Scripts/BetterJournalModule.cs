@@ -158,7 +158,7 @@ namespace Celeste.Mod.izumisQOL
 			{
 				if (SaveJournalSnapshot())
 				{
-					Tooltip.Show(Dialog.Clean("MODOPTIONS_IZUMISQOL_BETTERJOURNAL_SAVED_TOOLTIP"), position: Tooltip.DisplayPosition.TopLeft);
+					Tooltip.Show("MODOPTIONS_IZUMISQOL_BETTERJOURNAL_SAVED_TOOLTIP".AsDialog(), position: Tooltip.DisplayPosition.TopLeft);
 					JournalSnapshot = null;
 					if (ChangeCurrentJournalDataType(JournalDataType.Default))
 					{
@@ -702,10 +702,10 @@ namespace Celeste.Mod.izumisQOL
 		{
 			return journalDataType switch
 			{
-				JournalDataType.Default => Dialog.Clean("journal_progress"),
-				JournalDataType.SeparateTimes => Dialog.Clean("MODOPTIONS_IZUMISQOL_BETTERJOURNAL_SEPARATEABCSIDE"),
-				JournalDataType.Saved => Dialog.Clean("MODOPTIONS_IZUMISQOL_BETTERJOURNAL_SAVED"),
-				JournalDataType.Difference => Dialog.Clean("MODOPTIONS_IZUMISQOL_BETTERJOURNAL_DIFFERENCE"),
+				JournalDataType.Default => "journal_progress".AsDialog(),
+				JournalDataType.SeparateTimes => "MODOPTIONS_IZUMISQOL_BETTERJOURNAL_SEPARATEABCSIDE".AsDialog(),
+				JournalDataType.Saved => "MODOPTIONS_IZUMISQOL_BETTERJOURNAL_SAVED".AsDialog(),
+				JournalDataType.Difference => "MODOPTIONS_IZUMISQOL_BETTERJOURNAL_DIFFERENCE".AsDialog(),
 				_ => "_ERROR_",
 			};
 		}
@@ -752,7 +752,7 @@ namespace Celeste.Mod.izumisQOL
 			if (!ModSettings.ShowModTimeInJournal)
 				return;
 
-			OuiJournalPage.Row row = table.AddRow().Add(new OuiJournalPage.TextCell(Dialog.Clean("MODOPTIONS_IZUMISQOL_BETTERJOURNAL_MODTOTALS"), new Vector2(1f, 0.5f), 0.7f, journalProgressPage.TextColor))
+			OuiJournalPage.Row row = table.AddRow().Add(new OuiJournalPage.TextCell("MODOPTIONS_IZUMISQOL_BETTERJOURNAL_MODTOTALS".AsDialog(), new Vector2(1f, 0.5f), 0.7f, journalProgressPage.TextColor))
 				.Add(null)
 				.Add(null)
 				.Add(null)

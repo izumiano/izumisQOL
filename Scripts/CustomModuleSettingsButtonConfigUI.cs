@@ -20,7 +20,7 @@ namespace Celeste.Mod.izumisQOL.Menu
 				return;
 			}
 			Clear();
-			Add(new Header(Dialog.Clean("BTN_CONFIG_TITLE")));
+			Add(new Header("BTN_CONFIG_TITLE".AsDialog()));
 			Add(new InputMappingInfo(controllerMode: true));
 			Bindings.Clear();
 			object settings = Module._Settings;
@@ -76,7 +76,7 @@ namespace Celeste.Mod.izumisQOL.Menu
 				}
 			}
 			Add(new SubHeader(""));
-			Add(new Button(Dialog.Clean("KEY_CONFIG_RESET"))
+			Add(new Button("KEY_CONFIG_RESET".AsDialog())
 			{
 				IncludeWidthInMeasurement = false,
 				AlwaysCenter = true,
