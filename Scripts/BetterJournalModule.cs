@@ -213,7 +213,7 @@ namespace Celeste.Mod.izumisQOL
 
 				int lastUnmoddedRow = isCollabUtils2Page ? mapsOnThisCollabUtils2Page + 2 : GetLastUnmoddedRowIndex(rows);
 				int abcSeparation = SeparateABCSideTimes(instance);
-				int rowOffset = 0;
+				int heartsideOffset = 0;
 				for (int i = 1; i < lastUnmoddedRow - 1; i++)
 				{
 					if (isCollabUtils2Page)
@@ -221,15 +221,15 @@ namespace Celeste.Mod.izumisQOL
 						GetInterludeOffset(firstIndexOnPage + i - 1, instance, out AreaStats area, true);
 						if (CollabUtils2Integration.IsHeartSide(AreaData.Get(area).SID))
 						{
-							rowOffset = 1;
+							heartsideOffset = 1;
 						}
 						else
 						{
-							rowOffset = 0;
+							heartsideOffset = 0;
 						}
 					}
 
-					OuiJournalPage.Row row = rows[i + rowOffset]; // go up an additional row if were on the heartside to skip the ui line between regular levels and the heartside
+					OuiJournalPage.Row row = rows[i + heartsideOffset]; // go up an additional row if were on the heartside to skip the ui line between regular levels and the heartside
 					InitializeColumns(row);
 					List<OuiJournalPage.Cell> entries = row.Entries;
 					try
@@ -840,6 +840,7 @@ namespace Celeste.Mod.izumisQOL
 			}
 
 			areaStats.ForEach(area => customAreaStats.Add(new CustomAreaStats(area.Modes)));
+			areaStats.ForEach(area => area.SID.Log());
 
 			string levelSet = areaStats[0].LevelSet.Replace("/", "").Replace("\n", "");
 			string path = journalStatsPath + instance.FileSlot + "_" + levelSet + ".txt";

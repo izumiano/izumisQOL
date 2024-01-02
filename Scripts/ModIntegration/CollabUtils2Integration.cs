@@ -60,17 +60,13 @@ namespace Celeste.Mod.izumisQOL.ModIntegration
 			List<AreaStats> areaStats = new();
 			string journalLevelSet = (journal.Overworld == null) ? null : new DynData<Overworld>(journal.Overworld).Get<AreaData>("collabInGameForcedArea").LevelSet;
 
-			foreach (LevelSetStats levelSet1 in instance.LevelSets)
+			LevelSetStats levelSet = instance.GetLevelSetStatsFor(journalLevelSet);
+
+			if(levelSet.Areas.TrueForAll(area => area.SID != "SpringCollab2020/5-Grandmaster/ZZ-NewHeartSide"))
 			{
-				foreach (AreaStats areaStat in levelSet1.Areas)
-				{
-					if (areaStat.LevelSet == journalLevelSet)
-					{
-						areaStats.Add(areaStat);
-					}
-				}
+				return levelSet.Areas;
 			}
-			return areaStats;
+			return levelSet.Areas.Where(area => area.SID != "SpringCollab2020/5-Grandmaster/ZZ-HeartSide").ToList();
 		}
 
 		public static List<AreaStats> GetSortedCollabAreaStats(SaveData instance, OuiJournal journal)
