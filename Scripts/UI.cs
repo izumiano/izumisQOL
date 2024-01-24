@@ -116,4 +116,20 @@ namespace Celeste.Mod.izumisQOL.UI
 			return btn;
 		}
 	}
+
+	public class DisableableButton : TextMenu.Button
+	{
+		Func<bool> shouldDisable;
+
+		public DisableableButton(string label, Func<bool> shouldDisable) : base(label) 
+		{
+			this.shouldDisable = shouldDisable;
+		}
+
+		public override void Update()
+		{
+			base.Update();
+			Disabled = shouldDisable();
+		}
+	}
 }

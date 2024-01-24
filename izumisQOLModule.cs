@@ -41,7 +41,7 @@ namespace Celeste.Mod.izumisQOL
 
 			if (ModSettings is not null && ModSettings.ConnectToOBSWebsocketsOnStartup)
 			{
-				OBSIntegration.Connect();
+				OBSIntegration.Connect(true);
 			}
 		}
 

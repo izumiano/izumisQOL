@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using OBSWebsocketDotNet;
 using OBSWebsocketDotNet.Communication;
 using OBSWebsocketDotNet.Types;
+using On.Monocle;
 
 namespace Celeste.Mod.izumisQOL.OBS
 {
@@ -92,6 +95,11 @@ namespace Celeste.Mod.izumisQOL.OBS
 			1_200_000,
 		};
 
+		public static string HostPort = "localhost:4455";
+		public static string Password = "";
+
+		private static bool isFromLaunch = false;
+
 		private static Task ObsPollTask;
 
 		public static void Update()
@@ -103,15 +111,17 @@ namespace Celeste.Mod.izumisQOL.OBS
 			ObsPollTask = PollOBSForState();
 		}
 
-		public static void Connect()
+		public static void Connect(bool fromLaunch = false)
 		{
 			socket ??= new();
+
+			isFromLaunch = fromLaunch;
 
 			if (!socket.IsConnected)
 			{
 				try
 				{
-					socket.ConnectAsync("ws://127.0.0.1:4455", "");
+					socket.ConnectAsync("ws://" + HostPort, Password);
 					socket.Connected += OnConnect;
 					socket.Disconnected += OnDisconnect;
 					socket.RecordStateChanged += OnRecordStateChange;
@@ -127,6 +137,7 @@ namespace Celeste.Mod.izumisQOL.OBS
 
 		private static void OnConnect(object sender, EventArgs ev)
 		{
+			if(!isFromLaunch) Tooltip.Show("Connected!");
 			IsConnected = true;
 		}
 
@@ -153,7 +164,7 @@ namespace Celeste.Mod.izumisQOL.OBS
 
 		private static void OnDisconnect(object sender, ObsDisconnectionInfo ev)
 		{
-			Log("disconnected from obs websockets");
+			if (!IsConnected) Tooltip.Show("Failed Connecting To OBS-Websockets");
 			socket = null;
 			IsConnected = false;
 			IsRecording = false;
@@ -246,6 +257,17 @@ namespace Celeste.Mod.izumisQOL.OBS
 		{
 			recordingStatusCancellationToken?.Cancel();
 			streamingStatusCancellationToken?.Cancel();
+		}
+
+		public static IEnumerator OnMainMenuEnter(On.Celeste.OuiMainMenu.orig_Enter orig, OuiMainMenu self, Oui from)
+		{
+			yield return orig(self, from);
+
+			if (isFromLaunch)
+			{
+				Tooltip.Show(IsConnected ? "Connected To OBS-Websockets" : "Failed Connecting To OBS-Websockets");
+				isFromLaunch = false;
+			}
 		}
 	}
 }

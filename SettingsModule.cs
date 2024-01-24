@@ -97,6 +97,31 @@ namespace Celeste.Mod.izumisQOL
 		public bool CheckStreamingStatus = false;
 		public int PollFrequencyIndex = 4;
 
+		[SettingIgnore]
+		public string OBSHostPort
+		{
+			get
+			{
+				return OBSIntegration.HostPort;
+			}
+			set
+			{
+				OBSIntegration.HostPort = value.Replace("ws://", "");
+			}
+		}
+		[SettingIgnore]
+		public string OBSPassword
+		{
+			get
+			{
+				return OBSIntegration.Password;
+			}
+			set
+			{
+				OBSIntegration.Password = value;
+			}
+		}
+
 		// Other settings
 		public bool ShowRestartButtonInMainMenu { get; set; } = false;
 
@@ -451,13 +476,15 @@ namespace Celeste.Mod.izumisQOL
 					}
 				}
 			});
+			subMenu.AddDescription(menu, menuItem, "Whether OBS Websockets are enabled or not.");
 
-			subMenu.Add(menuItem = new TextMenu.Button("Connect")
+			subMenu.Add(menuItem = new DisableableButton("Connect", () => OBSIntegration.IsConnected)
 			{
 				OnPressed = () =>
 				{
 					if (OBSWebsocketsEnabled)
 					{
+						Tooltip.Show("Waiting...");
 						OBSIntegration.Connect();
 					}
 					else
@@ -466,26 +493,54 @@ namespace Celeste.Mod.izumisQOL
 					}
 				}
 			});
+			subMenu.AddDescription(menu, menuItem, "Connect to the host.");
 
-			subMenu.Add(menuItem = new TextMenu.Button("Disconnect")
+			subMenu.Add(menuItem = new DisableableButton("Disconnect", () => !OBSIntegration.IsConnected)
 			{
 				OnPressed = OBSIntegration.Disconnect
 			});
+			subMenu.AddDescription(menu, menuItem, "Disconnect from the host.");
+
+			subMenu.Add(menuItem = new TextMenu.Button("Import host:port from clipboard")
+			{
+				OnPressed = () =>
+				{
+					string clipboardText = TextInput.GetClipboardText();
+					if (string.IsNullOrEmpty(clipboardText))
+					{
+						Tooltip.Show("Invalid Text In Clipboard");
+					}
+					else
+					{
+						OBSHostPort = clipboardText;
+					}
+				}
+			});
+			subMenu.AddDescription(menu, menuItem, "Your host and port. Default is \"localhost:4455\"");
+
+			subMenu.Add(menuItem = new TextMenu.Button("Import password from clipboard")
+			{
+				OnPressed = () => OBSPassword = TextInput.GetClipboardText()
+			});
+			subMenu.AddDescription(menu, menuItem, "Your server password. Leave this empty if authentiation is disabled.");
 
 			subMenu.Add(menuItem = new TextMenu.OnOff("Connect On Startup", ConnectToOBSWebsocketsOnStartup)
 			{
 				OnValueChange = (bool val) => ConnectToOBSWebsocketsOnStartup = val
 			});
+			subMenu.AddDescription(menu, menuItem, "Whether the game should automatically connect to the host on startup.");
 
 			subMenu.Add(menuItem = new TextMenu.OnOff("Check Recording Status", CheckRecordingStatus)
 			{
 				OnValueChange = (bool val) => CheckRecordingStatus = val
 			});
+			subMenu.AddDescription(menu, menuItem, "Whether the game should check if you are recording in OBS.");
 
 			subMenu.Add(menuItem = new TextMenu.OnOff("Check Streaming Status", CheckStreamingStatus)
 			{
 				OnValueChange = (bool val) => CheckStreamingStatus = val
 			});
+			subMenu.AddDescription(menu, menuItem, "Whether the game should check if you are streaming in OBS.");
 
 			subMenu.Add(menuItem = new TextMenu.Slider("Check Status Every", (int index) => OBSIntegration.PollFrequencyText[index], 0,
 				OBSIntegration.PollFrequencyText.Length - 1, PollFrequencyIndex)
@@ -496,6 +551,7 @@ namespace Celeste.Mod.izumisQOL
 					OBSIntegration.CancelOBSPoll();
 				}
 			});
+			subMenu.AddDescription(menu, menuItem, "How often the game should check if you are recording/streaming in OBS if enabled.");
 
 			menu.Add(subMenu);
 		}

@@ -18,6 +18,7 @@ namespace Celeste.Mod.izumisQOL
 			On.Celeste.OuiJournal.Close += BetterJournalModule.OnJournalClose;
 			Everest.Events.MainMenu.OnCreateButtons += UI.General.OnCreateButtons;
 			Everest.Events.Level.OnLoadLevel += RecordingIndicator.OnLevelLoad;
+			On.Celeste.OuiMainMenu.Enter += OBSIntegration.OnMainMenuEnter;
 
 			KeybindModule.Load();
 			BetterJournalModule.Load();
@@ -33,6 +34,7 @@ namespace Celeste.Mod.izumisQOL
 			On.Celeste.OuiJournal.Close -= BetterJournalModule.OnJournalClose;
 			Everest.Events.MainMenu.OnCreateButtons -= UI.General.OnCreateButtons;
 			Everest.Events.Level.OnLoadLevel -= RecordingIndicator.OnLevelLoad;
+			On.Celeste.OuiMainMenu.Enter -= OBSIntegration.OnMainMenuEnter;
 
 			ModSettings.ButtonsSwapKeybinds.Clear();
 		}
