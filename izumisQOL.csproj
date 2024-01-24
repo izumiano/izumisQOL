@@ -19,6 +19,7 @@
 		<PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.1" PrivateAssets="all" />
 		<PackageReference Include="MonoMod.RuntimeDetour" Version="25.0.2" PrivateAssets="all" ExcludeAssets="runtime" />
 		<PackageReference Include="MonoMod.Patcher" Version="25.0.0-prerelease.2" />
+		<PackageReference Include="obs-websocket-dotnet" Version="5.0.0.3" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -38,8 +39,8 @@
 	</ItemGroup>
 
 	<Target Name="CopyFiles" AfterTargets="Build">
-		<Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll" DestinationFolder="..\bin" />
-		<Copy SourceFiles="$(OutputPath)\$(AssemblyName).pdb" DestinationFolder="..\bin" />
+		<Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll" DestinationFolder="bin" />
+		<Copy SourceFiles="$(OutputPath)\$(AssemblyName).pdb" DestinationFolder="bin" />
 	</Target>
 
 	<PropertyGroup>

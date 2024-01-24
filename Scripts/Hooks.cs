@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Monocle;
-using Celeste.Mod.izumisQOL.ModIntegration;
+using Celeste.Mod.izumisQOL.OBS;
 
 using System.Collections.Generic;
 
@@ -17,6 +17,8 @@ namespace Celeste.Mod.izumisQOL
 			Everest.Events.Journal.OnEnter += BetterJournalModule.OnJournalEnter;
 			On.Celeste.OuiJournal.Close += BetterJournalModule.OnJournalClose;
 			Everest.Events.MainMenu.OnCreateButtons += UI.General.OnCreateButtons;
+			//On.Monocle.Scene.Begin += RecordingIndicator.OnSceneBegin;
+			Everest.Events.Level.OnLoadLevel += RecordingIndicator.OnLevelLoad;
 
 			KeybindModule.Load();
 			BetterJournalModule.Load();
@@ -41,6 +43,7 @@ namespace Celeste.Mod.izumisQOL
 
 			KeybindModule.Update();
 			GamepadPauser.Update();
+			OBSIntegration.Update();
 		}
 	}
 }

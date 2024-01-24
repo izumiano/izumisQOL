@@ -8,6 +8,7 @@ using Monocle;
 using Celeste.Mod.izumisQOL.Menu;
 using Microsoft.Xna.Framework;
 using Celeste.Mod.izumisQOL.UI;
+using Celeste.Mod.izumisQOL.OBS;
 
 namespace Celeste.Mod.izumisQOL
 {
@@ -88,6 +89,8 @@ namespace Celeste.Mod.izumisQOL
 		// GamepadPauser settings
 		public bool GamepadPauserEnabled { get; set; } = false;
 		public int PauseAfterFramesGamepadInactive = 10;
+
+		public bool OBSWebsocketsEnabled { get; set; } = false;
 
 		// Other settings
 		public bool ShowRestartButtonInMainMenu { get; set; } = false;
@@ -423,6 +426,46 @@ namespace Celeste.Mod.izumisQOL
 				OnValueChange = (int val) => PauseAfterFramesGamepadInactive = val
 			});
 			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_PAUSEFRAMESINACTIVE_DESC".AsDialog());
+
+			menu.Add(subMenu);
+		}
+
+		public void CreateOBSWebsocketsEnabledEntry(TextMenu menu, bool inGame)
+		{
+			TextMenuExt.SubMenu subMenu = new("OBS Websocket Settings", false);
+			TextMenu.Item menuItem;
+
+			subMenu.Add(menuItem = new TextMenu.OnOff("OBS Websockets Enabled", OBSWebsocketsEnabled)
+			{
+				OnValueChange = (bool val) =>
+				{
+					OBSWebsocketsEnabled = val;
+					if (!OBSWebsocketsEnabled)
+					{
+						OBSIntegration.Disconnect();
+					}
+				}
+			});
+
+			subMenu.Add(menuItem = new TextMenu.Button("Connect")
+			{
+				OnPressed = () =>
+				{
+					if (OBSWebsocketsEnabled)
+					{
+						OBSIntegration.Connect();
+					}
+					else
+					{
+						Tooltip.Show("Websockets are not enabled");
+					}
+				}
+			});
+
+			subMenu.Add(menuItem = new TextMenu.Button("Disconnect")
+			{
+				OnPressed = OBSIntegration.Disconnect
+			});
 
 			menu.Add(subMenu);
 		}

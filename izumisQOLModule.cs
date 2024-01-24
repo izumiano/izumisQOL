@@ -5,6 +5,7 @@ using Monocle;
 using FMOD.Studio;
 using Celeste.Mod.izumisQOL.Menu;
 using Celeste.Mod.izumisQOL.ModIntegration;
+using Celeste.Mod.izumisQOL.OBS;
 
 namespace Celeste.Mod.izumisQOL
 {
@@ -42,7 +43,6 @@ namespace Celeste.Mod.izumisQOL
 		// Optional, initialize anything after Celeste has initialized itself properly.
 		public override void Initialize()
 		{
-
 		}
 
 		// Optional, do anything requiring either the Celeste or mod content here.
