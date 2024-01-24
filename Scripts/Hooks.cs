@@ -17,7 +17,6 @@ namespace Celeste.Mod.izumisQOL
 			Everest.Events.Journal.OnEnter += BetterJournalModule.OnJournalEnter;
 			On.Celeste.OuiJournal.Close += BetterJournalModule.OnJournalClose;
 			Everest.Events.MainMenu.OnCreateButtons += UI.General.OnCreateButtons;
-			//On.Monocle.Scene.Begin += RecordingIndicator.OnSceneBegin;
 			Everest.Events.Level.OnLoadLevel += RecordingIndicator.OnLevelLoad;
 
 			KeybindModule.Load();
@@ -33,6 +32,7 @@ namespace Celeste.Mod.izumisQOL
 			Everest.Events.Journal.OnEnter -= BetterJournalModule.OnJournalEnter;
 			On.Celeste.OuiJournal.Close -= BetterJournalModule.OnJournalClose;
 			Everest.Events.MainMenu.OnCreateButtons -= UI.General.OnCreateButtons;
+			Everest.Events.Level.OnLoadLevel -= RecordingIndicator.OnLevelLoad;
 
 			ModSettings.ButtonsSwapKeybinds.Clear();
 		}

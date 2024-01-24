@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Monocle;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace Celeste.Mod.izumisQOL.OBS
 {
@@ -33,7 +32,7 @@ namespace Celeste.Mod.izumisQOL.OBS
 		{
 			base.Render();
 
-			if (OBSIntegration.IsRecording)
+			if (OBSIntegration.IsRecording || OBSIntegration.IsStreaming)
 			{
 				texture.Draw(Position);
 			}

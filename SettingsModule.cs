@@ -90,7 +90,12 @@ namespace Celeste.Mod.izumisQOL
 		public bool GamepadPauserEnabled { get; set; } = false;
 		public int PauseAfterFramesGamepadInactive = 10;
 
+		// OBS Websocket settings
 		public bool OBSWebsocketsEnabled { get; set; } = false;
+		public bool ConnectToOBSWebsocketsOnStartup = false;
+		public bool CheckRecordingStatus = false;
+		public bool CheckStreamingStatus = false;
+		public int PollFrequencyIndex = 4;
 
 		// Other settings
 		public bool ShowRestartButtonInMainMenu { get; set; } = false;
@@ -465,6 +470,31 @@ namespace Celeste.Mod.izumisQOL
 			subMenu.Add(menuItem = new TextMenu.Button("Disconnect")
 			{
 				OnPressed = OBSIntegration.Disconnect
+			});
+
+			subMenu.Add(menuItem = new TextMenu.OnOff("Connect On Startup", ConnectToOBSWebsocketsOnStartup)
+			{
+				OnValueChange = (bool val) => ConnectToOBSWebsocketsOnStartup = val
+			});
+
+			subMenu.Add(menuItem = new TextMenu.OnOff("Check Recording Status", CheckRecordingStatus)
+			{
+				OnValueChange = (bool val) => CheckRecordingStatus = val
+			});
+
+			subMenu.Add(menuItem = new TextMenu.OnOff("Check Streaming Status", CheckStreamingStatus)
+			{
+				OnValueChange = (bool val) => CheckStreamingStatus = val
+			});
+
+			subMenu.Add(menuItem = new TextMenu.Slider("Check Status Every", (int index) => OBSIntegration.PollFrequencyText[index], 0,
+				OBSIntegration.PollFrequencyText.Length - 1, PollFrequencyIndex)
+			{
+				OnValueChange = (int val) =>
+				{
+					PollFrequencyIndex = val;
+					OBSIntegration.CancelOBSPoll();
+				}
 			});
 
 			menu.Add(subMenu);
