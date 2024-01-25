@@ -30,7 +30,7 @@ public class Global
 		var className = methodInfo.ReflectedType.Name;
 		var methodName = methodInfo.Name;
 
-		Logger.Log(logLevel == LogLevel.Error ? LogLevel.Error : LogLevel.Debug, "izumisQOL/" + className + "/" + methodName, log);
+		Logger.Log(logLevel, "izumisQOL/" + className + "/" + methodName, log);
 #else
 		Logger.Log(logLevel, "izumisQOL", log);
 #endif

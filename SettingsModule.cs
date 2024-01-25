@@ -93,6 +93,7 @@ namespace Celeste.Mod.izumisQOL
 		// OBS Websocket settings
 		public bool OBSWebsocketsEnabled { get; set; } = false;
 		public bool ConnectToOBSWebsocketsOnStartup = false;
+		public RecordingIndicator.DisplayType ShowRecordingIndicatorWhen = RecordingIndicator.DisplayType.WhenNotRecording;
 		public bool CheckRecordingStatus = false;
 		public bool CheckStreamingStatus = false;
 		public int PollFrequencyIndex = 4;
@@ -484,7 +485,6 @@ namespace Celeste.Mod.izumisQOL
 				{
 					if (OBSWebsocketsEnabled)
 					{
-						Tooltip.Show("Waiting...");
 						OBSIntegration.Connect();
 					}
 					else
@@ -529,6 +529,14 @@ namespace Celeste.Mod.izumisQOL
 				OnValueChange = (bool val) => ConnectToOBSWebsocketsOnStartup = val
 			});
 			subMenu.AddDescription(menu, menuItem, "Whether the game should automatically connect to the host on startup.");
+
+			subMenu.Add(menuItem = new TextMenu.Slider("Show Indicator When", (int index) => 
+			new string[] { "Recording/Streaming", "Not Recording/Streaming", "Either" }[index], 
+				0, 2, (int)ShowRecordingIndicatorWhen)
+			{
+				OnValueChange = (int val) => ShowRecordingIndicatorWhen = (RecordingIndicator.DisplayType)val
+			});
+			subMenu.AddDescription(menu, menuItem, "Whether the indicator should be shown when recording/streaming or when not recording/streaming");
 
 			subMenu.Add(menuItem = new TextMenu.OnOff("Check Recording Status", CheckRecordingStatus)
 			{

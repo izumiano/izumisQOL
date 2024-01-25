@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using OBSWebsocketDotNet;
 using OBSWebsocketDotNet.Communication;
 using OBSWebsocketDotNet.Types;
-using On.Monocle;
 
 namespace Celeste.Mod.izumisQOL.OBS
 {
@@ -121,6 +119,7 @@ namespace Celeste.Mod.izumisQOL.OBS
 			{
 				try
 				{
+					Tooltip.Show("Waiting...");
 					socket.ConnectAsync("ws://" + HostPort, Password);
 					socket.Connected += OnConnect;
 					socket.Disconnected += OnDisconnect;
@@ -265,7 +264,7 @@ namespace Celeste.Mod.izumisQOL.OBS
 
 			if (isFromLaunch)
 			{
-				Tooltip.Show(IsConnected ? "Connected To OBS-Websockets" : "Failed Connecting To OBS-Websockets");
+				if(ModSettings.ConnectToOBSWebsocketsOnStartup) Tooltip.Show(IsConnected ? "Connected To OBS-Websockets" : "Failed Connecting To OBS-Websockets");
 				isFromLaunch = false;
 			}
 		}
