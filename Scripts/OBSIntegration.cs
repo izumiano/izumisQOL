@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
+using Celeste.Mod.izumisQOL.UI;
+using Monocle;
 using OBSWebsocketDotNet;
 using OBSWebsocketDotNet.Communication;
 using OBSWebsocketDotNet.Types;
@@ -119,7 +121,7 @@ namespace Celeste.Mod.izumisQOL.OBS
 			{
 				try
 				{
-					Tooltip.Show("Waiting...");
+					Tooltip.Show("Connecting...");
 					socket.ConnectAsync("ws://" + HostPort, Password);
 					socket.Connected += OnConnect;
 					socket.Disconnected += OnDisconnect;
@@ -136,7 +138,7 @@ namespace Celeste.Mod.izumisQOL.OBS
 
 		private static void OnConnect(object sender, EventArgs ev)
 		{
-			if(!isFromLaunch) Tooltip.Show("Connected!");
+			if(!isFromLaunch) Tooltip.Show("Connected to OBS!");
 			IsConnected = true;
 		}
 
@@ -163,7 +165,7 @@ namespace Celeste.Mod.izumisQOL.OBS
 
 		private static void OnDisconnect(object sender, ObsDisconnectionInfo ev)
 		{
-			if (!IsConnected) Tooltip.Show("Failed Connecting To OBS-Websockets");
+			if (!IsConnected) Tooltip.Show("Failed Connecting To OBS");
 			socket = null;
 			IsConnected = false;
 			IsRecording = false;
@@ -256,17 +258,6 @@ namespace Celeste.Mod.izumisQOL.OBS
 		{
 			recordingStatusCancellationToken?.Cancel();
 			streamingStatusCancellationToken?.Cancel();
-		}
-
-		public static IEnumerator OnMainMenuEnter(On.Celeste.OuiMainMenu.orig_Enter orig, OuiMainMenu self, Oui from)
-		{
-			yield return orig(self, from);
-
-			if (isFromLaunch)
-			{
-				if(ModSettings.ConnectToOBSWebsocketsOnStartup) Tooltip.Show(IsConnected ? "Connected To OBS-Websockets" : "Failed Connecting To OBS-Websockets");
-				isFromLaunch = false;
-			}
 		}
 	}
 }
