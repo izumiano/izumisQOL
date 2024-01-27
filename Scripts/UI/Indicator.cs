@@ -109,7 +109,7 @@ namespace Celeste.Mod.izumisQOL.UI
 		{
 			get
 			{
-				if(!Global.ModSettings.OBSWebsocketsEnabled) return false;
+				if(!Global.ModSettings.OBSIntegrationEnabled) return false;
 
 				return Global.ModSettings.ShowRecordingIndicatorWhen switch
 				{
@@ -148,6 +148,6 @@ namespace Celeste.Mod.izumisQOL.UI
 
 	public class OBSDisconnectedIndicator : Indicator
 	{
-		public OBSDisconnectedIndicator() : base("disconnectedIndicator", () => !OBSIntegration.IsConnected && Global.ModSettings.OBSWebsocketsEnabled) { }
+		public OBSDisconnectedIndicator() : base("disconnectedIndicator", () => !OBSIntegration.IsConnected && Global.ModSettings.OBSIntegrationEnabled) { }
 	}
 }

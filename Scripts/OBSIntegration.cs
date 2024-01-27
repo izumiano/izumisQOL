@@ -104,7 +104,7 @@ namespace Celeste.Mod.izumisQOL.OBS
 
 		public static void Update()
 		{
-			if (!ModSettings.OBSWebsocketsEnabled || !IsConnected) return;
+			if (!ModSettings.OBSIntegrationEnabled || !IsConnected) return;
 
 			if (ObsPollTask is not null && !ObsPollTask.IsCompleted) return;
 

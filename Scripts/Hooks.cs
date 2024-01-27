@@ -20,7 +20,6 @@ namespace Celeste.Mod.izumisQOL
 			Everest.Events.MainMenu.OnCreateButtons += UI.General.OnCreateButtons;
 			On.Monocle.Scene.Begin += Indicator.OnSceneBegin;
 			On.Monocle.Scene.End += Indicator.OnSceneEnd;
-			//On.Celeste.OuiMainMenu.Enter += OBSIntegration.OnMainMenuEnter;
 
 			KeybindModule.Load();
 			BetterJournalModule.Load();
@@ -37,7 +36,6 @@ namespace Celeste.Mod.izumisQOL
 			Everest.Events.MainMenu.OnCreateButtons -= UI.General.OnCreateButtons;
 			On.Monocle.Scene.Begin -= Indicator.OnSceneBegin;
 			On.Monocle.Scene.End -= Indicator.OnSceneEnd;
-			//On.Celeste.OuiMainMenu.Enter -= OBSIntegration.OnMainMenuEnter;
 
 			ModSettings.ButtonsSwapKeybinds.Clear();
 		}

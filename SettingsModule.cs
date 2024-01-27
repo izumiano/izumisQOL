@@ -91,7 +91,7 @@ namespace Celeste.Mod.izumisQOL
 		public int PauseAfterFramesGamepadInactive = 10;
 
 		// OBS Websocket settings
-		public bool OBSWebsocketsEnabled { get; set; } = false;
+		public bool OBSIntegrationEnabled { get; set; } = false;
 		public bool ConnectToOBSWebsocketsOnStartup = false;
 		public OBSRecordingIndicator.DisplayType ShowRecordingIndicatorWhen = OBSRecordingIndicator.DisplayType.WhenNotRecording;
 		public bool CheckRecordingStatus = false;
@@ -463,37 +463,37 @@ namespace Celeste.Mod.izumisQOL
 
 		public void CreateOBSWebsocketsEnabledEntry(TextMenu menu, bool inGame)
 		{
-			TextMenuExt.SubMenu subMenu = new("OBS Websocket Settings", false);
+			TextMenuExt.SubMenu subMenu = new("OBS Integration Settings", false);
 			TextMenu.Item menuItem;
 
-			subMenu.Add(menuItem = new TextMenu.OnOff("OBS Websockets Enabled", OBSWebsocketsEnabled)
+			subMenu.Add(menuItem = new TextMenu.OnOff("OBS Integration Enabled", OBSIntegrationEnabled)
 			{
 				OnValueChange = (bool val) =>
 				{
-					OBSWebsocketsEnabled = val;
-					if (!OBSWebsocketsEnabled)
+					OBSIntegrationEnabled = val;
+					if (!OBSIntegrationEnabled)
 					{
 						OBSIntegration.Disconnect();
 					}
 				}
 			});
-			subMenu.AddDescription(menu, menuItem, "Whether OBS Websockets are enabled or not.");
+			subMenu.AddDescription(menu, menuItem, "Whether OBS integration is enabled or not.");
 
 			subMenu.Add(menuItem = new DisableableButton("Connect", () => OBSIntegration.IsConnected)
 			{
 				OnPressed = () =>
 				{
-					if (OBSWebsocketsEnabled)
+					if (OBSIntegrationEnabled)
 					{
 						OBSIntegration.Connect();
 					}
 					else
 					{
-						Tooltip.Show("Websockets are not enabled");
+						Tooltip.Show("OBS integration is not enabled");
 					}
 				}
 			});
-			subMenu.AddDescription(menu, menuItem, "Connect to the host.");
+			subMenu.AddDescription(menu, menuItem, "Connect to the host. \nNote: To be able to connect to OBS you need to have OBS-WebSockets enabled\nwhich you can do in OBS by going to\nTools->WebSocket Server Settings->Enable WebSocket Server");
 
 			subMenu.Add(menuItem = new DisableableButton("Disconnect", () => !OBSIntegration.IsConnected)
 			{
@@ -522,7 +522,7 @@ namespace Celeste.Mod.izumisQOL
 			{
 				OnPressed = () => OBSPassword = TextInput.GetClipboardText()
 			});
-			subMenu.AddDescription(menu, menuItem, "Your server password. Leave this empty if authentiation is disabled.");
+			subMenu.AddDescription(menu, menuItem, "Your OBS-WebSocket server password. Leave this empty if authentiation is disabled.");
 
 			subMenu.Add(menuItem = new TextMenu.OnOff("Connect On Startup", ConnectToOBSWebsocketsOnStartup)
 			{
@@ -559,7 +559,7 @@ namespace Celeste.Mod.izumisQOL
 					OBSIntegration.CancelOBSPoll();
 				}
 			});
-			subMenu.AddDescription(menu, menuItem, "How often the game should check if you are recording/streaming in OBS if enabled.");
+			subMenu.AddDescription(menu, menuItem, "How often the game should check if you are recording/streaming in OBS.");
 
 			menu.Add(subMenu);
 		}
