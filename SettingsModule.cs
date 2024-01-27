@@ -461,12 +461,12 @@ namespace Celeste.Mod.izumisQOL
 			menu.Add(subMenu);
 		}
 
-		public void CreateOBSWebsocketsEnabledEntry(TextMenu menu, bool inGame)
+		public void CreateOBSIntegrationEnabledEntry(TextMenu menu, bool inGame)
 		{
-			TextMenuExt.SubMenu subMenu = new("OBS Integration Settings", false);
+			TextMenuExt.SubMenu subMenu = new("MODOPTIONS_IZUMISQOL_OBSSETTINGS_OBSSETTINGS".AsDialog(), false);
 			TextMenu.Item menuItem;
 
-			subMenu.Add(menuItem = new TextMenu.OnOff("OBS Integration Enabled", OBSIntegrationEnabled)
+			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_OBSSETTINGS_INTEGRATIONENABLED".AsDialog(), OBSIntegrationEnabled)
 			{
 				OnValueChange = (bool val) =>
 				{
@@ -477,9 +477,9 @@ namespace Celeste.Mod.izumisQOL
 					}
 				}
 			});
-			subMenu.AddDescription(menu, menuItem, "Whether OBS integration is enabled or not.");
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_INTEGRATIONENABLED_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new DisableableButton("Connect", () => OBSIntegration.IsConnected)
+			subMenu.Add(menuItem = new DisableableButton("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CONNECT".AsDialog(), () => OBSIntegration.IsConnected)
 			{
 				OnPressed = () =>
 				{
@@ -489,26 +489,26 @@ namespace Celeste.Mod.izumisQOL
 					}
 					else
 					{
-						Tooltip.Show("OBS integration is not enabled");
+						Tooltip.Show("MODOPTIONS_IZUMISQOL_OBSSETTINGS_INTEGRATIONDISABLED_TOOLTIP".AsDialog());
 					}
 				}
 			});
-			subMenu.AddDescription(menu, menuItem, "Connect to the host. \nNote: To be able to connect to OBS you need to have OBS-WebSockets enabled\nwhich you can do in OBS by going to\nTools->WebSocket Server Settings->Enable WebSocket Server");
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CONNECT_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new DisableableButton("Disconnect", () => !OBSIntegration.IsConnected)
+			subMenu.Add(menuItem = new DisableableButton("MODOPTIONS_IZUMISQOL_OBSSETTINGS_DISCONNECT".AsDialog(), () => !OBSIntegration.IsConnected)
 			{
 				OnPressed = OBSIntegration.Disconnect
 			});
-			subMenu.AddDescription(menu, menuItem, "Disconnect from the host.");
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_DISCONNECT_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new TextMenu.Button("Import host:port from clipboard")
+			subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTHOSTPORT".AsDialog())
 			{
 				OnPressed = () =>
 				{
 					string clipboardText = TextInput.GetClipboardText();
 					if (string.IsNullOrEmpty(clipboardText))
 					{
-						Tooltip.Show("Invalid Text In Clipboard");
+						Tooltip.Show("MODOPTIONS_IZUMISQOL_OBSSETTINGS_INVALIDCLIPBOARD_TOOLTIP".AsDialog());
 					}
 					else
 					{
@@ -516,41 +516,45 @@ namespace Celeste.Mod.izumisQOL
 					}
 				}
 			});
-			subMenu.AddDescription(menu, menuItem, "Your host and port. Default is \"localhost:4455\"");
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTHOSTPORT_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new TextMenu.Button("Import password from clipboard")
+			subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTPASSWORD".AsDialog())
 			{
 				OnPressed = () => OBSPassword = TextInput.GetClipboardText()
 			});
-			subMenu.AddDescription(menu, menuItem, "Your OBS-WebSocket server password. Leave this empty if authentiation is disabled.");
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTPASSWORD_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new TextMenu.OnOff("Connect On Startup", ConnectToOBSWebsocketsOnStartup)
+			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CONNECTSTARTUP".AsDialog(), ConnectToOBSWebsocketsOnStartup)
 			{
 				OnValueChange = (bool val) => ConnectToOBSWebsocketsOnStartup = val
 			});
-			subMenu.AddDescription(menu, menuItem, "Whether the game should automatically connect to the host on startup.");
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CONNECTSTARTUP_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new TextMenu.Slider("Show Indicator When", (int index) => 
-			new string[] { "Recording/Streaming", "Not Recording/Streaming", "Either" }[index], 
+			subMenu.Add(menuItem = new TextMenu.Slider("MODOPTIONS_IZUMISQOL_OBSSETTINGS_SHOWINDICATOR".AsDialog(), (int index) => 
+			new string[] { 
+				"MODOPTIONS_IZUMISQOL_OBSSETTINGS_SHOWINDICATOR_1".AsDialog(), 
+				"MODOPTIONS_IZUMISQOL_OBSSETTINGS_SHOWINDICATOR_2".AsDialog(),
+				"MODOPTIONS_IZUMISQOL_OBSSETTINGS_SHOWINDICATOR_3".AsDialog()
+			}[index], 
 				0, 2, (int)ShowRecordingIndicatorWhen)
 			{
 				OnValueChange = (int val) => ShowRecordingIndicatorWhen = (OBSRecordingIndicator.DisplayType)val
 			});
-			subMenu.AddDescription(menu, menuItem, "Whether the indicator should be shown when recording/streaming or when not recording/streaming");
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_SHOWINDICATOR_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new TextMenu.OnOff("Check Recording Status", CheckRecordingStatus)
+			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKRECORD".AsDialog(), CheckRecordingStatus)
 			{
 				OnValueChange = (bool val) => CheckRecordingStatus = val
 			});
-			subMenu.AddDescription(menu, menuItem, "Whether the game should check if you are recording in OBS.");
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKRECORD_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new TextMenu.OnOff("Check Streaming Status", CheckStreamingStatus)
+			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKSTREAM".AsDialog(), CheckStreamingStatus)
 			{
 				OnValueChange = (bool val) => CheckStreamingStatus = val
 			});
-			subMenu.AddDescription(menu, menuItem, "Whether the game should check if you are streaming in OBS.");
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKSTREAM_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new TextMenu.Slider("Check Status Every", (int index) => OBSIntegration.PollFrequencyText[index], 0,
+			subMenu.Add(menuItem = new TextMenu.Slider("MODOPTIONS_IZUMISQOL_OBSSETTINGS_STATUSFREQUENCY".AsDialog(), (int index) => OBSIntegration.PollFrequencyText[index], 0,
 				OBSIntegration.PollFrequencyText.Length - 1, PollFrequencyIndex)
 			{
 				OnValueChange = (int val) =>
@@ -559,7 +563,7 @@ namespace Celeste.Mod.izumisQOL
 					OBSIntegration.CancelOBSPoll();
 				}
 			});
-			subMenu.AddDescription(menu, menuItem, "How often the game should check if you are recording/streaming in OBS.");
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_STATUSFREQUENCY_DESC".AsDialog());
 
 			menu.Add(subMenu);
 		}

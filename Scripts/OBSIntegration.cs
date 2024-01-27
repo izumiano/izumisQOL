@@ -113,6 +113,8 @@ namespace Celeste.Mod.izumisQOL.OBS
 
 		public static void Connect(bool fromLaunch = false)
 		{
+			if(!ModSettings.OBSIntegrationEnabled) return;
+
 			socket ??= new();
 
 			isFromLaunch = fromLaunch;
