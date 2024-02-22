@@ -85,7 +85,7 @@ Tools->WebSocket Server Settings->Enable WebSocket Server
 MODOPTIONS_IZUMISQOL_OBSSETTINGS_DISCONNECT=Disconnect
 MODOPTIONS_IZUMISQOL_OBSSETTINGS_DISCONNECT_DESC=Disconnect from the host.
 MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTHOSTPORT=Import host:port from clipboard
-MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTHOSTPORT_DESC=Your host and port. It is set to "localhost:4455" by default
+MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTHOSTPORT_DESC=Your host and port. It is set to "localhost:4455" by default.
 MODOPTIONS_IZUMISQOL_OBSSETTINGS_INVALIDCLIPBOARD_TOOLTIP=Invalid Text In Clipboard
 MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTPASSWORD=Import password from clipboard
 MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTPASSWORD_DESC=Your OBS-WebSocket server password. Leave this empty if authentiation is disabled.
