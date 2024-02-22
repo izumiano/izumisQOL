@@ -23,9 +23,11 @@ namespace Celeste.Mod.izumisQOL.OBS
 			}
 			private set
 			{
+				WaitingForConnection = false;
 				_IsConnected = value.Log("connected");
 			}
 		}
+		public static bool WaitingForConnection = false;
 
 		private static bool _IsRecording = false;
 		public static bool IsRecording
@@ -36,7 +38,7 @@ namespace Celeste.Mod.izumisQOL.OBS
 			}
 			private set
 			{
-				_IsRecording = value.Log("recording");
+				_IsRecording = value/*.Log("recording")*/;
 			}
 		}
 
@@ -49,7 +51,7 @@ namespace Celeste.Mod.izumisQOL.OBS
 			}
 			private set
 			{
-				_IsStreaming = value.Log("streaming");
+				_IsStreaming = value/*.Log("streaming")*/;
 			}
 		}
 
@@ -121,9 +123,10 @@ namespace Celeste.Mod.izumisQOL.OBS
 
 			if (!socket.IsConnected)
 			{
+				WaitingForConnection = true;
 				try
 				{
-					Tooltip.Show("Connecting...");
+					if(!isFromLaunch) Tooltip.Show("Connecting...");
 					socket.ConnectAsync("ws://" + HostPort, Password);
 					socket.Connected += OnConnect;
 					socket.Disconnected += OnDisconnect;

@@ -479,7 +479,7 @@ namespace Celeste.Mod.izumisQOL
 			});
 			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_INTEGRATIONENABLED_DESC".AsDialog());
 
-			subMenu.Add(menuItem = new DisableableButton("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CONNECT".AsDialog(), () => OBSIntegration.IsConnected)
+			subMenu.Add(menuItem = new DisableableButton("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CONNECT".AsDialog(), () => OBSIntegration.IsConnected || OBSIntegration.WaitingForConnection)
 			{
 				OnPressed = () =>
 				{

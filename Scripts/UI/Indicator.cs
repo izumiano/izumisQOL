@@ -21,11 +21,11 @@ namespace Celeste.Mod.izumisQOL.UI
 				return ParentIcon.IsVisible && shouldBeVisible();
 			}
 		}
-		private Func<bool> shouldBeVisible;
+		private readonly Func<bool> shouldBeVisible;
 
 		private readonly MTexture iconTexture;
 
-		private int indexInIndicatorList;
+		private readonly int indexInIndicatorList;
 
 		public Indicator ParentIcon = null;
 		public Indicator ChildIcon = null;
