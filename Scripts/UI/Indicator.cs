@@ -81,6 +81,8 @@ namespace Celeste.Mod.izumisQOL.UI
 		{
 			orig(scene);
 
+			indicators.Clear();
+
 			new OBSRecordingIndicator();
 			new OBSDisconnectedIndicator();
 
