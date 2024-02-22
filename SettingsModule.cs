@@ -20,6 +20,9 @@ namespace Celeste.Mod.izumisQOL
 		// ButtonBinds
 		public ButtonBinding ButtonSaveJournal { get; set; } = new();
 
+		[SettingName("Suppress OBS-Indicators")]
+		public ButtonBinding ButtonSuppressOBSIndicators { get; set; } = new();
+
 		public ButtonBinding ButtonLoadKeybind { get; set; } = new();
 
 		public List<ButtonBinding> ButtonsSwapKeybinds { get; set; } = new();

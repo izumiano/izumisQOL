@@ -1,8 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Monocle;
 using Celeste.Mod.izumisQOL.OBS;
-
-using System.Collections.Generic;
 using Celeste.Mod.izumisQOL.UI;
 
 namespace Celeste.Mod.izumisQOL
@@ -17,9 +15,10 @@ namespace Celeste.Mod.izumisQOL
 			On.Celeste.OuiJournalPage.Redraw += BetterJournalModule.OnJournalPageRedraw;
 			Everest.Events.Journal.OnEnter += BetterJournalModule.OnJournalEnter;
 			On.Celeste.OuiJournal.Close += BetterJournalModule.OnJournalClose;
-			Everest.Events.MainMenu.OnCreateButtons += UI.General.OnCreateButtons;
+			Everest.Events.MainMenu.OnCreateButtons += General.OnCreateButtons;
 			On.Monocle.Scene.Begin += Indicator.OnSceneBegin;
 			On.Monocle.Scene.End += Indicator.OnSceneEnd;
+			On.Celeste.Level.Begin += OBSIntegration.OnLevelBegin;
 
 			KeybindModule.Load();
 			BetterJournalModule.Load();
@@ -33,9 +32,10 @@ namespace Celeste.Mod.izumisQOL
 			On.Celeste.OuiJournalPage.Redraw -= BetterJournalModule.OnJournalPageRedraw;
 			Everest.Events.Journal.OnEnter -= BetterJournalModule.OnJournalEnter;
 			On.Celeste.OuiJournal.Close -= BetterJournalModule.OnJournalClose;
-			Everest.Events.MainMenu.OnCreateButtons -= UI.General.OnCreateButtons;
+			Everest.Events.MainMenu.OnCreateButtons -= General.OnCreateButtons;
 			On.Monocle.Scene.Begin -= Indicator.OnSceneBegin;
 			On.Monocle.Scene.End -= Indicator.OnSceneEnd;
+			On.Celeste.Level.Begin -= OBSIntegration.OnLevelBegin;
 
 			ModSettings.ButtonsSwapKeybinds.Clear();
 		}

@@ -27,7 +27,7 @@ namespace Celeste.Mod.izumisQOL.OBS
 				_IsConnected = value.Log("connected");
 			}
 		}
-		public static bool WaitingForConnection = false;
+		public static bool WaitingForConnection { get; set; } = false;
 
 		private static bool _IsRecording = false;
 		public static bool IsRecording
@@ -54,6 +54,8 @@ namespace Celeste.Mod.izumisQOL.OBS
 				_IsStreaming = value/*.Log("streaming")*/;
 			}
 		}
+
+		public static bool SuppressIndicators { get; set; } = false;
 
 		public static int PollOBSFrequency => PollFrequencyMilliseconds[ModSettings.PollFrequencyIndex] / 2;
 
@@ -97,8 +99,8 @@ namespace Celeste.Mod.izumisQOL.OBS
 			1_200_000,
 		};
 
-		public static string HostPort = "localhost:4455";
-		public static string Password = "";
+		public static string HostPort { get; set; } = "localhost:4455";
+		public static string Password { get; set; } = "";
 
 		private static bool isFromLaunch = false;
 
@@ -106,6 +108,11 @@ namespace Celeste.Mod.izumisQOL.OBS
 
 		public static void Update()
 		{
+			if (ModSettings.ButtonSuppressOBSIndicators.Pressed)
+			{
+				SuppressIndicators = !SuppressIndicators;
+			}
+
 			if (!ModSettings.OBSIntegrationEnabled || !IsConnected) return;
 
 			if (ObsPollTask is not null && !ObsPollTask.IsCompleted) return;
@@ -263,6 +270,13 @@ namespace Celeste.Mod.izumisQOL.OBS
 		{
 			recordingStatusCancellationToken?.Cancel();
 			streamingStatusCancellationToken?.Cancel();
+		}
+
+		public static void OnLevelBegin(On.Celeste.Level.orig_Begin orig, Level self)
+		{
+			orig(self);
+
+			SuppressIndicators = false;
 		}
 	}
 }

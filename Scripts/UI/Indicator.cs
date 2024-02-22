@@ -111,7 +111,7 @@ namespace Celeste.Mod.izumisQOL.UI
 		{
 			get
 			{
-				if(!Global.ModSettings.OBSIntegrationEnabled) return false;
+				if(!Global.ModSettings.OBSIntegrationEnabled || OBSIntegration.SuppressIndicators) return false;
 
 				return Global.ModSettings.ShowRecordingIndicatorWhen switch
 				{
