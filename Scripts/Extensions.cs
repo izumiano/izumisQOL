@@ -109,4 +109,10 @@ public static class Extensions
 #endif
 		return obj;
 	}
+
+	public static Vector2 Log<T>(this Vector2 vector, T vectorIdentifier, LogLevel logLevel = LogLevel.Verbose)
+	{
+		Log($"X: {vector.X}, Y: {vector.Y}", vectorIdentifier.ToString(), logLevel);
+		return vector;
+	}
 }

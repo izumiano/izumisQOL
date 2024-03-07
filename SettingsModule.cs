@@ -9,6 +9,7 @@ using Celeste.Mod.izumisQOL.Menu;
 using Microsoft.Xna.Framework;
 using Celeste.Mod.izumisQOL.UI;
 using Celeste.Mod.izumisQOL.OBS;
+using System.Text.Json.Serialization;
 
 namespace Celeste.Mod.izumisQOL
 {
@@ -22,6 +23,8 @@ namespace Celeste.Mod.izumisQOL
 
 		[SettingName("Suppress OBS-Indicators")]
 		public ButtonBinding ButtonSuppressOBSIndicators { get; set; } = new();
+
+		public ButtonBinding ButtonEnableNoClip { get; set; } = new();
 
 		public ButtonBinding ButtonLoadKeybind { get; set; } = new();
 
@@ -125,6 +128,16 @@ namespace Celeste.Mod.izumisQOL
 				OBSIntegration.Password = value;
 			}
 		}
+
+		// NoClip Settings
+		[YamlIgnore]
+		public bool NoClipEnabled { get; set; } = false;
+		[SettingIgnore]
+		public int NoClipNormalSpeed { get; set; } = 8;
+		[SettingIgnore]
+		public int NoClipFastSpeed { get; set; } = 8;
+		[SettingIgnore]
+		public int NoClipSlowSpeed { get; set; } = 8;
 
 		// Other settings
 		public bool ShowRestartButtonInMainMenu { get; set; } = false;
@@ -567,6 +580,38 @@ namespace Celeste.Mod.izumisQOL
 				}
 			});
 			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_STATUSFREQUENCY_DESC".AsDialog());
+
+			menu.Add(subMenu);
+		}
+
+		public void CreateNoClipEnabledEntry(TextMenu menu, bool inGame)
+		{
+			TextMenuExt.SubMenu subMenu = new("NoClip Settings", false);
+
+			TextMenu.Item menuItem;
+			subMenu.Add(menuItem = new TextMenu.OnOff("NoClip Enabled", NoClipEnabled)
+			{
+				OnValueChange = (bool val) => NoClipEnabled = val
+			});
+			subMenu.AddDescription(menu, menuItem, "Whether NoClip is enabled or not.");
+
+			subMenu.Add(menuItem = new TextMenu.Slider("Movement Speed", (int index) => (index * 0.25f).ToString(), 1, 16, NoClipNormalSpeed)
+			{
+				OnValueChange = (val) => NoClipNormalSpeed = val
+			});
+			subMenu.AddDescription(menu, menuItem, "How fast regular movement speed is while NoClip is enabled.");
+
+			subMenu.Add(menuItem = new TextMenu.Slider("Fast Movement Speed", (int index) => (index * 0.5f).ToString(), 1, 16, NoClipFastSpeed)
+			{
+				OnValueChange = (val) => NoClipFastSpeed = val
+			});
+			subMenu.AddDescription(menu, menuItem, "How fast movement speed is while holding the grab button.");
+
+			subMenu.Add(menuItem = new TextMenu.Slider("Slow Movement Speed", (int index) => (index * 0.125f).ToString(), 1, 16, NoClipSlowSpeed)
+			{
+				OnValueChange = (val) => NoClipSlowSpeed = val
+			});
+			subMenu.AddDescription(menu, menuItem, "How fast movement speed is while holding the dash button.");
 
 			menu.Add(subMenu);
 		}

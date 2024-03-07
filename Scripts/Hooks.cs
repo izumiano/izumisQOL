@@ -20,6 +20,7 @@ namespace Celeste.Mod.izumisQOL
 			On.Monocle.Scene.End += Indicator.OnSceneEnd;
 			On.Celeste.Level.Begin += OBSIntegration.OnLevelBegin;
 
+			NoClipModule.Load();
 			KeybindModule.Load();
 			BetterJournalModule.Load();
 		}
@@ -36,6 +37,8 @@ namespace Celeste.Mod.izumisQOL
 			On.Monocle.Scene.Begin -= Indicator.OnSceneBegin;
 			On.Monocle.Scene.End -= Indicator.OnSceneEnd;
 			On.Celeste.Level.Begin -= OBSIntegration.OnLevelBegin;
+
+			NoClipModule.Unload();
 
 			ModSettings.ButtonsSwapKeybinds.Clear();
 		}
