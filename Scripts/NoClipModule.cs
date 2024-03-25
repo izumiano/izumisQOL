@@ -81,7 +81,8 @@ namespace Celeste.Mod.izumisQOL
 		{
 			Vector2 aim = Input.Aim.Value * (Input.Grab.Check ? fastSpeed : (Input.Dash.Check ? slowSpeed : normalSpeed));
 
-			player.Position += aim;
+			player.MoveH(aim.X);
+			player.MoveV(aim.Y);
 
 			if (Engine.Scene is Level level)
 			{
