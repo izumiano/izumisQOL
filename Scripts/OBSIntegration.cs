@@ -177,7 +177,7 @@ namespace Celeste.Mod.izumisQOL.OBS
 
 		private static void OnDisconnect(object sender, ObsDisconnectionInfo ev)
 		{
-			if (!IsConnected) Tooltip.Show("Failed Connecting To OBS");
+			if (!IsConnected && !isFromLaunch) Tooltip.Show("Failed Connecting To OBS");
 			socket = null;
 			IsConnected = false;
 			IsRecording = false;
