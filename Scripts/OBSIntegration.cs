@@ -142,7 +142,7 @@ namespace Celeste.Mod.izumisQOL.OBS
 				}
 				catch (Exception ex)
 				{
-					Tooltip.Show("Failed Connecting To OBS Websocket");
+					if(!isFromLaunch) Tooltip.Show("Failed Connecting To OBS Websocket");
 					Log(ex);
 				}
 			}
