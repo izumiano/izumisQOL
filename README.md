@@ -43,6 +43,9 @@ The journal snapshot tool lets you save the information in the (vanilla and coll
 
 To use it first bind a button to 'Save journal snapshot' in the mod settings. Then open the journal(must be either the vanilla journal or a collabutils2 journal like the one in strawberry jam) and press the button you bound. Once you've done that you should be able to press up or down while in the journal to scroll through the different journal modes.
 
+Automatic controller-freeze pausing:
+If you enable the gamepad-pauser in the settings menu the game will pause if your controller disconnects or if the controller freezes for the amount of frames specified in settings (defualt: 10).
+
 OBS Recording/Streaming Indicator:
 
 If enabled this will let you connect celeste to obs and show a warning icon in the corner if you're not recording/streaming. Even if you have enabled it you can also temporily suppress the warning for times when you're not intending to record.
