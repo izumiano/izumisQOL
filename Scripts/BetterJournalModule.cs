@@ -138,11 +138,6 @@ namespace Celeste.Mod.izumisQOL
 		{
 			orig(self);
 
-			if(JournalProgressPage != null)
-			{
-				CollabUtils2Integration.IsCU2ProgressPage(JournalProgressPage);
-			}
-
 			if (!ModSettings.BetterJournalEnabled)
 				return;
 

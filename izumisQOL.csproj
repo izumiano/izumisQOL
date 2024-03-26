@@ -5,6 +5,7 @@
 		<AssemblyName>izumisQOL</AssemblyName>
 		<RootNamespace>Celeste.Mod.izumisQOL</RootNamespace>
 		<LangVersion>latest</LangVersion>
+		<CelestePrefix Condition="'$(CelestePrefix)' == '' And Exists('..\..\Celeste.dll')">..\..</CelestePrefix>
 		<CelestePrefix Condition="'$(CelestePrefix)' == '' And Exists('..\..\..\Celeste.dll')">..\..\..</CelestePrefix>
 		<CelestePrefix Condition="'$(CelestePrefix)' == ''">lib-stripped</CelestePrefix>
 	</PropertyGroup>
@@ -19,27 +20,19 @@
 		<PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.1" PrivateAssets="all" />
 		<PackageReference Include="MonoMod.RuntimeDetour" Version="25.0.2" PrivateAssets="all" ExcludeAssets="runtime" />
 		<PackageReference Include="MonoMod.Patcher" Version="25.0.0-prerelease.2" />
+		<PackageReference Include="obs-websocket-dotnet" Version="5.0.0.3" />
 	</ItemGroup>
 
 	<ItemGroup>
-        <Reference Include="Celeste">
-		  <Publicize>true</Publicize>
-          <HintPath>..\..\..\..\..\Program Files\celeste-win-opengl\Celeste.dll</HintPath>
-        </Reference>
-        <Reference Include="FNA">
-          <HintPath>..\..\..\..\..\Program Files\celeste-win-opengl\FNA.dll</HintPath>
-        </Reference>
-        <Reference Include="MMHOOK_Celeste">
-          <HintPath>..\..\..\..\..\Program Files\celeste-win-opengl\MMHOOK_Celeste.dll</HintPath>
-        </Reference>
-        <Reference Include="YamlDotNet">
-          <HintPath>..\..\..\..\..\Program Files\celeste-win-opengl\YamlDotNet.dll</HintPath>
-        </Reference>
+		<Reference Include="$(CelestePrefix)\Celeste.dll" Publicize="true" Private="false"></Reference>
+		<Reference Include="$(CelestePrefix)\FNA.dll" Private="false"></Reference>
+		<Reference Include="$(CelestePrefix)\MMHOOK_Celeste.dll" Private="false"></Reference>
+		<Reference Include="$(CelestePrefix)\YamlDotNet.dll" Private="false"></Reference>
 	</ItemGroup>
 
 	<Target Name="CopyFiles" AfterTargets="Build">
-		<Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll" DestinationFolder="..\bin" />
-		<Copy SourceFiles="$(OutputPath)\$(AssemblyName).pdb" DestinationFolder="..\bin" />
+		<Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll" DestinationFolder="bin" />
+		<Copy SourceFiles="$(OutputPath)\$(AssemblyName).pdb" DestinationFolder="bin" />
 	</Target>
 
 	<PropertyGroup>

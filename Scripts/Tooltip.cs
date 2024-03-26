@@ -5,6 +5,7 @@ using Celeste;
 using Microsoft.Xna.Framework;
 using Monocle;
 using System;
+using Celeste.Mod.Helpers;
 
 [Tracked(false)]
 public class Tooltip : Entity
@@ -156,7 +157,7 @@ public class Tooltip : Entity
 
 		public Info(string message, float duration = 1f, DisplayPosition position = DisplayPosition.BottomLeft)
 		{
-			this.message = message;
+			this.message = message.Log();
 			this.position = position;
 			this.duration = duration;
 		}

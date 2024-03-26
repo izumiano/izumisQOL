@@ -43,6 +43,18 @@ The journal snapshot tool lets you save the information in the (vanilla and coll
 
 To use it first bind a button to 'Save journal snapshot' in the mod settings. Then open the journal(must be either the vanilla journal or a collabutils2 journal like the one in strawberry jam) and press the button you bound. Once you've done that you should be able to press up or down while in the journal to scroll through the different journal modes.
 
+OBS Recording/Streaming Indicator:
+
+If enabled this will let you connect celeste to obs and show a warning icon in the corner if you're not recording/streaming. Even if you have enabled it you can also temporily suppress the warning for times when you're not intending to record.
+To use it, first you need to enable websockets in OBS which you can do in from |Tools->WebSocket Server Settings->Enable WebSocket server|. You can also find the websockets server port and password here.
+After you have enabled websockets, in celeste go to |Mod Settings->izumi's quality of life->OBS Integration Settings| and set OBS Integration Enabled to On. 
+Then import your host:port(localhost:4455 by default) and password from your clipboard and then click Connect. If it managed to connect properly you will get a message in the bottom left saying "Connected!". 
+Final step now is to turn on Check Recording Status and/or Check Streaming Status.
+
+NoClip:
+
+NoClip is a mode where if enabled, Madeline can fly and has no collision letting her for example fly through walls. You can bind a button to enable/disable it or do so in NoClip Settings. Holding grab will let you move faster, holding dash lets you move slower. The speed can also be changed in the settings.
+
 (Experimental) Mod Keybind Swapper:
 
 If you want to try swapping modded keybinds go to your celeste folder then 'Saves/izumisQOL/keybinds' and open whitelist.txt. In here write the names of all the mods you want to be able to swap the keybinds of. Once you've done this everything should function exactly like the vanilla keybind swapper.

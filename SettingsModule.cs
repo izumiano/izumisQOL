@@ -8,6 +8,8 @@ using Monocle;
 using Celeste.Mod.izumisQOL.Menu;
 using Microsoft.Xna.Framework;
 using Celeste.Mod.izumisQOL.UI;
+using Celeste.Mod.izumisQOL.OBS;
+using System.Text.Json.Serialization;
 
 namespace Celeste.Mod.izumisQOL
 {
@@ -18,6 +20,11 @@ namespace Celeste.Mod.izumisQOL
 
 		// ButtonBinds
 		public ButtonBinding ButtonSaveJournal { get; set; } = new();
+
+		[SettingName("Suppress OBS-Indicators")]
+		public ButtonBinding ButtonSuppressOBSIndicators { get; set; } = new();
+
+		public ButtonBinding ButtonEnableNoClip { get; set; } = new();
 
 		public ButtonBinding ButtonLoadKeybind { get; set; } = new();
 
@@ -88,6 +95,49 @@ namespace Celeste.Mod.izumisQOL
 		// GamepadPauser settings
 		public bool GamepadPauserEnabled { get; set; } = false;
 		public int PauseAfterFramesGamepadInactive = 10;
+
+		// OBS Websocket settings
+		public bool OBSIntegrationEnabled { get; set; } = false;
+		public bool ConnectToOBSWebsocketsOnStartup = false;
+		public OBSRecordingIndicator.DisplayType ShowRecordingIndicatorWhen = OBSRecordingIndicator.DisplayType.WhenNotRecording;
+		public bool CheckRecordingStatus = false;
+		public bool CheckStreamingStatus = false;
+		public int PollFrequencyIndex = 4;
+
+		[SettingIgnore]
+		public string OBSHostPort
+		{
+			get
+			{
+				return OBSIntegration.HostPort;
+			}
+			set
+			{
+				OBSIntegration.HostPort = value.Replace("ws://", "");
+			}
+		}
+		[SettingIgnore]
+		public string OBSPassword
+		{
+			get
+			{
+				return OBSIntegration.Password;
+			}
+			set
+			{
+				OBSIntegration.Password = value;
+			}
+		}
+
+		// NoClip Settings
+		[YamlIgnore]
+		public bool NoClipEnabled { get; set; } = false;
+		[SettingIgnore]
+		public int NoClipNormalSpeed { get; set; } = 8;
+		[SettingIgnore]
+		public int NoClipFastSpeed { get; set; } = 8;
+		[SettingIgnore]
+		public int NoClipSlowSpeed { get; set; } = 8;
 
 		// Other settings
 		public bool ShowRestartButtonInMainMenu { get; set; } = false;
@@ -423,6 +473,145 @@ namespace Celeste.Mod.izumisQOL
 				OnValueChange = (int val) => PauseAfterFramesGamepadInactive = val
 			});
 			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_PAUSEFRAMESINACTIVE_DESC".AsDialog());
+
+			menu.Add(subMenu);
+		}
+
+		public void CreateOBSIntegrationEnabledEntry(TextMenu menu, bool inGame)
+		{
+			TextMenuExt.SubMenu subMenu = new("MODOPTIONS_IZUMISQOL_OBSSETTINGS_OBSSETTINGS".AsDialog(), false);
+			TextMenu.Item menuItem;
+
+			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_OBSSETTINGS_INTEGRATIONENABLED".AsDialog(), OBSIntegrationEnabled)
+			{
+				OnValueChange = (bool val) =>
+				{
+					OBSIntegrationEnabled = val;
+					if (!OBSIntegrationEnabled)
+					{
+						OBSIntegration.Disconnect();
+					}
+				}
+			});
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_INTEGRATIONENABLED_DESC".AsDialog());
+
+			subMenu.Add(menuItem = new DisableableButton("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CONNECT".AsDialog(), () => OBSIntegration.IsConnected || OBSIntegration.WaitingForConnection)
+			{
+				OnPressed = () =>
+				{
+					if (OBSIntegrationEnabled)
+					{
+						OBSIntegration.Connect();
+					}
+					else
+					{
+						Tooltip.Show("MODOPTIONS_IZUMISQOL_OBSSETTINGS_INTEGRATIONDISABLED_TOOLTIP".AsDialog());
+					}
+				}
+			});
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CONNECT_DESC".AsDialog());
+
+			subMenu.Add(menuItem = new DisableableButton("MODOPTIONS_IZUMISQOL_OBSSETTINGS_DISCONNECT".AsDialog(), () => !OBSIntegration.IsConnected)
+			{
+				OnPressed = OBSIntegration.Disconnect
+			});
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_DISCONNECT_DESC".AsDialog());
+
+			subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTHOSTPORT".AsDialog())
+			{
+				OnPressed = () =>
+				{
+					string clipboardText = TextInput.GetClipboardText();
+					if (string.IsNullOrEmpty(clipboardText))
+					{
+						Tooltip.Show("MODOPTIONS_IZUMISQOL_OBSSETTINGS_INVALIDCLIPBOARD_TOOLTIP".AsDialog());
+					}
+					else
+					{
+						OBSHostPort = clipboardText;
+					}
+				}
+			});
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTHOSTPORT_DESC".AsDialog());
+
+			subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTPASSWORD".AsDialog())
+			{
+				OnPressed = () => OBSPassword = TextInput.GetClipboardText()
+			});
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTPASSWORD_DESC".AsDialog());
+
+			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CONNECTSTARTUP".AsDialog(), ConnectToOBSWebsocketsOnStartup)
+			{
+				OnValueChange = (bool val) => ConnectToOBSWebsocketsOnStartup = val
+			});
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CONNECTSTARTUP_DESC".AsDialog());
+
+			subMenu.Add(menuItem = new TextMenu.Slider("MODOPTIONS_IZUMISQOL_OBSSETTINGS_SHOWINDICATOR".AsDialog(), (int index) => 
+			new string[] { 
+				"MODOPTIONS_IZUMISQOL_OBSSETTINGS_SHOWINDICATOR_1".AsDialog(), 
+				"MODOPTIONS_IZUMISQOL_OBSSETTINGS_SHOWINDICATOR_2".AsDialog(),
+				"MODOPTIONS_IZUMISQOL_OBSSETTINGS_SHOWINDICATOR_3".AsDialog()
+			}[index], 
+				0, 2, (int)ShowRecordingIndicatorWhen)
+			{
+				OnValueChange = (int val) => ShowRecordingIndicatorWhen = (OBSRecordingIndicator.DisplayType)val
+			});
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_SHOWINDICATOR_DESC".AsDialog());
+
+			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKRECORD".AsDialog(), CheckRecordingStatus)
+			{
+				OnValueChange = (bool val) => CheckRecordingStatus = val
+			});
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKRECORD_DESC".AsDialog());
+
+			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKSTREAM".AsDialog(), CheckStreamingStatus)
+			{
+				OnValueChange = (bool val) => CheckStreamingStatus = val
+			});
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKSTREAM_DESC".AsDialog());
+
+			subMenu.Add(menuItem = new TextMenu.Slider("MODOPTIONS_IZUMISQOL_OBSSETTINGS_STATUSFREQUENCY".AsDialog(), (int index) => OBSIntegration.PollFrequencyText[index], 0,
+				OBSIntegration.PollFrequencyText.Length - 1, PollFrequencyIndex)
+			{
+				OnValueChange = (int val) =>
+				{
+					PollFrequencyIndex = val;
+					OBSIntegration.CancelOBSPoll();
+				}
+			});
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_STATUSFREQUENCY_DESC".AsDialog());
+
+			menu.Add(subMenu);
+		}
+
+		public void CreateNoClipEnabledEntry(TextMenu menu, bool inGame)
+		{
+			TextMenuExt.SubMenu subMenu = new("NoClip Settings", false);
+
+			TextMenu.Item menuItem;
+			subMenu.Add(menuItem = new TextMenu.OnOff("NoClip Enabled", NoClipEnabled)
+			{
+				OnValueChange = (bool val) => NoClipEnabled = val
+			});
+			subMenu.AddDescription(menu, menuItem, "Whether NoClip is enabled or not.");
+
+			subMenu.Add(menuItem = new TextMenu.Slider("Movement Speed", (int index) => (index * 0.25f).ToString(), 1, 16, NoClipNormalSpeed)
+			{
+				OnValueChange = (val) => NoClipNormalSpeed = val
+			});
+			subMenu.AddDescription(menu, menuItem, "How fast regular movement speed is while NoClip is enabled.");
+
+			subMenu.Add(menuItem = new TextMenu.Slider("Fast Movement Speed", (int index) => (index * 0.5f).ToString(), 1, 16, NoClipFastSpeed)
+			{
+				OnValueChange = (val) => NoClipFastSpeed = val
+			});
+			subMenu.AddDescription(menu, menuItem, "How fast movement speed is while holding the grab button.");
+
+			subMenu.Add(menuItem = new TextMenu.Slider("Slow Movement Speed", (int index) => (index * 0.125f).ToString(), 1, 16, NoClipSlowSpeed)
+			{
+				OnValueChange = (val) => NoClipSlowSpeed = val
+			});
+			subMenu.AddDescription(menu, menuItem, "How fast movement speed is while holding the dash button.");
 
 			menu.Add(subMenu);
 		}

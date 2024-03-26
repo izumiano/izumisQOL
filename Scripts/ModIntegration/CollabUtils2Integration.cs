@@ -72,29 +72,32 @@ namespace Celeste.Mod.izumisQOL.ModIntegration
 		public static List<AreaStats> GetSortedCollabAreaStats(SaveData instance, OuiJournal journal)
 		{
 			List<AreaStats> areaStats = GetUnsortedCollabStats(instance, journal);
+			AreaStats[] areaStatsArray = new AreaStats[areaStats.Count];
+			areaStats.CopyTo(areaStatsArray);
+			List<AreaStats> areaStatsCopy = areaStatsArray.ToList();
 
 			Regex startsWithNumber = new(".*/[0-9]+-.*");
 			if (areaStats.Select((AreaStats map) => AreaData.Get(map).Icon ?? "").All((string icon) => startsWithNumber.IsMatch(icon)))
 			{
-				areaStats.Sort(delegate (AreaStats a, AreaStats b)
+				areaStatsCopy.Sort(delegate (AreaStats a, AreaStats b)
 				{
-					AreaData areaData2 = AreaData.Get(a);
-					AreaData areaData3 = AreaData.Get(b);
-					bool flag = IsHeartSide(a.SID);
-					bool flag2 = IsHeartSide(b.SID);
-					if (flag && !flag2)
+					AreaData aAreaData = AreaData.Get(a);
+					AreaData bAreaData = AreaData.Get(b);
+					bool aIsHeartSide = IsHeartSide(a.SID);
+					bool bIsHeartSide = IsHeartSide(b.SID);
+					if (aIsHeartSide && !bIsHeartSide)
 					{
 						return 1;
 					}
-					if (!flag && flag2)
+					if (!aIsHeartSide && bIsHeartSide)
 					{
 						return -1;
 					}
-					return (!(areaData2.Icon == areaData3.Icon)) ? areaData2.Icon.CompareTo(areaData3.Icon) : areaData2.Name.CompareTo(areaData3.Name);
+					return (!(aAreaData.Icon == bAreaData.Icon)) ? aAreaData.Icon.CompareTo(bAreaData.Icon) : aAreaData.Name.CompareTo(bAreaData.Name);
 				});
 			}
 
-			return areaStats;
+			return areaStatsCopy;
 		}
 
 		public static int ProgressPageAmount(OuiJournal journal)

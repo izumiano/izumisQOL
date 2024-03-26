@@ -23,12 +23,6 @@ namespace Celeste.Mod.izumisQOL.Menu
 			Add(new Header("KEY_CONFIG_TITLE".AsDialog()));
 			Add(new InputMappingInfo(controllerMode: false));
 			object settings = Module._Settings;
-			string typeName = Module.SettingsType.Name.ToLowerInvariant();
-			if (typeName.EndsWith("settings"))
-			{
-				typeName = typeName.Substring(0, typeName.Length - 8);
-			}
-			string nameDefaultPrefix = "modoptions_" + typeName + "_";
 			PropertyInfo[] properties = Module.SettingsType.GetProperties();
 			foreach (PropertyInfo prop in properties)
 			{
@@ -41,16 +35,16 @@ namespace Celeste.Mod.izumisQOL.Menu
 				{
 					if (prop.GetValue(settings) is ButtonBinding binding)
 					{
-						string name2 = prop.GetCustomAttribute<SettingNameAttribute>()?.Name ?? (nameDefaultPrefix + prop.Name.ToLowerInvariant());
-						name2 = name2.DialogCleanOrNull() ?? (prop.Name.ToLowerInvariant().StartsWith("button") ? prop.Name.Substring(6) : prop.Name).SpacedPascalCase();
+						string name = prop.GetCustomAttribute<SettingNameAttribute>()?.Name ?? prop.Name;
+						name = name.DialogCleanOrNull() ?? (name.ToLowerInvariant().StartsWith("button") ? name.Substring(6) : name).SpacedPascalCase();
 						DefaultButtonBindingAttribute defaults = prop.GetCustomAttribute<DefaultButtonBindingAttribute>();
 						Bindings.Add(new ButtonBindingEntry(binding, defaults));
-						string subheader2 = prop.GetCustomAttribute<SettingSubHeaderAttribute>()?.SubHeader;
-						if (subheader2 != null)
+						string subheader = prop.GetCustomAttribute<SettingSubHeaderAttribute>()?.SubHeader;
+						if (subheader != null)
 						{
-							Add(new SubHeader(subheader2.DialogCleanOrNull() ?? subheader2));
+							Add(new SubHeader(subheader.DialogCleanOrNull() ?? subheader));
 						}
-						AddMapForceLabel(name2, binding.Binding);
+						AddMapForceLabel(name, binding.Binding);
 					}
 				}
 				else
@@ -59,15 +53,15 @@ namespace Celeste.Mod.izumisQOL.Menu
 					{
 						continue;
 					}
-					string name = prop.GetCustomAttribute<SettingNameAttribute>()?.Name ?? (nameDefaultPrefix + prop.Name.ToLowerInvariant());
-					name = name.DialogCleanOrNull() ?? (prop.Name.ToLowerInvariant().StartsWith("buttons") ? prop.Name.Substring(7) : prop.Name).SpacedPascalCase();
+					string name = prop.GetCustomAttribute<SettingNameAttribute>()?.Name ?? prop.Name;
+					name = name.DialogCleanOrNull() ?? (name.ToLowerInvariant().StartsWith("buttons") ? name.Substring(7) : name).SpacedPascalCase();
 					
 					string subheader = prop.GetCustomAttribute<SettingSubHeaderAttribute>()?.SubHeader;
 					if (subheader != null)
 					{
 						Add(new SubHeader(subheader.DialogCleanOrNull() ?? subheader));
 					}
-					for(int i = 0; i< bindingMap.Count; i++)
+					for(int i = 0; i < bindingMap.Count; i++)
 					{
 						Bindings.Add(new ButtonBindingEntry(bindingMap[i], null));
 						AddMapForceLabel(name + " to slot " + (i + 1), bindingMap[i].Binding);

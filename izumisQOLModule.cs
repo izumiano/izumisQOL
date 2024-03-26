@@ -5,6 +5,7 @@ using Monocle;
 using FMOD.Studio;
 using Celeste.Mod.izumisQOL.Menu;
 using Celeste.Mod.izumisQOL.ModIntegration;
+using Celeste.Mod.izumisQOL.OBS;
 
 namespace Celeste.Mod.izumisQOL
 {
@@ -37,12 +38,17 @@ namespace Celeste.Mod.izumisQOL
 		public override void Load()
 		{
 			Hooks.Load();
+
+			if (ModSettings is not null && ModSettings.ConnectToOBSWebsocketsOnStartup)
+			{
+				OBSIntegration.Connect(true);
+			}
 		}
 
 		// Optional, initialize anything after Celeste has initialized itself properly.
 		public override void Initialize()
 		{
-
+			
 		}
 
 		// Optional, do anything requiring either the Celeste or mod content here.
