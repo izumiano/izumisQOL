@@ -107,11 +107,12 @@ namespace Celeste.Mod.izumisQOL
 			{
 				return OBSPollFrequencyIndex[RecordingType.Record] != 0;
 			}
-			set // set is needed for supporting older versions
+			[Obsolete]
+			set
 			{
 				if (value)
 				{
-					OBSPollFrequencyIndex[RecordingType.Record] = 5;
+					setRecordingPollFrequencyIndex = true;
 				}
 			}
 		}
@@ -122,11 +123,12 @@ namespace Celeste.Mod.izumisQOL
 			{
 				return OBSPollFrequencyIndex[RecordingType.Stream] != 0;
 			}
-			set // set is needed for supporting older versions
+			[Obsolete]
+			set
 			{
 				if (value)
 				{
-					OBSPollFrequencyIndex[RecordingType.Stream] = 5;
+					setStreamingPollFrequencyIndex = true;
 				}
 			}
 		}
@@ -138,17 +140,31 @@ namespace Celeste.Mod.izumisQOL
 			{ RecordingType.Stream, 0 },
 			{ RecordingType.ReplayBuffer, 0 }
 		};
-		public int PollFrequency // this is needed for supporting older versions
-		{ 
-			set 
+
+
+		[Obsolete]
+		private bool setRecordingPollFrequencyIndex = false;
+		[Obsolete]
+		private bool setStreamingPollFrequencyIndex = false;
+		[Obsolete("Use OBSPollFrequency instead.")]
+		public int PollFrequencyIndex
+		{
+			get
 			{
-				if (CheckRecordingStatus)
-				{
-					OBSPollFrequencyIndex[RecordingType.Record] = value;
-				}
-				if (CheckStreamingStatus)
-				{
-					OBSPollFrequencyIndex[RecordingType.Stream] = value;
+				return -1;
+			}
+			set
+			{
+				if(value >= 0)
+				{ 
+					if (setRecordingPollFrequencyIndex)
+					{
+						OBSPollFrequencyIndex[RecordingType.Record] = value > 0 ? value - 1 : 0;
+					}
+					if (setStreamingPollFrequencyIndex)
+					{
+						OBSPollFrequencyIndex[RecordingType.Stream] = value > 0 ? value - 1 : 0;
+					}
 				}
 			} 
 		}
