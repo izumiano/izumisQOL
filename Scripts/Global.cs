@@ -8,6 +8,7 @@ using System.IO;
 
 using Celeste.Mod;
 using Celeste.Mod.izumisQOL;
+using System.Threading;
 
 public class Global
 {
@@ -46,5 +47,29 @@ public class Global
 				return true;
 		}
 		return false;
+	}
+
+	public static Task RunAfter(Action func, int millisecondsDelay, Task task, ref CancellationTokenSource cancellationTokenSource)
+	{
+		if (task is null)
+		{
+			return RunAfterAsync(func, millisecondsDelay, task, cancellationTokenSource);
+		}
+		else if (task.IsCompleted)
+		{
+			cancellationTokenSource = new();
+			return null;
+		}
+		return task;
+	}
+
+	private static async Task RunAfterAsync(Action func, int millisecondsDelay, Task task, CancellationTokenSource cancellationTokenSource)
+	{
+		if (task != null)
+			return;
+
+		await Task.Delay(millisecondsDelay, cancellationTokenSource.Token);
+
+		func();
 	}
 }

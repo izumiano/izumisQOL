@@ -150,6 +150,6 @@ namespace Celeste.Mod.izumisQOL.UI
 
 	public class OBSDisconnectedIndicator : Indicator
 	{
-		public OBSDisconnectedIndicator() : base("disconnectedIndicator", () => !OBSIntegration.IsConnected && Global.ModSettings.OBSIntegrationEnabled || OBSIntegration.SuppressIndicators) { }
+		public OBSDisconnectedIndicator() : base("disconnectedIndicator", () => !OBSIntegration.IsConnected && Global.ModSettings.OBSIntegrationEnabled && !OBSIntegration.SuppressIndicators) { }
 	}
 }

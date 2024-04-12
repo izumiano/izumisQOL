@@ -100,10 +100,59 @@ namespace Celeste.Mod.izumisQOL
 		public bool OBSIntegrationEnabled { get; set; } = false;
 		public bool ConnectToOBSWebsocketsOnStartup = false;
 		public OBSRecordingIndicator.DisplayType ShowRecordingIndicatorWhen = OBSRecordingIndicator.DisplayType.WhenNotRecording;
-		public bool CheckRecordingStatus = false;
-		public bool CheckStreamingStatus = false;
-		public bool CheckReplayBufferStatus = false;
-		public int PollFrequencyIndex = 4;
+		[SettingIgnore] // we're not using YamlIgnore here to support older versions
+		public bool CheckRecordingStatus
+		{
+			get
+			{
+				return OBSPollFrequencyIndex[RecordingType.Record] != 0;
+			}
+			set // set is needed for supporting older versions
+			{
+				if (value)
+				{
+					OBSPollFrequencyIndex[RecordingType.Record] = 5;
+				}
+			}
+		}
+		[SettingIgnore] // we're not using YamlIgnore here to support older versions
+		public bool CheckStreamingStatus
+		{
+			get
+			{
+				return OBSPollFrequencyIndex[RecordingType.Stream] != 0;
+			}
+			set // set is needed for supporting older versions
+			{
+				if (value)
+				{
+					OBSPollFrequencyIndex[RecordingType.Stream] = 5;
+				}
+			}
+		}
+		[YamlIgnore]
+		public bool CheckReplayBufferStatus => OBSPollFrequencyIndex[RecordingType.ReplayBuffer] != 0;
+		public Dictionary<RecordingType, int> OBSPollFrequencyIndex = new()
+		{
+			{ RecordingType.Record, 0 },
+			{ RecordingType.Stream, 0 },
+			{ RecordingType.ReplayBuffer, 0 }
+		};
+		public int PollFrequency // this is needed for supporting older versions
+		{ 
+			set 
+			{
+				if (CheckRecordingStatus)
+				{
+					OBSPollFrequencyIndex[RecordingType.Record] = value;
+				}
+				if (CheckStreamingStatus)
+				{
+					OBSPollFrequencyIndex[RecordingType.Stream] = value;
+				}
+			} 
+		}
+
 
 		[SettingIgnore]
 		public string OBSHostPort
@@ -558,35 +607,39 @@ namespace Celeste.Mod.izumisQOL
 				OnValueChange = (int val) => ShowRecordingIndicatorWhen = (OBSRecordingIndicator.DisplayType)val
 			});
 			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_SHOWINDICATOR_DESC".AsDialog());
-
-			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKRECORD".AsDialog(), CheckRecordingStatus)
-			{
-				OnValueChange = (bool val) => CheckRecordingStatus = val
-			});
-			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKRECORD_DESC".AsDialog());
-
-			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKSTREAM".AsDialog(), CheckStreamingStatus)
-			{
-				OnValueChange = (bool val) => CheckStreamingStatus = val
-			});
-			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKSTREAM_DESC".AsDialog());
-
-			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKREPLAYBUFFER".AsDialog(), CheckReplayBufferStatus)
-			{
-				OnValueChange = (bool val) => CheckReplayBufferStatus = val
-			});
-			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKREPLAYBUFFER_DESC".AsDialog());
-
-			subMenu.Add(menuItem = new TextMenu.Slider("MODOPTIONS_IZUMISQOL_OBSSETTINGS_STATUSFREQUENCY".AsDialog(), (int index) => OBSIntegration.PollFrequencyText[index], 0,
-				OBSIntegration.PollFrequencyText.Length - 1, PollFrequencyIndex)
+			//
+			subMenu.Add(menuItem = new TextMenu.Slider("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKRECORD".AsDialog(), (int index) => OBSIntegration.PollFrequencyText[index], 
+				0, OBSIntegration.PollFrequencyText.Length - 1, OBSPollFrequencyIndex[RecordingType.Record])
 			{
 				OnValueChange = (int val) =>
 				{
-					PollFrequencyIndex = val;
+					OBSPollFrequencyIndex[RecordingType.Record] = val;
 					OBSIntegration.CancelOBSPoll();
 				}
 			});
-			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_STATUSFREQUENCY_DESC".AsDialog());
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKRECORD_DESC".AsDialog());
+
+			subMenu.Add(menuItem = new TextMenu.Slider("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKSTREAM".AsDialog(), (int index) => OBSIntegration.PollFrequencyText[index],
+				0, OBSIntegration.PollFrequencyText.Length - 1, OBSPollFrequencyIndex[RecordingType.Stream])
+			{
+				OnValueChange = (int val) =>
+				{
+					OBSPollFrequencyIndex[RecordingType.Stream] = val;
+					OBSIntegration.CancelOBSPoll();
+				}
+			});
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKSTREAM_DESC".AsDialog());
+
+			subMenu.Add(menuItem = new TextMenu.Slider("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKREPLAYBUFFER".AsDialog(), (int index) => OBSIntegration.PollFrequencyText[index],
+				0, OBSIntegration.PollFrequencyText.Length - 1, OBSPollFrequencyIndex[RecordingType.ReplayBuffer])
+			{
+				OnValueChange = (int val) =>
+				{
+					OBSPollFrequencyIndex[RecordingType.ReplayBuffer] = val;
+					OBSIntegration.CancelOBSPoll();
+				}
+			});
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKREPLAYBUFFER_DESC".AsDialog());
 
 			menu.Add(subMenu);
 		}

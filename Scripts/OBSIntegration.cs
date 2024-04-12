@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Celeste.Mod.izumisQOL.UI;
@@ -10,6 +10,13 @@ using OBSWebsocketDotNet.Types;
 
 namespace Celeste.Mod.izumisQOL.OBS
 {
+	public enum RecordingType
+	{
+		Record,
+		Stream,
+		ReplayBuffer
+	}
+
 	public class OBSIntegration : Global
 	{
 		private static OBSWebsocket socket = new();
@@ -38,7 +45,7 @@ namespace Celeste.Mod.izumisQOL.OBS
 			}
 			private set
 			{
-				_IsRecording = value/*.Log("recording")*/;
+				_IsRecording = value;
 			}
 		}
 
@@ -70,10 +77,9 @@ namespace Celeste.Mod.izumisQOL.OBS
 
 		public static bool SuppressIndicators { get; set; } = false;
 
-		public static int PollOBSFrequency => PollFrequencyMilliseconds[ModSettings.PollFrequencyIndex] / 2;
-
 		public static readonly string[] PollFrequencyText =
 		{
+			"Never",
 			"1 Second",
 			"2 Seconds",
 			"3 Seconds",
@@ -94,6 +100,7 @@ namespace Celeste.Mod.izumisQOL.OBS
 
 		private static readonly int[] PollFrequencyMilliseconds =
 		{
+			1_000,
 			1_000,
 			2_000,
 			3_000,
@@ -202,32 +209,34 @@ namespace Celeste.Mod.izumisQOL.OBS
 		private static Task streamingStatusTask;
 		private static CancellationTokenSource streamingStatusCancellationToken = new();
 		private static Task replayBufferStatusTask;
-		private static CancellationTokenSource replayBufferCancellationToken = new();
+		private static CancellationTokenSource replayBufferStatusCancellationToken = new();
 		private static async Task PollOBSForState()
 		{
 			if (ModSettings.CheckRecordingStatus)
 			{
-				await DelayRecordingStatusCheck();
-				if (!recordingStatusTask.IsCanceled) IsRecording = GetRecordingState(socket);
-
-				recordingStatusTask = null;
-				recordingStatusCancellationToken = new();
+				recordingStatusTask = RunAfter(() =>
+				{
+					IsRecording = GetRecordingState(socket);
+				},
+				GetPollOBSFrequency(RecordingType.Record), recordingStatusTask, ref recordingStatusCancellationToken);
 			}
+			await Task.Delay(100);
 			if (ModSettings.CheckStreamingStatus)
 			{
-				await DelayStreamingStatusCheck();
-				if(!streamingStatusTask.IsCanceled) IsStreaming = GetStreamingState(socket);
-
-				streamingStatusTask = null;
-				streamingStatusCancellationToken = new();
+				streamingStatusTask = RunAfter(() =>
+				{
+					IsStreaming = GetStreamingState(socket);
+				},
+				GetPollOBSFrequency(RecordingType.Stream), streamingStatusTask, ref streamingStatusCancellationToken);
 			}
+			await Task.Delay(100);
 			if (ModSettings.CheckReplayBufferStatus)
 			{
-				await DelayReplayBufferStatusCheck();
-				if (!replayBufferStatusTask.IsCanceled) IsReplayBuffering = GetReplayBufferState(socket);
-
-				replayBufferStatusTask = null;
-				replayBufferCancellationToken = new();
+				replayBufferStatusTask = RunAfter(() =>
+				{
+					IsReplayBuffering = GetReplayBufferState(socket);
+				},
+				GetPollOBSFrequency(RecordingType.ReplayBuffer), replayBufferStatusTask, ref replayBufferStatusCancellationToken);
 			}
 		}
 
@@ -251,14 +260,6 @@ namespace Celeste.Mod.izumisQOL.OBS
 				Log(ex, LogLevel.Error);
 				return false;
 			}
-		}
-
-		private static async Task DelayRecordingStatusCheck()
-		{
-			if (recordingStatusTask != null)
-				return;
-
-			await (recordingStatusTask = Task.Delay(PollOBSFrequency, recordingStatusCancellationToken.Token));
 		}
 		#endregion
 
@@ -284,14 +285,6 @@ namespace Celeste.Mod.izumisQOL.OBS
 				return false;
 			}
 		}
-
-		private static async Task DelayStreamingStatusCheck()
-		{
-			if (streamingStatusTask != null)
-				return;
-
-			await (streamingStatusTask = Task.Delay(PollOBSFrequency, streamingStatusCancellationToken.Token));
-		}
 		#endregion
 
 		#region ReplayBufferState
@@ -315,21 +308,18 @@ namespace Celeste.Mod.izumisQOL.OBS
 				return false;
 			}
 		}
-
-		private static async Task DelayReplayBufferStatusCheck()
-		{
-			if (replayBufferStatusTask != null)
-				return;
-
-			await (replayBufferStatusTask = Task.Delay(PollOBSFrequency, streamingStatusCancellationToken.Token));
-		}
 		#endregion
+
+		private static int GetPollOBSFrequency(RecordingType recordingType)
+		{
+			return PollFrequencyMilliseconds[ModSettings.OBSPollFrequencyIndex[recordingType]];
+		}
 
 		public static void CancelOBSPoll()
 		{
 			recordingStatusCancellationToken?.Cancel();
 			streamingStatusCancellationToken?.Cancel();
-			replayBufferCancellationToken?.Cancel();
+			replayBufferStatusCancellationToken?.Cancel();
 		}
 
 		public static void OnLevelBegin(On.Celeste.Level.orig_Begin orig, Level self)
