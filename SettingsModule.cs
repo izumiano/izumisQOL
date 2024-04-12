@@ -102,6 +102,7 @@ namespace Celeste.Mod.izumisQOL
 		public OBSRecordingIndicator.DisplayType ShowRecordingIndicatorWhen = OBSRecordingIndicator.DisplayType.WhenNotRecording;
 		public bool CheckRecordingStatus = false;
 		public bool CheckStreamingStatus = false;
+		public bool CheckReplayBufferStatus = false;
 		public int PollFrequencyIndex = 4;
 
 		[SettingIgnore]
@@ -569,6 +570,12 @@ namespace Celeste.Mod.izumisQOL
 				OnValueChange = (bool val) => CheckStreamingStatus = val
 			});
 			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKSTREAM_DESC".AsDialog());
+
+			subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKREPLAYBUFFER".AsDialog(), CheckReplayBufferStatus)
+			{
+				OnValueChange = (bool val) => CheckReplayBufferStatus = val
+			});
+			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKREPLAYBUFFER_DESC".AsDialog());
 
 			subMenu.Add(menuItem = new TextMenu.Slider("MODOPTIONS_IZUMISQOL_OBSSETTINGS_STATUSFREQUENCY".AsDialog(), (int index) => OBSIntegration.PollFrequencyText[index], 0,
 				OBSIntegration.PollFrequencyText.Length - 1, PollFrequencyIndex)

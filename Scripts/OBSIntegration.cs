@@ -51,7 +51,20 @@ namespace Celeste.Mod.izumisQOL.OBS
 			}
 			private set
 			{
-				_IsStreaming = value/*.Log("streaming")*/;
+				_IsStreaming = value;
+			}
+		}
+
+		private static bool _IsReplayBuffering = false;
+		public static bool IsReplayBuffering
+		{
+			get
+			{
+				return _IsReplayBuffering;
+			}
+			private set
+			{
+				_IsReplayBuffering = value;
 			}
 		}
 
@@ -139,11 +152,12 @@ namespace Celeste.Mod.izumisQOL.OBS
 					socket.Disconnected += OnDisconnect;
 					socket.RecordStateChanged += OnRecordStateChange;
 					socket.StreamStateChanged += OnStreamStateChange;
+					socket.ReplayBufferStateChanged += OnReplayBufferStateChange;
 				}
 				catch (Exception ex)
 				{
 					if(!isFromLaunch) Tooltip.Show("Failed Connecting To OBS Websocket");
-					Log(ex);
+					Log(ex, LogLevel.Error);
 				}
 			}
 		}
@@ -171,7 +185,7 @@ namespace Celeste.Mod.izumisQOL.OBS
 			catch (Exception ex)
 			{
 				Tooltip.Show("Failed Disconnecting From OBS Websocket");
-				Log(ex);
+				Log(ex, LogLevel.Error);
 			}
 		}
 
@@ -187,11 +201,13 @@ namespace Celeste.Mod.izumisQOL.OBS
 		private static CancellationTokenSource recordingStatusCancellationToken = new();
 		private static Task streamingStatusTask;
 		private static CancellationTokenSource streamingStatusCancellationToken = new();
+		private static Task replayBufferStatusTask;
+		private static CancellationTokenSource replayBufferCancellationToken = new();
 		private static async Task PollOBSForState()
 		{
 			if (ModSettings.CheckRecordingStatus)
 			{
-				await CheckRecordingStatus();
+				await DelayRecordingStatusCheck();
 				if (!recordingStatusTask.IsCanceled) IsRecording = GetRecordingState(socket);
 
 				recordingStatusTask = null;
@@ -199,14 +215,23 @@ namespace Celeste.Mod.izumisQOL.OBS
 			}
 			if (ModSettings.CheckStreamingStatus)
 			{
-				await CheckStreamingStatus();
+				await DelayStreamingStatusCheck();
 				if(!streamingStatusTask.IsCanceled) IsStreaming = GetStreamingState(socket);
 
 				streamingStatusTask = null;
 				streamingStatusCancellationToken = new();
 			}
+			if (ModSettings.CheckReplayBufferStatus)
+			{
+				await DelayReplayBufferStatusCheck();
+				if (!replayBufferStatusTask.IsCanceled) IsReplayBuffering = GetReplayBufferState(socket);
+
+				replayBufferStatusTask = null;
+				replayBufferCancellationToken = new();
+			}
 		}
 
+		#region RecordState
 		private static void OnRecordStateChange(object sender, EventArgs ev)
 		{
 			IsRecording = ModSettings.CheckRecordingStatus && GetRecordingState(socket);
@@ -223,19 +248,21 @@ namespace Celeste.Mod.izumisQOL.OBS
 			}
 			catch (Exception ex)
 			{
-				Log(ex);
+				Log(ex, LogLevel.Error);
 				return false;
 			}
 		}
 
-		private static async Task CheckRecordingStatus()
+		private static async Task DelayRecordingStatusCheck()
 		{
 			if (recordingStatusTask != null)
 				return;
 
 			await (recordingStatusTask = Task.Delay(PollOBSFrequency, recordingStatusCancellationToken.Token));
 		}
+		#endregion
 
+		#region StreamState
 		private static void OnStreamStateChange(object sender, EventArgs ev)
 		{
 			IsStreaming = ModSettings.CheckStreamingStatus && GetStreamingState(socket);
@@ -253,23 +280,56 @@ namespace Celeste.Mod.izumisQOL.OBS
 			}
 			catch (Exception ex)
 			{
-				Log(ex);
+				Log(ex, LogLevel.Error);
 				return false;
 			}
 		}
 
-		private static async Task CheckStreamingStatus()
+		private static async Task DelayStreamingStatusCheck()
 		{
 			if (streamingStatusTask != null)
 				return;
 
 			await (streamingStatusTask = Task.Delay(PollOBSFrequency, streamingStatusCancellationToken.Token));
 		}
+		#endregion
+
+		#region ReplayBufferState
+		private static void OnReplayBufferStateChange(object sender, EventArgs ev)
+		{
+			IsReplayBuffering = ModSettings.CheckReplayBufferStatus && GetReplayBufferState(socket);
+		}
+
+		private static bool GetReplayBufferState(OBSWebsocket socket)
+		{
+			if (!IsConnected)
+				return false;
+
+			try
+			{
+				return socket.GetReplayBufferStatus();
+			}
+			catch (Exception ex)
+			{
+				Log(ex, LogLevel.Error);
+				return false;
+			}
+		}
+
+		private static async Task DelayReplayBufferStatusCheck()
+		{
+			if (replayBufferStatusTask != null)
+				return;
+
+			await (replayBufferStatusTask = Task.Delay(PollOBSFrequency, streamingStatusCancellationToken.Token));
+		}
+		#endregion
 
 		public static void CancelOBSPoll()
 		{
 			recordingStatusCancellationToken?.Cancel();
 			streamingStatusCancellationToken?.Cancel();
+			replayBufferCancellationToken?.Cancel();
 		}
 
 		public static void OnLevelBegin(On.Celeste.Level.orig_Begin orig, Level self)

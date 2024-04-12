@@ -106,7 +106,7 @@ namespace Celeste.Mod.izumisQOL.UI
 			Either
 		}
 
-		private static bool IsRecordingOrStreaming => OBSIntegration.IsRecording || OBSIntegration.IsStreaming;
+		private static bool IsRecordingOrStreamingOrReplayBuffering => OBSIntegration.IsRecording || OBSIntegration.IsStreaming || OBSIntegration.IsReplayBuffering;
 		private static bool ShowIndicator
 		{
 			get
@@ -115,8 +115,8 @@ namespace Celeste.Mod.izumisQOL.UI
 
 				return Global.ModSettings.ShowRecordingIndicatorWhen switch
 				{
-					DisplayType.WhenRecording => IsRecordingOrStreaming,
-					DisplayType.WhenNotRecording => !IsRecordingOrStreaming,
+					DisplayType.WhenRecording => IsRecordingOrStreamingOrReplayBuffering,
+					DisplayType.WhenNotRecording => !IsRecordingOrStreamingOrReplayBuffering,
 					DisplayType.Either => true,
 					_ => false
 				};
@@ -130,8 +130,8 @@ namespace Celeste.Mod.izumisQOL.UI
 				return Global.ModSettings.ShowRecordingIndicatorWhen switch
 				{
 					DisplayType.WhenRecording => false,
-					DisplayType.WhenNotRecording => !IsRecordingOrStreaming,
-					DisplayType.Either => !IsRecordingOrStreaming,
+					DisplayType.WhenNotRecording => !IsRecordingOrStreamingOrReplayBuffering,
+					DisplayType.Either => !IsRecordingOrStreamingOrReplayBuffering,
 					_ => false
 				};
 			}
@@ -150,6 +150,6 @@ namespace Celeste.Mod.izumisQOL.UI
 
 	public class OBSDisconnectedIndicator : Indicator
 	{
-		public OBSDisconnectedIndicator() : base("disconnectedIndicator", () => !OBSIntegration.IsConnected && Global.ModSettings.OBSIntegrationEnabled) { }
+		public OBSDisconnectedIndicator() : base("disconnectedIndicator", () => !OBSIntegration.IsConnected && Global.ModSettings.OBSIntegrationEnabled || OBSIntegration.SuppressIndicators) { }
 	}
 }
