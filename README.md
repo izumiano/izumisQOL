@@ -52,7 +52,7 @@ If enabled this will let you connect celeste to obs and show a warning icon in t
 To use it, first you need to enable websockets in OBS which you can do in from |Tools->WebSocket Server Settings->Enable WebSocket server|. You can also find the websockets server port and password here.
 After you have enabled websockets, in celeste go to |Mod Settings->izumi's quality of life->OBS Integration Settings| and set OBS Integration Enabled to On. 
 Then import your host:port(localhost:4455 by default) and password from your clipboard and then click Connect. If it managed to connect properly you will get a message in the bottom left saying "Connected!". 
-Final step now is to turn on Check Recording Status and/or Check Streaming Status.
+Final step now is to turn on Check Recording Status, Check Streaming Status and/or Check Replay Buffer Status.
 
 NoClip:
 
