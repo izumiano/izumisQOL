@@ -67,11 +67,26 @@ namespace Celeste.Mod.izumisQOL.UI
 			if (ParentIcon is not null)
 				return ParentIcon.Position.X;
 
-			int visibleIcons = 0;
-			for (int i = 0; i < indexInIndicatorList; i++)
+			Global.Log("Getting Indicator X Position");
+
+			if (indexInIndicatorList > indicators.Count || indexInIndicatorList < 0)
 			{
-				if (indicators[i].ParentIcon is null && indicators[i].IsVisible)
-					visibleIcons++;
+				Global.Log("indexInIndicatorsList was out of out of bounds in indicators", LogLevel.Error);
+				return Engine.Width - 50f;
+			}
+
+			int visibleIcons = 0;
+			try
+			{
+				for (int i = 0; i < indexInIndicatorList; i++)
+				{
+					if (indicators[i].ParentIcon is null && indicators[i].IsVisible)
+						visibleIcons++;
+				}
+		}
+			catch(Exception ex)
+			{
+				Global.Log(ex, LogLevel.Error);
 			}
 
 			return Engine.Width - 50f - visibleIcons * 80;
@@ -81,11 +96,14 @@ namespace Celeste.Mod.izumisQOL.UI
 		{
 			orig(scene);
 
+			Global.Log("Removing indicators");
+			indicators.ForEach((Indicator i) => i.RemoveSelf());
 			indicators.Clear();
 
 			new OBSRecordingIndicator();
 			new OBSDisconnectedIndicator();
 
+			Global.Log("Adding indicators");
 			scene.Add(indicators);
 		}
 
@@ -93,6 +111,8 @@ namespace Celeste.Mod.izumisQOL.UI
 		{
 			orig(self);
 
+			Global.Log("Removing indicators");
+			indicators.ForEach((Indicator i) => i.RemoveSelf());
 			indicators.Clear();
 		}
 	}

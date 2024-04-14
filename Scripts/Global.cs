@@ -26,15 +26,11 @@ public class Global
 			log = "value was null or empty";
 		}
 
-#if DEBUG
 		var methodInfo = new StackTrace().GetFrame(1).GetMethod();
 		var className = methodInfo.ReflectedType.Name;
 		var methodName = methodInfo.Name;
 
 		Logger.Log(logLevel, "izumisQOL/" + className + "/" + methodName, log);
-#else
-		Logger.Log(logLevel, "izumisQOL", log);
-#endif
 	}
 
 	public static bool WhitelistContains(string path, string name)
