@@ -17,7 +17,6 @@ namespace Celeste.Mod.izumisQOL
 			On.Celeste.OuiJournal.Close += BetterJournalModule.OnJournalClose;
 			Everest.Events.MainMenu.OnCreateButtons += General.OnCreateButtons;
 			On.Monocle.Scene.Begin += Indicator.OnSceneBegin;
-			On.Monocle.Scene.End += Indicator.OnSceneEnd;
 			On.Celeste.Level.Begin += OBSIntegration.OnLevelBegin;
 
 			NoClipModule.Load();
@@ -35,7 +34,6 @@ namespace Celeste.Mod.izumisQOL
 			On.Celeste.OuiJournal.Close -= BetterJournalModule.OnJournalClose;
 			Everest.Events.MainMenu.OnCreateButtons -= General.OnCreateButtons;
 			On.Monocle.Scene.Begin -= Indicator.OnSceneBegin;
-			On.Monocle.Scene.End -= Indicator.OnSceneEnd;
 			On.Celeste.Level.Begin -= OBSIntegration.OnLevelBegin;
 
 			NoClipModule.Unload();

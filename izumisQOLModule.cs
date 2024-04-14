@@ -6,6 +6,7 @@ using FMOD.Studio;
 using Celeste.Mod.izumisQOL.Menu;
 using Celeste.Mod.izumisQOL.ModIntegration;
 using Celeste.Mod.izumisQOL.OBS;
+using Celeste.Mod.izumisQOL.UI;
 
 namespace Celeste.Mod.izumisQOL
 {
@@ -55,6 +56,7 @@ namespace Celeste.Mod.izumisQOL
 		public override void LoadContent(bool firstLoad)
 		{
 			CollabUtils2Integration.Load();
+			Indicator.Load();
 		}
 
 		// Unload the entirety of your mod's content. Free up any native resources.

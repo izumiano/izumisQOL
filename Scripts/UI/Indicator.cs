@@ -11,7 +11,8 @@ namespace Celeste.Mod.izumisQOL.UI
 {
 	public class Indicator : Entity
 	{
-		private static readonly List<Indicator> indicators = new();
+		protected readonly static List<Indicator> indicators = new();
+
 		public bool IsVisible
 		{
 			get
@@ -25,21 +26,27 @@ namespace Celeste.Mod.izumisQOL.UI
 
 		private readonly MTexture iconTexture;
 
-		private readonly int indexInIndicatorList;
+		private readonly int rowIndex;
 
 		public Indicator ParentIcon = null;
 		public Indicator ChildIcon = null;
 
+		public static void Load()
+		{
+			new OBSRecordingIndicator();
+			new OBSDisconnectedIndicator();
+		}
+
 		public Indicator(string iconName, Func<bool> ShouldBeVisible) : base()
 		{
-			indexInIndicatorList = indicators.Count;
+			rowIndex = indicators.Count;
 			indicators.Add(this);
 
 			Position = new Vector2(Engine.Width - 50f, Engine.Height - 50f);
 			shouldBeVisible = ShouldBeVisible;
 			iconTexture = GFX.Gui["hud/" + iconName];
-			Tag = (int)Tags.HUD | (int)Tags.Global | (int)Tags.FrozenUpdate | (int)Tags.PauseUpdate | (int)Tags.TransitionUpdate;
 		}
+
 
 		public void AddChild(Indicator child)
 		{
@@ -67,9 +74,7 @@ namespace Celeste.Mod.izumisQOL.UI
 			if (ParentIcon is not null)
 				return ParentIcon.Position.X;
 
-			Global.Log("Getting Indicator X Position");
-
-			if (indexInIndicatorList > indicators.Count || indexInIndicatorList < 0)
+			if (rowIndex > indicators.Count || rowIndex < 0)
 			{
 				Global.Log("indexInIndicatorsList was out of out of bounds in indicators", LogLevel.Error);
 				return Engine.Width - 50f;
@@ -78,9 +83,11 @@ namespace Celeste.Mod.izumisQOL.UI
 			int visibleIcons = 0;
 			try
 			{
-				for (int i = 0; i < indexInIndicatorList; i++)
+				for (int i = 0; i < rowIndex; i++)
 				{
-					if (indicators[i].ParentIcon is null && indicators[i].IsVisible)
+					Indicator indicator = indicators[i];
+
+					if (indicator.ParentIcon is null && indicator.IsVisible)
 						visibleIcons++;
 				}
 		}
@@ -96,24 +103,9 @@ namespace Celeste.Mod.izumisQOL.UI
 		{
 			orig(scene);
 
-			Global.Log("Removing indicators");
-			indicators.ForEach((Indicator i) => i.RemoveSelf());
-			indicators.Clear();
-
-			new OBSRecordingIndicator();
-			new OBSDisconnectedIndicator();
-
 			Global.Log("Adding indicators");
+			indicators.ForEach(i => i.Tag = (int)Tags.HUD | (int)Tags.Global | (int)Tags.FrozenUpdate | (int)Tags.PauseUpdate | (int)Tags.TransitionUpdate);
 			scene.Add(indicators);
-		}
-
-		public static void OnSceneEnd(On.Monocle.Scene.orig_End orig, Scene self)
-		{
-			orig(self);
-
-			Global.Log("Removing indicators");
-			indicators.ForEach((Indicator i) => i.RemoveSelf());
-			indicators.Clear();
 		}
 	}
 
