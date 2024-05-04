@@ -15,7 +15,7 @@ namespace Celeste.Mod.izumisQOL
 {
 	public class BetterJournalModule : Global
 	{
-		private static readonly string journalStatsPath = BaseDirectory + "Saves\\izumisQOL\\journalStats\\";
+		private static readonly string journalStatsPath = UserIO.SavePath.SanitizeFilePath() + "/izumisQOL/journalStats/";
 
 		enum JournalDataType
 		{

@@ -14,6 +14,20 @@ using Monocle;
 
 public static class Extensions
 {
+	public static string SanitizeFilePath(this string path)
+	{
+		return path.Replace("\\", "/");
+	}
+
+	public static string[] SanitizeFilePath(this string[] paths)
+	{
+        for(int i = 0; i < paths.Length; i++)
+		{
+			paths[i] = paths[i].SanitizeFilePath();
+		}
+		return paths;
+    }
+
 	public static OuiJournalPage Page(this OuiJournal journal)
 	{
 		if(journal == null || journal.PageIndex > journal.Pages.Count - 1 || journal.PageIndex < 0)

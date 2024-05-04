@@ -1,13 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Linq;
+using Celeste.Mod;
 
 namespace Celeste.Mod.izumisQOL
 {
 	public class WhitelistModule : Global
 	{
-		private static readonly string whitelistsPath = BaseDirectory + "Saves\\izumisQOL\\whitelists";
+		private static readonly string whitelistsPath = UserIO.SavePath.SanitizeFilePath() + "/izumisQOL/whitelists";
 
 		public static void Init()
 		{
@@ -29,7 +29,7 @@ namespace Celeste.Mod.izumisQOL
 
 		private static void LoadWhitelistFiles()
 		{
-			string[] files = Directory.GetFiles(whitelistsPath);
+			string[] files = Directory.GetFiles(whitelistsPath).SanitizeFilePath();
 
 			if(files.Length <= 0)
 			{
@@ -39,7 +39,7 @@ namespace Celeste.Mod.izumisQOL
 
 			for (int i = 0; i < files.Length; i++)
 			{
-				string fileName = files[i].Replace(whitelistsPath + "\\", "").Replace(".txt", "");
+				string fileName = files[i].Replace(whitelistsPath + "/", "").Replace(".txt", "");
 
 				ModSettings.AddWhitelistName(fileName);
 				Log(fileName);
@@ -134,13 +134,13 @@ namespace Celeste.Mod.izumisQOL
 				}
 
 				string[] whitelistLines = File.ReadAllLines(whitelistsPath + "/" + name + ".txt");
-				string[] everestBlacklistLines = File.ReadAllLines(BaseDirectory + "Mods/blacklist.txt");
+				string[] everestBlacklistLines = File.ReadAllLines(Everest.Loader.PathBlacklist);
 				string everestBlacklistText = "";
 
 				if (ModSettings.WhitelistIsExclusive)
 				{
-					string[] modFiles = Directory.GetFiles(BaseDirectory + "Mods");
-					string[] modFolders = Directory.GetDirectories(BaseDirectory + "Mods");
+					string[] modFiles = Directory.GetFiles(Everest.Loader.PathMods).SanitizeFilePath();
+					string[] modFolders = Directory.GetDirectories(Everest.Loader.PathMods).SanitizeFilePath();
 					foreach (string modPath in modFiles)
 					{
 						if (!modPath.EndsWith(".zip"))
@@ -157,7 +157,7 @@ namespace Celeste.Mod.izumisQOL
 					{
 						if (string.IsNullOrEmpty(modPath))
 							return;
-						modPath = modPath.Replace(BaseDirectory + "Mods\\", "");
+						modPath = modPath.Replace(Everest.Loader.PathMods.SanitizeFilePath() + "/", "");
 						if (IsEssentialModule(modPath))
 							return;
 
@@ -176,7 +176,7 @@ namespace Celeste.Mod.izumisQOL
 					}
 				}
 
-				File.WriteAllText(BaseDirectory + "Mods/blacklist.txt", everestBlacklistText);
+				File.WriteAllText(Everest.Loader.PathBlacklist, everestBlacklistText);
 
 				Tooltip.Show((ModSettings.WhitelistIsExclusive ? "Exclusively " : "Non-exclusively ") + "applied " + name + " to blacklist");
 

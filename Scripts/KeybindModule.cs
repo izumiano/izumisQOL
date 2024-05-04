@@ -13,7 +13,7 @@ namespace Celeste.Mod.izumisQOL
 	public class KeybindModule : Global
 	{
 		public static List<Settings> KeybindSettings = new();
-		private static readonly string keybindsPath = BaseDirectory + "Saves\\izumisQOL\\keybinds";
+		private static readonly string keybindsPath = UserIO.SavePath.SanitizeFilePath()  + "/izumisQOL/keybinds";
 
 		public static void Load()
 		{
@@ -102,11 +102,12 @@ namespace Celeste.Mod.izumisQOL
 			int keybindIndex = -1;
 			for(int i = 0; i < keybindFiles.Count; i++)
 			{
+				Log(i);
 				if (!keybindFiles.ContainsKey(i.ToString()))
 					continue;
 
-				string shortPath = keybindFiles[i.ToString()].Replace(BaseDirectory + "Saves\\", "").Replace(".celeste", ""); // izuMod\0_
-				string fileName = shortPath.Replace("izumisQOL\\keybinds\\", "");
+				string shortPath = keybindFiles[i.ToString()].Replace(UserIO.SavePath.SanitizeFilePath() + "/", "").Replace(".celeste", "");
+				string fileName = shortPath.Replace("izumisQOL/keybinds/", "");
 
 				string s = fileName.Remove(0, fileName.IndexOf('_') + 1);
 
@@ -137,8 +138,7 @@ namespace Celeste.Mod.izumisQOL
 
 		public static void SaveKeybinds(int keybindID)
 		{
-			Log("saving keybind " + keybindID);
-
+			Log("getting ready to save keybind " + keybindID);
 			FileStream fileStream = File.Open("Saves/settings.celeste", FileMode.Open);
 
 			string celesteSettingsFile;
@@ -163,7 +163,8 @@ namespace Celeste.Mod.izumisQOL
 				}
 				name = "keybind" + index;
 			}
-			File.WriteAllText(keybindsPath + "/" + keybindID + "_" + name + ".celeste", celesteSettingsFile);
+			Log("saving keybind " + keybindID + " to path:");
+			File.WriteAllText((keybindsPath + "/" + keybindID + "_" + name + ".celeste").Log(), celesteSettingsFile);
 
 			SaveModKeybinds(keybindID);
 
@@ -177,17 +178,17 @@ namespace Celeste.Mod.izumisQOL
 
 			Dictionary<string, string> keybindFiles = GetKeybindFilesIDPathValuePair(Directory.GetFiles(keybindsPath));
 
-			string keybindDelPath = keybindsPath + "\\" + keybindID + "_" + keybindNames[keybindID] + ".celeste";
+			string keybindDelPath = keybindsPath + "/" + keybindID + "_" + keybindNames[keybindID] + ".celeste";
 			Log("Deleting: " + keybindDelPath);
 			File.Delete(keybindDelPath);
 
 			foreach(EverestModule module in Everest.Modules)
 			{
 				string modName = module.Metadata.Name;
-				if (!WhitelistContains(keybindsPath + "\\whitelist.txt", modName))
+				if (!WhitelistContains(keybindsPath + "/whitelist.txt", modName))
 					continue;
 
-				string modFileDelPath = keybindsPath + "\\" + keybindID + "_modsettings-" + modName + ".celeste";
+				string modFileDelPath = keybindsPath + "/" + keybindID + "_modsettings-" + modName + ".celeste";
 				Log("Deleting Mod File: " + modFileDelPath);
 				File.Delete(modFileDelPath);
 			}
@@ -202,10 +203,10 @@ namespace Celeste.Mod.izumisQOL
 				{
 					string modName = module.Metadata.Name;
 					keybindID.Log("keybindID");
-					if (!WhitelistContains(keybindsPath + "\\whitelist.txt", modName))
+					if (!WhitelistContains(keybindsPath + "/whitelist.txt", modName))
 						continue;
 					
-					MoveKeybindFileIndexDown(i, keybindsPath + "\\" + i + "_modsettings-" + modName + ".celeste");
+					MoveKeybindFileIndexDown(i, keybindsPath + "/" + i + "_modsettings-" + modName + ".celeste");
 				}
 			}
 
@@ -222,16 +223,18 @@ namespace Celeste.Mod.izumisQOL
 				string newName = (keybindID - 1).ToString() + fileName.Remove(0, fileName.IndexOf('_'));
 
 				Log("Renaming: " + fileName + " to: " + newName);
-				File.Move(filePath, keybindsPath + "\\" + newName);
+				File.Move(filePath, keybindsPath + "/" + newName);
 			}
 		}
 
 		private static Dictionary<string, string> GetKeybindFilesIDPathValuePair(string[] filePaths)
 		{
+			filePaths = filePaths.SanitizeFilePath();
+
 			Dictionary<string, string> keybindFiles = new();
 			foreach (string filePath in filePaths)
 			{
-				string fileName = filePath.Replace(keybindsPath + "\\", "");
+				string fileName = filePath.Replace(keybindsPath + "/", "");
 				if (!fileName.Contains(".celeste"))
 				{
 					continue;
@@ -384,7 +387,7 @@ namespace Celeste.Mod.izumisQOL
 					}
 					if (doSave)
 					{
-						FileStream fileStream2 = File.Create(keybindsPath + "\\" + keybindID + "_modsettings-" + module.Metadata.Name + ".celeste");
+						FileStream fileStream2 = File.Create(keybindsPath + "/" + keybindID + "_modsettings-" + module.Metadata.Name + ".celeste");
 						using StreamWriter writer = new(fileStream2);
 						YamlHelper.Serializer.Serialize(writer, settingsSave, typeof(ModKeybindsSaveType));
 					}
@@ -410,7 +413,7 @@ namespace Celeste.Mod.izumisQOL
 				bool inWhitelist = WhitelistContains(keybindsPath + "/whitelist.txt", modName);
 				Log(modName + " in whitelist: " + inWhitelist);
 
-				string modPath = keybindsPath + "\\" + keybindID + "_modsettings-" + modName + ".celeste";
+				string modPath = keybindsPath + "/" + keybindID + "_modsettings-" + modName + ".celeste";
 				if (!inWhitelist)
 				{
 					continue;

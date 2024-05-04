@@ -12,8 +12,6 @@ using System.Threading;
 
 public class Global
 {
-	public static readonly string BaseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-
 	public static SettingsModule ModSettings => izumisQOL.ModSettings;
 
 	public static void Log<T>(T obj, LogLevel logLevel = LogLevel.Verbose)
