@@ -139,7 +139,7 @@ namespace Celeste.Mod.izumisQOL
 		public static void SaveKeybinds(int keybindID)
 		{
 			Log("getting ready to save keybind " + keybindID);
-			FileStream fileStream = File.Open("Saves/settings.celeste", FileMode.Open);
+			FileStream fileStream = File.Open((UserIO.SavePath.SanitizeFilePath() + "/settings.celeste").Log("reading celeste settings at"), FileMode.Open);
 
 			string celesteSettingsFile;
 			using(var sr = new StreamReader(fileStream))
