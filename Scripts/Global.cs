@@ -9,14 +9,16 @@ using System.IO;
 using Celeste.Mod;
 using Celeste.Mod.izumisQOL;
 using System.Threading;
+using Celeste.Mod.izumisQOL.Scripts;
 
 public class Global
 {
 	public static SettingsModule ModSettings => izumisQOL.ModSettings;
 
-	public static void Log<T>(T obj, LogLevel logLevel = LogLevel.Verbose)
+	public static void Log<T>(T obj, LogLevel logLevel = LogLevel.Verbose, Func<T, string> logParser = null)
 	{
-		string text = obj is null ? "null" : obj.ToString();
+		logParser ??= LogParser.Default;
+		string text = obj is null ? "null" : logParser(obj);
 		string log = text.ToString();
 
 		if (string.IsNullOrEmpty(log))
@@ -28,7 +30,7 @@ public class Global
 		var className = methodInfo.ReflectedType.Name;
 		var methodName = methodInfo.Name;
 
-		Logger.Log(logLevel, "izumisQOL/" + className + "/" + methodName, log);
+		Logger.Log(logLevel, nameof(izumisQOL), "[" + className + "/" + methodName + "] " + log);
 	}
 
 	public static bool WhitelistContains(string path, string name)

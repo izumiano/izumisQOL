@@ -9,6 +9,7 @@ using Monocle;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using SDL2;
+using Celeste.Mod.izumisQOL.Scripts;
 
 namespace Celeste.Mod.izumisQOL
 {
@@ -145,11 +146,7 @@ namespace Celeste.Mod.izumisQOL
 
 		private static bool HasJoystickChanged(Vector2 leftJoystickPosition, Vector2 rightJoystickPosition, Vector2 prevLeftJoystick, Vector2 prevRightJoystick)
 		{
-			if (leftJoystickPosition != prevLeftJoystick || rightJoystickPosition != prevRightJoystick)
-			{
-				return true;
-			}
-			return false;
+			return leftJoystickPosition != prevLeftJoystick || rightJoystickPosition != prevRightJoystick;
 		}
 
 		private static bool HasControllerChanged(GamePadState gamepadState, GamePadState prevGamepadState, ref Vector2 prevLeftJoystick, ref Vector2 prevRightJoystick, out bool gotSDLJoystick)
@@ -190,7 +187,7 @@ namespace Celeste.Mod.izumisQOL
 				Log("connection");
 				return true;
 			}
-			if(leftJoystickPosition == Vector2.Zero && rightJoystickPosition == Vector2.Zero)
+			if(Vector2.DistanceSquared(leftJoystickPosition, Vector2.Zero) < 1.8627588E-08 && Vector2.DistanceSquared(rightJoystickPosition, Vector2.Zero) < 1.8627588E-08)
 			{
 				Log("joystick at zero");
 				return true;

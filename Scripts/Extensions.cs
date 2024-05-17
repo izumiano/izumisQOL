@@ -11,6 +11,8 @@ using Celeste.Mod;
 using Celeste.Mod.izumisQOL.UI;
 
 using Monocle;
+using Celeste.Mod.izumisQOL.Scripts;
+using Celeste.Mod.izumisQOL;
 
 public static class Extensions
 {
@@ -97,14 +99,15 @@ public static class Extensions
 			});
 		}
 
-	public static T1 Log<T1, T2>(this T1 obj, T2 identifier, LogLevel logLevel = LogLevel.Verbose)
+	public static T1 Log<T1, T2>(this T1 obj, T2 identifier, LogLevel logLevel = LogLevel.Verbose, Func<T1, string> logParser = null)
 	{
-		return Log(obj, identifier.ToString(), logLevel);
+		return Log(obj, identifier.ToString(), logLevel, logParser);
 	}
 
-	public static T Log<T>(this T obj, string identifier = null, LogLevel logLevel = LogLevel.Verbose)
+	public static T Log<T>(this T obj, string identifier = null, LogLevel logLevel = LogLevel.Verbose, Func<T, string> logParser = null)
 	{
-		string text = obj is null ? "null" : obj.ToString();
+		logParser ??= LogParser.Default;
+		string text = obj is null ? "null" : logParser(obj);
 		string log = string.IsNullOrEmpty(identifier) ? text : identifier + ": " + text;
 
 		if (string.IsNullOrEmpty(log))
@@ -116,7 +119,7 @@ public static class Extensions
 		var className = methodInfo.ReflectedType.Name;
 		var methodName = methodInfo.Name;
 
-		Logger.Log(logLevel, "izumisQOL/" + className + "/" + methodName, log);
+		Logger.Log(logLevel, nameof(izumisQOL), "[" + className + "/" + methodName + "] " + log);
 		return obj;
 	}
 
