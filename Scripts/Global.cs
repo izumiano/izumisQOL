@@ -15,22 +15,9 @@ public class Global
 {
 	public static SettingsModule ModSettings => izumisQOL.ModSettings;
 
-	public static void Log<T>(T obj, LogLevel logLevel = LogLevel.Verbose, Func<T, string> logParser = null)
+	public static T Log<T>(T obj, LogLevel logLevel = LogLevel.Verbose, Func<T, string> logParser = null)
 	{
-		logParser ??= LogParser.Default;
-		string text = obj is null ? "null" : logParser(obj);
-		string log = text.ToString();
-
-		if (string.IsNullOrEmpty(log))
-		{
-			log = "value was null or empty";
-		}
-
-		var methodInfo = new StackTrace().GetFrame(1).GetMethod();
-		var className = methodInfo.ReflectedType.Name;
-		var methodName = methodInfo.Name;
-
-		Logger.Log(logLevel, nameof(izumisQOL), "[" + className + "/" + methodName + "] " + log);
+		return obj.Log(logLevel: logLevel, logParser: logParser, methodInfo: new StackTrace()?.GetFrame(1)?.GetMethod());
 	}
 
 	public static bool WhitelistContains(string path, string name)

@@ -1,7 +1,9 @@
 ﻿using System.Collections;
-
+using System.Reflection;
 using Microsoft.Xna.Framework;
 using Monocle;
+
+using MonoMod.RuntimeDetour;
 
 namespace Celeste.Mod.izumisQOL
 {
@@ -27,24 +29,34 @@ namespace Celeste.Mod.izumisQOL
 
 		public static void Load()
 		{
-			On.Celeste.Player.ctor += OnPlayerCtor;
+			Everest.Events.Player.OnRegisterStates += OnRegisterStates;
 			On.Celeste.Player.Update += PlayerUpdate;
 			On.Celeste.Player.OnTransition += OnPlayerTransition;
+			On.Celeste.Level.End += OnLevelEnd;
+
 			On.Monocle.Collide.Check_Entity_Entity += CheckEntity;
 		}
 
 		public static void Unload()
 		{
-			On.Celeste.Player.ctor -= OnPlayerCtor;
+			Everest.Events.Player.OnRegisterStates -= OnRegisterStates;
 			On.Celeste.Player.Update -= PlayerUpdate;
+			On.Celeste.Player.OnTransition -= OnPlayerTransition;
+			On.Celeste.Level.End -= OnLevelEnd;
+
 			On.Monocle.Collide.Check_Entity_Entity -= CheckEntity;
 		}
 
-		private static void OnPlayerCtor(On.Celeste.Player.orig_ctor orig, Player self, Vector2 position, PlayerSpriteMode spriteMode)
+		private static void OnRegisterStates(Player player)
 		{
-			orig(self, position, spriteMode);
+			noClipState = player.AddState("StNoClip", StateUpdate, StateCoroutine, StateBegin, StateEnd);
+		}
 
-			noClipState = self.StateMachine.AddState<Player>("StNoClip", StateUpdate, StateCoroutine, StateBegin, StateEnd);
+		private static void OnLevelEnd(On.Celeste.Level.orig_End orig, Level self)
+		{
+			orig(self);
+
+			Enabled = false;
 		}
 
 		private static void OnPlayerTransition(On.Celeste.Player.orig_OnTransition orig, Player self)
@@ -131,6 +143,7 @@ namespace Celeste.Mod.izumisQOL
 			{
 				if(playerA.StateMachine.State == noClipState)
 				{
+					orig(a, b);
 					return false;
 				}
 			}
@@ -138,6 +151,7 @@ namespace Celeste.Mod.izumisQOL
 			{
 				if (playerB.StateMachine.State == noClipState)
 				{
+					orig(a, b);
 					return false;
 				}
 			}

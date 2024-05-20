@@ -662,12 +662,18 @@ namespace Celeste.Mod.izumisQOL
 
 		public void CreateNoClipEnabledEntry(TextMenu menu, bool inGame)
 		{
+			if (!inGame)
+			{
+				NoClipEnabled = false;
+			}
+
 			TextMenuExt.SubMenu subMenu = new("NoClip Settings", false);
 
 			TextMenu.Item menuItem;
 			subMenu.Add(menuItem = new TextMenu.OnOff("NoClip Enabled", NoClipEnabled)
 			{
-				OnValueChange = (bool val) => NoClipEnabled = val
+				OnValueChange = (bool val) => NoClipEnabled = val,
+				Disabled = !inGame,
 			});
 			subMenu.AddDescription(menu, menuItem, "Whether NoClip is enabled or not.");
 
