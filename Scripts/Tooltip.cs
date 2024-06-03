@@ -5,7 +5,6 @@ using Microsoft.Xna.Framework;
 using Monocle;
 
 namespace Celeste.Mod.izumisQOL;
-
 [Tracked(false)]
 public class Tooltip : Entity
 {

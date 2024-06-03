@@ -1,20 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
 
-using Celeste;
-using Celeste.Mod;
-using Celeste.Mod.izumisQOL.UI;
-
-using Monocle;
 using Celeste.Mod.izumisQOL.Scripts;
-using Celeste.Mod.izumisQOL;
 using System.Reflection;
 
+namespace Celeste.Mod.izumisQOL;
 public static class Extensions
 {
 	public static string SanitizeFilePath(this string path)
