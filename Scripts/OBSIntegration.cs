@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Celeste.Mod.izumisQOL.UI;
-using Monocle;
 using OBSWebsocketDotNet;
 using OBSWebsocketDotNet.Communication;
 using OBSWebsocketDotNet.Types;
@@ -17,7 +14,7 @@ namespace Celeste.Mod.izumisQOL.OBS
 		ReplayBuffer
 	}
 
-	public class OBSIntegration
+	public static class OBSIntegration
 	{
 		private static OBSWebsocket socket = new();
 

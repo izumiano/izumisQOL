@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace Celeste.Mod.izumisQOL.ModIntegration
 {
-	public class CollabUtils2Integration
+	public static class CollabUtils2Integration
 	{
 		//public static bool InJournal => Loaded && Journal != null;
 

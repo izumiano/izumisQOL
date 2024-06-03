@@ -1,11 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Celeste;
 using Microsoft.Xna.Framework;
 using Monocle;
-using System;
-using Celeste.Mod.Helpers;
+
+namespace Celeste.Mod.izumisQOL;
 
 [Tracked(false)]
 public class Tooltip : Entity

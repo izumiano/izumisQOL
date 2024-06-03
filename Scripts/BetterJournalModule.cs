@@ -13,7 +13,7 @@ using Celeste.Mod.izumisQOL.ModIntegration;
 
 namespace Celeste.Mod.izumisQOL
 {
-	public class BetterJournalModule
+	public static class BetterJournalModule
 	{
 		private static readonly string journalStatsPath = UserIO.SavePath.SanitizeFilePath() + "/izumisQOL/journalStats/";
 

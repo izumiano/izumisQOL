@@ -5,7 +5,7 @@ using Celeste.Mod.izumisQOL.UI;
 
 namespace Celeste.Mod.izumisQOL
 {
-	public class Hooks
+	public static class Hooks
 	{
 		internal static void Load()
 		{

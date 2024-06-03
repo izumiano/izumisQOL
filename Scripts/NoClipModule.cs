@@ -1,13 +1,10 @@
 ﻿using System.Collections;
-using System.Reflection;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-using MonoMod.RuntimeDetour;
-
 namespace Celeste.Mod.izumisQOL
 {
-	public class NoClipModule
+	public static class NoClipModule
 	{
 		public static bool Enabled
 		{

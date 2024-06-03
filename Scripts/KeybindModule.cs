@@ -10,7 +10,7 @@ using System.Reflection;
 
 namespace Celeste.Mod.izumisQOL
 {
-	public class KeybindModule
+	public static class KeybindModule
 	{
 		public static List<Settings> KeybindSettings = new();
 		private static readonly string keybindsPath = UserIO.SavePath.SanitizeFilePath()  + "/izumisQOL/keybinds";

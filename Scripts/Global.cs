@@ -6,7 +6,7 @@ using System.IO;
 using System.Threading;
 
 namespace Celeste.Mod.izumisQOL;
-public class Global
+public static class Global
 {
 	public static SettingsModule ModSettings => izumisQOL.ModSettings;
 

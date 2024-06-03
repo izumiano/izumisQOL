@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Celeste.Mod.izumisQOL.ModIntegration
 {
-	public class IntegrationUtils
+	public static class IntegrationUtils
 	{
 		public static bool TryGetModule(EverestModuleMetadata meta, out EverestModule module)
 		{
