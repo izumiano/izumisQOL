@@ -1,8 +1,6 @@
 ﻿global using static Celeste.Mod.izumisQOL.Global;
 
 using System;
-using Microsoft.Xna.Framework;
-using System.Collections.Generic;
 using Monocle;
 using FMOD.Studio;
 using Celeste.Mod.izumisQOL.Menu;
