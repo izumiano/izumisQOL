@@ -112,16 +112,16 @@ public static class Extensions
 		{
 			methodInfo ??= new StackTrace()?.GetFrame(1)?.GetMethod();
 
-			if(methodInfo is null) throw new Exception("methodInfo was null");
+			if (methodInfo is null) throw new Exception("methodInfo was null");
 
-			var className = methodInfo.ReflectedType.Name;
-			var methodName = methodInfo.Name;
+			string className = methodInfo.ReflectedType.Name;
+			string methodName = methodInfo.Name;
 
 			log = "[" + className + "/" + methodName + "] " + log;
 		}
 		catch(Exception ex)
 		{
-			Logger.Log(LogLevel.Warn, nameof(izumisQOL), "\nCould not get complete methodInfo.\n" + ex);
+			Logger.Log(LogLevel.Warn, nameof(izumisQOL), ex.ToString());
 		}
 
 		Logger.Log(logLevel, nameof(izumisQOL), log);

@@ -12,7 +12,7 @@ public static class Global
 
 	public static T Log<T>(T obj, LogLevel logLevel = LogLevel.Verbose, Func<T, string> logParser = null)
 	{
-		return obj.Log(logLevel: logLevel, logParser: logParser, methodInfo: new StackTrace()?.GetFrame(1)?.GetMethod());
+		return obj.Log(logLevel: logLevel, logParser: logParser, methodInfo: new StackTrace()?.GetFrame(0)?.GetMethod());
 	}
 
 	public static bool WhitelistContains(string path, string name)
