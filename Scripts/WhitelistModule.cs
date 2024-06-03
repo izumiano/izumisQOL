@@ -5,7 +5,7 @@ using Celeste.Mod;
 
 namespace Celeste.Mod.izumisQOL
 {
-	public class WhitelistModule : Global
+	public class WhitelistModule
 	{
 		private static readonly string whitelistsPath = UserIO.SavePath.SanitizeFilePath() + "/izumisQOL/whitelists";
 

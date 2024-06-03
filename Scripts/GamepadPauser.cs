@@ -13,7 +13,7 @@ using Celeste.Mod.izumisQOL.Scripts;
 
 namespace Celeste.Mod.izumisQOL
 {
-	public class GamepadPauser : Global
+	public class GamepadPauser
 	{
 		private static int sameCount = 0;
 		private static int SameCount

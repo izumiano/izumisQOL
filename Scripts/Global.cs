@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
 
-using Celeste.Mod;
-using Celeste.Mod.izumisQOL;
 using System.Threading;
-using Celeste.Mod.izumisQOL.Scripts;
 
+namespace Celeste.Mod.izumisQOL;
 public class Global
 {
 	public static SettingsModule ModSettings => izumisQOL.ModSettings;

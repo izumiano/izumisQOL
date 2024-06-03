@@ -1,4 +1,6 @@
-﻿using System;
+﻿global using static Celeste.Mod.izumisQOL.Global;
+
+using System;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 using Monocle;

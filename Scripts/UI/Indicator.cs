@@ -76,7 +76,7 @@ namespace Celeste.Mod.izumisQOL.UI
 
 			if (rowIndex > indicators.Count || rowIndex < 0)
 			{
-				Global.Log("indexInIndicatorsList was out of out of bounds in indicators", LogLevel.Error);
+				Log("indexInIndicatorsList was out of out of bounds in indicators", LogLevel.Error);
 				return Engine.Width - 50f;
 			}
 
@@ -93,7 +93,7 @@ namespace Celeste.Mod.izumisQOL.UI
 		}
 			catch(Exception ex)
 			{
-				Global.Log(ex, LogLevel.Error);
+				Log(ex, LogLevel.Error);
 			}
 
 			return Engine.Width - 50f - visibleIcons * 80;
@@ -103,7 +103,7 @@ namespace Celeste.Mod.izumisQOL.UI
 		{
 			orig(scene);
 
-			Global.Log("Adding indicators");
+			Log("Adding indicators");
 			indicators.ForEach(i => i.Tag = (int)Tags.HUD | (int)Tags.Global | (int)Tags.FrozenUpdate | (int)Tags.PauseUpdate | (int)Tags.TransitionUpdate);
 			scene.Add(indicators);
 		}
@@ -123,9 +123,9 @@ namespace Celeste.Mod.izumisQOL.UI
 		{
 			get
 			{
-				if(!Global.ModSettings.OBSIntegrationEnabled || OBSIntegration.SuppressIndicators) return false;
+				if(!ModSettings.OBSIntegrationEnabled || OBSIntegration.SuppressIndicators) return false;
 
-				return Global.ModSettings.ShowRecordingIndicatorWhen switch
+				return ModSettings.ShowRecordingIndicatorWhen switch
 				{
 					DisplayType.WhenRecording => IsRecordingOrStreamingOrReplayBuffering,
 					DisplayType.WhenNotRecording => !IsRecordingOrStreamingOrReplayBuffering,
@@ -139,7 +139,7 @@ namespace Celeste.Mod.izumisQOL.UI
 		{
 			get
 			{
-				return Global.ModSettings.ShowRecordingIndicatorWhen switch
+				return ModSettings.ShowRecordingIndicatorWhen switch
 				{
 					DisplayType.WhenRecording => false,
 					DisplayType.WhenNotRecording => !IsRecordingOrStreamingOrReplayBuffering,
@@ -162,6 +162,6 @@ namespace Celeste.Mod.izumisQOL.UI
 
 	public class OBSDisconnectedIndicator : Indicator
 	{
-		public OBSDisconnectedIndicator() : base("disconnectedIndicator", () => !OBSIntegration.IsConnected && Global.ModSettings.OBSIntegrationEnabled && !OBSIntegration.SuppressIndicators) { }
+		public OBSDisconnectedIndicator() : base("disconnectedIndicator", () => !OBSIntegration.IsConnected && ModSettings.OBSIntegrationEnabled && !OBSIntegration.SuppressIndicators) { }
 	}
 }

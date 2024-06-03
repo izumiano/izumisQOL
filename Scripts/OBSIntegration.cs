@@ -17,7 +17,7 @@ namespace Celeste.Mod.izumisQOL.OBS
 		ReplayBuffer
 	}
 
-	public class OBSIntegration : Global
+	public class OBSIntegration
 	{
 		private static OBSWebsocket socket = new();
 

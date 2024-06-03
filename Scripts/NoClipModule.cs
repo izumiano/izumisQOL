@@ -7,7 +7,7 @@ using MonoMod.RuntimeDetour;
 
 namespace Celeste.Mod.izumisQOL
 {
-	public class NoClipModule : Global
+	public class NoClipModule
 	{
 		public static bool Enabled
 		{

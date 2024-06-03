@@ -13,7 +13,7 @@ namespace Celeste.Mod.izumisQOL.UI
 	{
 		public static void OnCreateButtons(OuiMainMenu menu, List<MenuButton> buttons)
 		{
-			if (!Global.ModSettings.ShowRestartButtonInMainMenu)
+			if (!ModSettings.ShowRestartButtonInMainMenu)
 				return;
 
 			MainMenuSmallButton btn = new("MODOPTIONS_IZUMISQOL_RESTART", "menu/restart", menu, Vector2.Zero, Vector2.Zero,

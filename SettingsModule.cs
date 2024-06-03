@@ -76,7 +76,7 @@ namespace Celeste.Mod.izumisQOL
 			{
 				if(value < 0)
 				{
-					Global.Log("tried to set currentWhitelistSlot to value outside array size, setting to 0", LogLevel.Warn);
+					Log("tried to set currentWhitelistSlot to value outside array size, setting to 0", LogLevel.Warn);
 					currentWhitelistSlot = 0;
 				}
 				else
@@ -232,7 +232,7 @@ namespace Celeste.Mod.izumisQOL
 
 			TextMenu.Item menuItem;
 
-			Global.Log("keybindSettings.Count=" + KeybindModule.KeybindSettings.Count);
+			Log("keybindSettings.Count=" + KeybindModule.KeybindSettings.Count);
 
 			subMenu.Add(CurrentKeybindSlider = new TextMenu.Slider("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_CURRENTKEYBINDSLOT".AsDialog(), i => GetKeybindName(i), 0, keybindNames.Count - 1, CurrentKeybindSlot)
 			{
@@ -260,7 +260,7 @@ namespace Celeste.Mod.izumisQOL
 			menuItem.Pressed(
 				delegate
 				{
-					Global.Log("Copying to: " + CurrentKeybindSlider.Index);
+					Log("Copying to: " + CurrentKeybindSlider.Index);
 					Tooltip.Show("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_COPYKEYBINDS_TOOLTIP".AsDialog() + " " + GetKeybindName(CurrentKeybindSlider.Index));
 
 					KeybindModule.SaveKeybinds(CurrentKeybindSlider.Index);
@@ -328,7 +328,7 @@ namespace Celeste.Mod.izumisQOL
 
 						if(keybindSlot < 0)
 						{
-							Global.Log("keybindSlot was negative", LogLevel.Warn);
+							Log("keybindSlot was negative", LogLevel.Warn);
 							keybindSlot = 0;
 						}
 
@@ -355,7 +355,7 @@ namespace Celeste.Mod.izumisQOL
 							Tooltip.Show();
 						}
 					}
-					Global.Log("only 1 item in slider");
+					Log("only 1 item in slider");
 				}
 			);
 			subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_REMOVE_DESC".AsDialog());
@@ -380,7 +380,7 @@ namespace Celeste.Mod.izumisQOL
 
 			if(CurrentWhitelistSlot > whitelistNames.Count - 1)
 			{
-				Global.Log("CurrentWhitelistSlot > whitelistNames.Count - 1");
+				Log("CurrentWhitelistSlot > whitelistNames.Count - 1");
 				CurrentWhitelistSlot = whitelistNames.Count - 1;
 			}
 			subMenu.Add(CurrentWhitelistSlider = new TextMenu.Slider("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_CURRENTWHITELIST".AsDialog(), i => GetWhitelistName(i), 0, whitelistNames.Count - 1, CurrentWhitelistSlot)
@@ -475,7 +475,7 @@ namespace Celeste.Mod.izumisQOL
 
 						if (whitelistSlot < 0)
 						{
-							Global.Log("whitelistSlot was negative", LogLevel.Warn);
+							Log("whitelistSlot was negative", LogLevel.Warn);
 							whitelistSlot = 0;
 						}
 
@@ -737,7 +737,7 @@ namespace Celeste.Mod.izumisQOL
 		{
 			if(index > whitelistNames.Count - 1 || index < 0)
 			{
-				Global.Log("index: " + index + " out of bounds for whitelistNames");
+				Log("index: " + index + " out of bounds for whitelistNames");
 				Tooltip.Add("MODOPTIONS_IZUMISQOL_WHITELISTERROR_GETNAME".AsDialog());
 				return null;
 			}
@@ -748,18 +748,18 @@ namespace Celeste.Mod.izumisQOL
 		{
 			if (!whitelistNames.Contains(name))
 			{
-				Global.Log(name);
+				Log(name);
 				whitelistNames.Add(name);
 				return;
 			}
-			Global.Log(name + " is already another whitelist's name", LogLevel.Info);
+			Log(name + " is already another whitelist's name", LogLevel.Info);
 		}
 
 		public void ChangeWhitelistName(int index, string name)
 		{
 			if (index > whitelistNames.Count - 1 || index < 0)
 			{
-				Global.Log("index: " + index + " out of bounds for whitelistNames");
+				Log("index: " + index + " out of bounds for whitelistNames");
 				Tooltip.Show("MODOPTIONS_IZUMISQOL_WHITELISTERROR_NAMECHANGE".AsDialog());
 				return;
 			}
@@ -780,7 +780,7 @@ namespace Celeste.Mod.izumisQOL
 		{
 			if (index > keybindNames.Count - 1 || index < 0)
 			{
-				Global.Log("index: " + index + " out of bounds for keybindNames");
+				Log("index: " + index + " out of bounds for keybindNames");
 				Tooltip.Show("MODOPTIONS_IZUMISQOL_KEYBINDERROR_GETNAME".AsDialog());
 				return null;
 			}
@@ -791,7 +791,7 @@ namespace Celeste.Mod.izumisQOL
 		{
 			if (index > keybindNames.Count - 1 || index < 0)
 			{
-				Global.Log("index: " + index + " out of bounds for keybindNames");
+				Log("index: " + index + " out of bounds for keybindNames");
 				Tooltip.Show("MODOPTIONS_IZUMISQOL_KEYBINDERROR_NAMECHANGE".AsDialog());
 				return;
 			}
