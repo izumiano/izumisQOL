@@ -29,20 +29,23 @@
 		<Reference Include="$(CelestePrefix)\YamlDotNet.dll" Private="false" />
 	</ItemGroup>
 
-	<Target Name="CopyFiles" AfterTargets="Build" Inputs="$(OutputPath)\$(AssemblyName).dll;$(OutputPath)\$(AssemblyName).pdb" Outputs="..\bin\$(AssemblyName).dll;..\bin\$(AssemblyName).pdb">
-		<Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll" DestinationFolder="..\bin" />
-		<Copy SourceFiles="$(OutputPath)\$(AssemblyName).pdb" DestinationFolder="..\bin" />
+	<Target Name="CopyFiles" AfterTargets="Build">
+		<Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll" DestinationFolder="bin" />
+		<Copy SourceFiles="$(OutputPath)\$(AssemblyName).pdb" DestinationFolder="bin" />
+		<Copy SourceFiles="libs\obs-websocket-dotnet.dll" DestinationFolder="bin" />
+		<Copy SourceFiles="libs\System.Reactive.dll" DestinationFolder="bin" />
+		<Copy SourceFiles="libs\Websocket.Client.dll" DestinationFolder="bin" />
 	</Target>
 
-	<Target Name="PackageMod" AfterTargets="CopyFiles" Inputs="$(ZippedFiles)" Outputs="..\PersonalServerAccess.zip" Condition="'$(Configuration)' == 'Release'">
+	<Target Name="PackageMod" AfterTargets="CopyFiles" Inputs="$(ZippedFiles)" Outputs="..\izumisQOL.zip" Condition="'$(Configuration)' == 'Release'">
 		<ItemGroup>
 			<FilesToPackage Include="$(ZippedFiles)" />
 		</ItemGroup>
-		<PackageMod Files="@(FilesToPackage)" OutputPath="..\PersonalServerAccess.zip" />
+		<PackageMod Files="@(FilesToPackage)" OutputPath="..\izumisQOL.zip" />
 	</Target>
 
 	<PropertyGroup>
-		<PathMap>$(MSBuildProjectDirectory)=PersonalServerAccess/</PathMap>
+		<PathMap>$(MSBuildProjectDirectory)=izumisQOL/</PathMap>
 	</PropertyGroup>
 
 	<!-- Inline task used to create a .zip for the mod -->
