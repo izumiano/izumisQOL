@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework;
 using Monocle;
 
 namespace Celeste.Mod.izumisQOL;
-[Tracked(false)]
+[Tracked()]
 public class Tooltip : Entity
 {
 	public enum DisplayPosition
@@ -13,7 +13,7 @@ public class Tooltip : Entity
 		BottomLeft,
 		TopLeft,
 		BottomRight,
-		TopRight
+		TopRight,
 	}
 
 	private readonly string message;
@@ -44,7 +44,7 @@ public class Tooltip : Entity
 			DisplayPosition.TopLeft => new Vector2(25f, 12.5f),
 			DisplayPosition.BottomRight => new Vector2(Engine.Width - messageSize.X - 25f, Engine.Height - messageSize.Y - 12.5f),
 			DisplayPosition.TopRight => new Vector2(Engine.Width - messageSize.X - 25f, 12.5f),
-			_ => Vector2.Zero
+			_ => Vector2.Zero,
 		};
 	}
 
@@ -97,22 +97,22 @@ public class Tooltip : Entity
 				entity.RemoveSelf();
 			});
 			Info info = tooltipQueue.Dequeue();
-			scene.Add(new Tooltip(info.message, info.duration, info.position));
+			scene.Add(new Tooltip(info.Message, info.Duration, info.Position));
 		}
 	}
 
 	public static void Show(params Info[] tooltips)
 	{
-		if(tooltips.Length == 1)
+		switch( tooltips.Length )
 		{
-			Show(tooltips[0].message, tooltips[0].duration, tooltips[0].position);
-			return;
+			case 1:
+				Show(tooltips[0].Message, tooltips[0].Duration, tooltips[0].Position);
+				return;
+			case > 0:
+				Add(tooltips);
+				break;
 		}
 
-		if(tooltips.Length > 0)
-		{
-			Add(tooltips);
-		}
 		Display();
 	}
 
@@ -147,18 +147,11 @@ public class Tooltip : Entity
 		}
 		tooltipQueue.Enqueue(new Info(message, duration, position));
 	}
-	public struct Info
+	public struct Info(string message, float duration = 1f, DisplayPosition position = DisplayPosition.BottomLeft)
 	{
-		public string message;
-		public DisplayPosition position;
-		public float duration;
-
-		public Info(string message, float duration = 1f, DisplayPosition position = DisplayPosition.BottomLeft)
-		{
-			this.message = message.Log();
-			this.position = position;
-			this.duration = duration;
-		}
+		public readonly string          Message  = message.Log();
+		public readonly DisplayPosition Position = position;
+		public readonly float           Duration = duration;
 	}
 }
 

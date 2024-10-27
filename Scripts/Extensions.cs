@@ -1,11 +1,12 @@
 ﻿using System;
-using Microsoft.Xna.Framework;
 using System.Diagnostics;
-
-using Celeste.Mod.izumisQOL.Scripts;
 using System.Reflection;
+using Celeste.Mod.izumisQOL.Scripts;
+using Microsoft.Xna.Framework;
+using MonoMod.Utils;
 
 namespace Celeste.Mod.izumisQOL;
+
 public static class Extensions
 {
 	public static string SanitizeFilePath(this string path)
@@ -15,20 +16,22 @@ public static class Extensions
 
 	public static string[] SanitizeFilePath(this string[] paths)
 	{
-        for(int i = 0; i < paths.Length; i++)
+		for( var i = 0; i < paths.Length; i++ )
 		{
 			paths[i] = paths[i].SanitizeFilePath();
 		}
-		return paths;
-    }
 
-	public static OuiJournalPage Page(this OuiJournal journal)
+		return paths;
+	}
+
+	public static OuiJournalPage? Page(this OuiJournal journal)
 	{
-		if(journal == null || journal.PageIndex > journal.Pages.Count - 1 || journal.PageIndex < 0)
+		if( journal.PageIndex > journal.Pages.Count - 1 || journal.PageIndex < 0 )
 		{
 			Log("Could not get the current journal page", null, LogLevel.Warn);
 			return null;
 		}
+
 		return journal.Page;
 	}
 
@@ -37,71 +40,64 @@ public static class Extensions
 		return Dialog.Clean(dialogID);
 	}
 
-	public static void AddDescription(this TextMenuExt.SubMenu subMenu, TextMenu containingMenu, TextMenu.Item subMenuItem, string description)
+	public static void AddDescription(
+		this TextMenuExt.SubMenu subMenu, TextMenu containingMenu, TextMenu.Item subMenuItem, string description
+	)
 	{
 		TextMenuExt.EaseInSubHeaderExt descriptionText = new(description, initiallyVisible: false, containingMenu)
 		{
-			TextColor = Color.Gray,
-			HeightExtra = 0f
+			TextColor   = Color.Gray,
+			HeightExtra = 0f,
 		};
 		subMenu.Add(descriptionText);
-		subMenuItem.OnEnter = (Action)Delegate.Combine(subMenuItem.OnEnter, (Action)delegate
-		{
-			descriptionText.FadeVisible = true;
-		});
-		subMenuItem.OnLeave = (Action)Delegate.Combine(subMenuItem.OnLeave, (Action)delegate
-		{
-			descriptionText.FadeVisible = false;
-		});
+		subMenuItem.OnEnter =
+			(Action)Delegate.Combine(subMenuItem.OnEnter, (Action)delegate { descriptionText.FadeVisible = true; });
+		subMenuItem.OnLeave =
+			(Action)Delegate.Combine(subMenuItem.OnLeave, (Action)delegate { descriptionText.FadeVisible = false; });
 	}
 
-	public static void InsertDescription(this TextMenuExt.SubMenu subMenu, TextMenu containingMenu, TextMenu.Item subMenuItem, string description)
+	public static void InsertDescription(
+		this TextMenuExt.SubMenu subMenu, TextMenu containingMenu, TextMenu.Item subMenuItem, string description
+	)
 	{
 		TextMenuExt.EaseInSubHeaderExt descriptionText = new(description, initiallyVisible: false, containingMenu)
 		{
-			TextColor = Color.Gray,
-			HeightExtra = 0f
+			TextColor   = Color.Gray,
+			HeightExtra = 0f,
 		};
 		subMenu.Insert(subMenu.IndexOf(subMenuItem) + 1, descriptionText);
-		subMenuItem.OnEnter = (Action)Delegate.Combine(subMenuItem.OnEnter, (Action)delegate
-		{
-			descriptionText.FadeVisible = true;
-		});
-		subMenuItem.OnLeave = (Action)Delegate.Combine(subMenuItem.OnLeave, (Action)delegate
-		{
-			descriptionText.FadeVisible = false;
-		});
+		subMenuItem.OnEnter =
+			(Action)Delegate.Combine(subMenuItem.OnEnter, (Action)delegate { descriptionText.FadeVisible = true; });
+		subMenuItem.OnLeave =
+			(Action)Delegate.Combine(subMenuItem.OnLeave, (Action)delegate { descriptionText.FadeVisible = false; });
 	}
 
 	public static void NeedsRelaunch(this TextMenuExt.SubMenu subMenu, TextMenu containingMenu, TextMenu.Item subMenuItem)
 	{
-		TextMenuExt.EaseInSubHeaderExt needsRelaunchText = new("MODOPTIONS_NEEDSRELAUNCH".AsDialog(), initiallyVisible: false, containingMenu)
-		{
-			TextColor = Color.OrangeRed,
-			HeightExtra = 0f
-		};
+		TextMenuExt.EaseInSubHeaderExt needsRelaunchText =
+			new("MODOPTIONS_NEEDSRELAUNCH".AsDialog(), initiallyVisible: false, containingMenu)
+			{
+				TextColor   = Color.OrangeRed,
+				HeightExtra = 0f,
+			};
 		subMenu.Add(needsRelaunchText);
-		subMenuItem.OnEnter = (Action)Delegate.Combine(subMenuItem.OnEnter, (Action)delegate
-		{
-			needsRelaunchText.FadeVisible = true;
-		});
-		subMenuItem.OnLeave = (Action)Delegate.Combine(subMenuItem.OnLeave, (Action)delegate
-		{
-			needsRelaunchText.FadeVisible = false;
-		});
+		subMenuItem.OnEnter =
+			(Action)Delegate.Combine(subMenuItem.OnEnter, (Action)delegate { needsRelaunchText.FadeVisible = true; });
+		subMenuItem.OnLeave =
+			(Action)Delegate.Combine(subMenuItem.OnLeave, (Action)delegate { needsRelaunchText.FadeVisible = false; });
 	}
 
 	public static T Log<T>(
-		this T obj, 
-		string identifier = null, 
-		LogLevel logLevel = LogLevel.Verbose, 
-		Func<T, string> logParser = null,
-		MethodBase methodInfo = null
+		this T           obj,
+		string?          identifier = null,
+		LogLevel         logLevel   = LogLevel.Verbose,
+		Func<T, string>? logParser  = null,
+		MethodBase?      methodInfo = null
 	)
 	{
 		logParser ??= LogParser.Default;
 		string text = obj is null ? "null" : logParser(obj);
-		string log = string.IsNullOrEmpty(identifier) ? text : identifier + ": " + text;
+		string log  = string.IsNullOrEmpty(identifier) ? text : identifier + ": " + text;
 
 		if (string.IsNullOrEmpty(log))
 		{
@@ -110,11 +106,13 @@ public static class Extensions
 
 		try
 		{
-			methodInfo ??= new StackTrace()?.GetFrame(1)?.GetMethod();
+			methodInfo ??= new StackTrace().GetFrame(1)?.GetMethod();
 
 			if (methodInfo is null) throw new Exception("methodInfo was null");
 
-			string className = methodInfo.ReflectedType.Name;
+			string? className = methodInfo.GetRealDeclaringType()?.Name;
+			if(className is null) throw new Exception("className was null");
+			
 			string methodName = methodInfo.Name;
 
 			log = "[" + className + "/" + methodName + "] " + log;

@@ -1,52 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
+using Celeste.Mod.izumisQOL.Obs;
 using Microsoft.Xna.Framework;
 using Monocle;
-using Celeste.Mod.izumisQOL.OBS;
+using Scene = On.Monocle.Scene;
 
 namespace Celeste.Mod.izumisQOL.UI;
+
 public class Indicator : Entity
 {
-	protected readonly static List<Indicator> indicators = new();
+	protected readonly static List<Indicator> Indicators = [ ];
 
 	public bool IsVisible
 	{
 		get
 		{
-			if(ParentIcon is null) return shouldBeVisible();
+			if( ParentIcon is null ) return _shouldBeVisible();
 
-			return ParentIcon.IsVisible && shouldBeVisible();
+			return ParentIcon.IsVisible && _shouldBeVisible();
 		}
 	}
-	private readonly Func<bool> shouldBeVisible;
+
+	private readonly Func<bool> _shouldBeVisible;
 
 	private readonly MTexture iconTexture;
 
 	private readonly int rowIndex;
 
-	public Indicator ParentIcon = null;
-	public Indicator ChildIcon = null;
+	public Indicator? ParentIcon;
+	public Indicator? ChildIcon;
 
 	public static void Load()
 	{
-		new OBSRecordingIndicator();
-		new OBSDisconnectedIndicator();
+		_ = new OBSRecordingIndicator();
+		_ = new OBSDisconnectedIndicator();
 	}
 
-	public Indicator(string iconName, Func<bool> ShouldBeVisible) : base()
+	protected Indicator(string iconName, Func<bool> shouldBeVisible)
 	{
-		rowIndex = indicators.Count;
-		indicators.Add(this);
+		rowIndex = Indicators.Count;
+		Indicators.Add(this);
 
-		Position = new Vector2(Engine.Width - 50f, Engine.Height - 50f);
-		shouldBeVisible = ShouldBeVisible;
-		iconTexture = GFX.Gui["hud/" + iconName];
+		Position         = new Vector2(Engine.Width - 50f, Engine.Height - 50f);
+		_shouldBeVisible = shouldBeVisible;
+		iconTexture      = GFX.Gui["hud/" + iconName];
 	}
 
 
 	public void AddChild(Indicator child)
 	{
-		ChildIcon = child;
+		ChildIcon            = child;
 		ChildIcon.ParentIcon = this;
 	}
 
@@ -54,7 +57,7 @@ public class Indicator : Entity
 	{
 		base.Update();
 
-		if (IsVisible)
+		if( IsVisible )
 			Position.X = GetIndicatorXPosition();
 	}
 
@@ -62,32 +65,32 @@ public class Indicator : Entity
 	{
 		base.Render();
 
-		if(IsVisible) iconTexture.DrawCentered(Position);
+		if( IsVisible ) iconTexture.DrawCentered(Position);
 	}
 
 	private float GetIndicatorXPosition()
 	{
-		if (ParentIcon is not null)
+		if( ParentIcon is not null )
 			return ParentIcon.Position.X;
 
-		if (rowIndex > indicators.Count || rowIndex < 0)
+		if( rowIndex > Indicators.Count || rowIndex < 0 )
 		{
 			Log("indexInIndicatorsList was out of out of bounds in indicators", LogLevel.Error);
 			return Engine.Width - 50f;
 		}
 
-		int visibleIcons = 0;
+		var visibleIcons = 0;
 		try
 		{
-			for (int i = 0; i < rowIndex; i++)
+			for( var i = 0; i < rowIndex; i++ )
 			{
-				Indicator indicator = indicators[i];
+				Indicator indicator = Indicators[i];
 
-				if (indicator.ParentIcon is null && indicator.IsVisible)
+				if( indicator.ParentIcon is null && indicator.IsVisible )
 					visibleIcons++;
 			}
-	}
-		catch(Exception ex)
+		}
+		catch( Exception ex )
 		{
 			Log(ex, LogLevel.Error);
 		}
@@ -95,13 +98,14 @@ public class Indicator : Entity
 		return Engine.Width - 50f - visibleIcons * 80;
 	}
 
-	public static void OnSceneBegin(On.Monocle.Scene.orig_Begin orig, Scene scene)
+	public static void OnSceneBegin(Scene.orig_Begin orig, Monocle.Scene scene)
 	{
 		orig(scene);
 
 		Log("Adding indicators");
-		indicators.ForEach(i => i.Tag = (int)Tags.HUD | (int)Tags.Global | (int)Tags.FrozenUpdate | (int)Tags.PauseUpdate | (int)Tags.TransitionUpdate);
-		scene.Add(indicators);
+		Indicators.ForEach(i => i.Tag = (int)Tags.HUD | (int)Tags.Global | (int)Tags.FrozenUpdate | (int)Tags.PauseUpdate |
+		                                (int)Tags.TransitionUpdate);
+		scene.Add(Indicators);
 	}
 }
 
@@ -111,22 +115,25 @@ public class OBSRecordingIndicator : Indicator
 	{
 		WhenRecording,
 		WhenNotRecording,
-		Either
+		Either,
 	}
 
-	private static bool IsRecordingOrStreamingOrReplayBuffering => OBSIntegration.IsRecording || OBSIntegration.IsStreaming || OBSIntegration.IsReplayBuffering;
+	private static bool IsRecordingOrStreamingOrReplayBuffering => OBSIntegration.IsRecording ||
+	                                                               OBSIntegration.IsStreaming ||
+	                                                               OBSIntegration.IsReplayBuffering;
+
 	private static bool ShowIndicator
 	{
 		get
 		{
-			if(!ModSettings.OBSIntegrationEnabled || OBSIntegration.SuppressIndicators) return false;
+			if( !ModSettings.OBSIntegrationEnabled || OBSIntegration.SuppressIndicators ) return false;
 
 			return ModSettings.ShowRecordingIndicatorWhen switch
 			{
-				DisplayType.WhenRecording => IsRecordingOrStreamingOrReplayBuffering,
+				DisplayType.WhenRecording    => IsRecordingOrStreamingOrReplayBuffering,
 				DisplayType.WhenNotRecording => !IsRecordingOrStreamingOrReplayBuffering,
-				DisplayType.Either => true,
-				_ => false
+				DisplayType.Either           => true,
+				_                            => false,
 			};
 		}
 	}
@@ -137,10 +144,10 @@ public class OBSRecordingIndicator : Indicator
 		{
 			return ModSettings.ShowRecordingIndicatorWhen switch
 			{
-				DisplayType.WhenRecording => false,
+				DisplayType.WhenRecording    => false,
 				DisplayType.WhenNotRecording => !IsRecordingOrStreamingOrReplayBuffering,
-				DisplayType.Either => !IsRecordingOrStreamingOrReplayBuffering,
-				_ => false
+				DisplayType.Either           => !IsRecordingOrStreamingOrReplayBuffering,
+				_                            => false,
 			};
 		}
 	}
@@ -151,12 +158,10 @@ public class OBSRecordingIndicator : Indicator
 	}
 }
 
-public class XIndicator : Indicator
-{
-	public XIndicator(Func<bool> shouldBeVisible) : base("x", shouldBeVisible) { }
-}
+public class XIndicator(Func<bool> shouldBeVisible) : Indicator("x", shouldBeVisible);
 
 public class OBSDisconnectedIndicator : Indicator
 {
-	public OBSDisconnectedIndicator() : base("disconnectedIndicator", () => !OBSIntegration.IsConnected && ModSettings.OBSIntegrationEnabled && !OBSIntegration.SuppressIndicators) { }
+	public OBSDisconnectedIndicator() : base("disconnectedIndicator",
+		() => !OBSIntegration.IsConnected && ModSettings.OBSIntegrationEnabled && !OBSIntegration.SuppressIndicators) { }
 }

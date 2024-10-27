@@ -1,14 +1,16 @@
-﻿global using static Celeste.Mod.izumisQOL.Global;
+﻿#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
+global using static Celeste.Mod.izumisQOL.Global;
 using System;
-using Monocle;
-using FMOD.Studio;
 using Celeste.Mod.izumisQOL.Menu;
 using Celeste.Mod.izumisQOL.ModIntegration;
-using Celeste.Mod.izumisQOL.OBS;
+using Celeste.Mod.izumisQOL.Obs;
 using Celeste.Mod.izumisQOL.UI;
+using FMOD.Studio;
+using Monocle;
 
 namespace Celeste.Mod.izumisQOL;
+
 public class izumisQOL : EverestModule
 {
 	// Only one alive module instance can exist at any given time.
@@ -31,25 +33,22 @@ public class izumisQOL : EverestModule
 	// Those are optional: if you don't need one of those, you can remove it from the module.
 
 	// If you need to store settings:
-	public override Type SettingsType => typeof(SettingsModule);
-	public static SettingsModule ModSettings => (SettingsModule)Instance._Settings;
+	public override Type           SettingsType => typeof(SettingsModule);
+	public static   SettingsModule ModSettings  => (SettingsModule)Instance._Settings;
 
 	// Load runs before Celeste itself has initialized properly.
 	public override void Load()
 	{
 		Hooks.Load();
 
-		if (ModSettings is not null && ModSettings.ConnectToOBSWebsocketsOnStartup)
+		if( ModSettings.ConnectToOBSWebsocketsOnStartup )
 		{
 			OBSIntegration.Connect(true);
 		}
 	}
 
 	// Optional, initialize anything after Celeste has initialized itself properly.
-	public override void Initialize()
-	{
-			
-	}
+	public override void Initialize() { }
 
 	// Optional, do anything requiring either the Celeste or mod content here.
 	public override void LoadContent(bool firstLoad)
@@ -68,10 +67,7 @@ public class izumisQOL : EverestModule
 	{
 		base.OnInputInitialize();
 
-		if (ModSettings.ButtonsSwapKeybinds == null)
-			return;
-
-		foreach (ButtonBinding buttonsConsoleCommand in ModSettings.ButtonsSwapKeybinds)
+		foreach( ButtonBinding buttonsConsoleCommand in ModSettings.ButtonsSwapKeybinds )
 		{
 			InitializeButtonBinding(buttonsConsoleCommand);
 		}
@@ -79,54 +75,46 @@ public class izumisQOL : EverestModule
 
 	public static void InitializeButtonBinding(ButtonBinding buttonBinding)
 	{
-		if (buttonBinding != null && buttonBinding.Button == null && buttonBinding.Binding != null)
+		if( buttonBinding.Button == null && buttonBinding.Binding != null )
 		{
-			buttonBinding.Button = new(buttonBinding.Binding, Input.Gamepad, 0.08f, 0.2f);
-			buttonBinding.Button.AutoConsumeBuffer = true;
+			buttonBinding.Button = new VirtualButton(buttonBinding.Binding, Input.Gamepad, 0.08f, 0.2f)
+			{
+				AutoConsumeBuffer = true,
+			};
 		}
 	}
 
-	public override void CreateModMenuSectionKeyBindings(TextMenu menu, bool inGame, EventInstance snapshot)
+	protected override void CreateModMenuSectionKeyBindings(TextMenu menu, bool inGame, EventInstance snapshot)
 	{
 		menu.Add(new TextMenu.Button("options_keyconfig".AsDialog()).Pressed(delegate
 		{
 			menu.Focused = false;
 			Engine.Scene.Add(CreateCustomKeyboardConfigUI(menu));
-			Engine.Scene.OnEndOfFrame += delegate
-			{
-				Engine.Scene.Entities.UpdateLists();
-			};
+			Engine.Scene.OnEndOfFrame += delegate { Engine.Scene.Entities.UpdateLists(); };
 		}));
 		menu.Add(new TextMenu.Button("options_btnconfig".AsDialog()).Pressed(delegate
 		{
 			menu.Focused = false;
 			Engine.Scene.Add(CreateCustomButtonConfigUI(menu));
-			Engine.Scene.OnEndOfFrame += delegate
-			{
-				Engine.Scene.Entities.UpdateLists();
-			};
+			Engine.Scene.OnEndOfFrame += delegate { Engine.Scene.Entities.UpdateLists(); };
 		}));
 	}
 
+	// ReSharper disable once InconsistentNaming
 	private Entity CreateCustomKeyboardConfigUI(TextMenu menu)
 	{
 		return new CustomModuleSettingsKeyboardConfigUI(Instance)
 		{
-			OnClose = delegate
-			{
-				menu.Focused = true;
-			}
+			OnClose = delegate { menu.Focused = true; },
 		};
 	}
 
+	// ReSharper disable once InconsistentNaming
 	private Entity CreateCustomButtonConfigUI(TextMenu menu)
 	{
 		return new CustomModuleSettingsButtonConfigUI(Instance)
 		{
-			OnClose = delegate
-			{
-				menu.Focused = true;
-			}
+			OnClose = delegate { menu.Focused = true; },
 		};
 	}
 }

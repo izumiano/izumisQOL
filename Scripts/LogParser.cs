@@ -5,7 +5,7 @@ public static class LogParser
 {
 	public static string Default<T>(T obj)
 	{
-		return obj.ToString();
+		return obj?.ToString() ?? "object was null";
 	}
 
 	public static string Vector2(Vector2 vector)

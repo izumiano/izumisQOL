@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Monocle;
 using System.Reflection;
+using Monocle;
 
 namespace Celeste.Mod.izumisQOL;
+
 public static class KeybindModule
 {
-	public static List<Settings> KeybindSettings = new();
-	private static readonly string keybindsPath = UserIO.SavePath.SanitizeFilePath()  + "/izumisQOL/keybinds";
+	public static readonly  List<Settings> KeybindSettings = [ ];
+	private static readonly string         keybindsPath    = UserIO.SavePath.SanitizeFilePath() + "/izumisQOL/keybinds";
 
 	public static void Load()
 	{
@@ -22,21 +23,22 @@ public static class KeybindModule
 	public static void Update()
 	{
 		int buttonPressed = CheckButtonSwapBinds();
-		if(buttonPressed > -1)
+		if( buttonPressed > -1 )
 		{
 			ModSettings.CurrentKeybindSlot = buttonPressed;
 
-			if (ModSettings.AutoLoadKeybinds)
+			if( ModSettings.AutoLoadKeybinds )
 			{
 				ApplyKeybinds(ModSettings.CurrentKeybindSlot);
 			}
 			else
 			{
-				Tooltip.Show("MODOPTIONS_IZUMISQOL_KEYBINDS_SLOTSELECTED1".AsDialog() + " " + (buttonPressed + 1) + " " + "MODOPTIONS_IZUMISQOL_KEYBINDS_SLOTSELECTED2".AsDialog());
+				Tooltip.Show("MODOPTIONS_IZUMISQOL_KEYBINDS_SLOTSELECTED1".AsDialog() + " " + (buttonPressed + 1) + " " +
+				             "MODOPTIONS_IZUMISQOL_KEYBINDS_SLOTSELECTED2".AsDialog());
 			}
 		}
 
-		if (ModSettings.ButtonLoadKeybind.Pressed)
+		if( ModSettings.ButtonLoadKeybind.Pressed )
 		{
 			ApplyKeybinds(ModSettings.CurrentKeybindSlot);
 		}
@@ -46,42 +48,42 @@ public static class KeybindModule
 	{
 		Directory.CreateDirectory(keybindsPath);
 
-		if (!File.Exists(keybindsPath + "/whitelist.txt"))
+		if( !File.Exists(keybindsPath + "/whitelist.txt") )
 		{
-			File.WriteAllText(keybindsPath + "/whitelist.txt", 
+			File.WriteAllText(keybindsPath + "/whitelist.txt",
 				"# Mods written here will have their settings copied by izumisQOL\n" +
 				"# Lines starting with # are ignored"
-				);
+			);
 		}
 	}
 
 	private static int CheckButtonSwapBinds()
 	{
-		if (!ModSettings.EnableHotkeys)
+		if( !ModSettings.EnableHotkeys )
 			return -1;
 
 		List<ButtonBinding> buttonSwapBinds = ModSettings.ButtonsSwapKeybinds;
-		if (buttonSwapBinds == null)
-			return -1;
 
 		int val = -1;
-		for (int i = 0; i < buttonSwapBinds.Count; i++)
+		for( var i = 0; i < buttonSwapBinds.Count; i++ )
 		{
-			if (buttonSwapBinds[i].Pressed)
-			{
-				val = i;
-				break;
-			}
+			if( !buttonSwapBinds[i].Pressed ) continue;
+
+			val = i;
+			break;
 		}
-		if (val == -1)
+
+		if( val == -1 )
 			return -1;
 
-		TextMenu.Slider currentKeybindSlider = ModSettings.GetCurrentKeybindSlider();
-		if (currentKeybindSlider != null)
+		TextMenu.Slider? currentKeybindSlider = ModSettings.GetCurrentKeybindSlider();
+		if( currentKeybindSlider is null )
 		{
-			currentKeybindSlider.Index = val;
-			currentKeybindSlider.SelectWiggler.Start();
+			return val;
 		}
+
+		currentKeybindSlider.Index = val;
+		currentKeybindSlider.SelectWiggler.Start();
 		return val;
 	}
 
@@ -95,13 +97,14 @@ public static class KeybindModule
 		Dictionary<string, string> keybindFiles = GetKeybindFilesIDPathValuePair(Directory.GetFiles(keybindsPath));
 
 		int keybindIndex = -1;
-		for(int i = 0; i < keybindFiles.Count; i++)
+		for( var i = 0; i < keybindFiles.Count; i++ )
 		{
 			Log(i);
-			if (!keybindFiles.ContainsKey(i.ToString()))
+			if( !keybindFiles.ContainsKey(i.ToString()) )
 				continue;
 
-			string shortPath = keybindFiles[i.ToString()].Replace(UserIO.SavePath.SanitizeFilePath() + "/", "").Replace(".celeste", "");
+			string shortPath = keybindFiles[i.ToString()].Replace(UserIO.SavePath.SanitizeFilePath() + "/", "")
+			                                             .Replace(".celeste", "");
 			string fileName = shortPath.Replace("izumisQOL/keybinds/", "");
 
 			string s = fileName.Remove(0, fileName.IndexOf('_') + 1);
@@ -110,7 +113,7 @@ public static class KeybindModule
 
 			Log("Loading: " + shortPath);
 
-			if (keybindIndex >= KeybindSettings.Count)
+			if( keybindIndex >= KeybindSettings.Count )
 			{
 				Log("Add keybind setting " + keybindIndex);
 				KeybindSettings.Add(UserIO.Load<Settings>(shortPath, backup: false));
@@ -124,40 +127,44 @@ public static class KeybindModule
 			}
 		}
 
-		if (keybindIndex == -1)
+		if( keybindIndex == -1 )
 		{
 			SaveKeybinds(0);
-			return;
 		}
 	}
 
 	public static void SaveKeybinds(int keybindID)
 	{
 		Log("getting ready to save keybind " + keybindID);
-		FileStream fileStream = File.Open((UserIO.SavePath.SanitizeFilePath() + "/settings.celeste").Log("reading celeste settings at"), FileMode.Open);
+		FileStream fileStream =
+			File.Open((UserIO.SavePath.SanitizeFilePath() + "/settings.celeste").Log("reading celeste settings at"),
+				FileMode.Open);
 
 		string celesteSettingsFile;
-		using(var sr = new StreamReader(fileStream))
+		using( var sr = new StreamReader(fileStream) )
 		{
 			celesteSettingsFile = sr.ReadToEnd();
 		}
+
 		fileStream.Dispose();
 
-		string name;
+		string       name;
 		List<string> keybindNames = ModSettings.GetKeybindNames();
-		if(keybindID < keybindNames.Count)
+		if( keybindID < keybindNames.Count )
 		{
 			name = keybindNames[keybindID];
 		}
 		else
 		{
-			int index = 0;
-			while(keybindNames.Contains("keybind" + index))
+			var index = 0;
+			while( keybindNames.Contains("keybind" + index) )
 			{
 				index++;
 			}
+
 			name = "keybind" + index;
 		}
+
 		Log("saving keybind " + keybindID + " to path:");
 		File.WriteAllText((keybindsPath + "/" + keybindID + "_" + name + ".celeste").Log(), celesteSettingsFile);
 
@@ -174,33 +181,33 @@ public static class KeybindModule
 		Dictionary<string, string> keybindFiles = GetKeybindFilesIDPathValuePair(Directory.GetFiles(keybindsPath));
 
 		string keybindDelPath = keybindsPath + "/" + keybindID + "_" + keybindNames[keybindID] + ".celeste";
-		Log("Deleting: " + keybindDelPath);
+		Log("Deleting: "                     + keybindDelPath);
 		File.Delete(keybindDelPath);
 
-		foreach(EverestModule module in Everest.Modules)
+		foreach( EverestModule module in Everest.Modules )
 		{
 			string modName = module.Metadata.Name;
-			if (!WhitelistContains(keybindsPath + "/whitelist.txt", modName))
+			if( !WhitelistContains(keybindsPath + "/whitelist.txt", modName) )
 				continue;
 
 			string modFileDelPath = keybindsPath + "/" + keybindID + "_modsettings-" + modName + ".celeste";
-			Log("Deleting Mod File: " + modFileDelPath);
+			Log("Deleting Mod File: "            + modFileDelPath);
 			File.Delete(modFileDelPath);
 		}
 
-		for (int i = keybindID + 1; i < keybindFiles.Count; i++)
+		for( int i = keybindID + 1; i < keybindFiles.Count; i++ )
 		{
-			if (!keybindFiles.TryGetValue(i.ToString(), out string filePath))
+			if( !keybindFiles.TryGetValue(i.ToString(), out string? filePath) )
 				continue;
 
 			MoveKeybindFileIndexDown(i, filePath);
-			foreach(EverestModule module in Everest.Modules)
+			foreach( EverestModule module in Everest.Modules )
 			{
 				string modName = module.Metadata.Name;
 				keybindID.Log("keybindID");
-				if (!WhitelistContains(keybindsPath + "/whitelist.txt", modName))
+				if( !WhitelistContains(keybindsPath + "/whitelist.txt", modName) )
 					continue;
-					
+
 				MoveKeybindFileIndexDown(i, keybindsPath + "/" + i + "_modsettings-" + modName + ".celeste");
 			}
 		}
@@ -209,16 +216,17 @@ public static class KeybindModule
 
 		static void MoveKeybindFileIndexDown(int keybindID, string filePath)
 		{
-			if (!File.Exists(filePath))
+			if( !File.Exists(filePath) )
 			{
 				Log(filePath + " does not exist");
 				return;
 			}
-			string fileName = Path.GetFileName(filePath);
-			string newName = (keybindID - 1).ToString() + fileName.Remove(0, fileName.IndexOf('_'));
 
-			Log("Renaming: " + fileName + " to: " + newName);
-			File.Move(filePath, keybindsPath + "/" + newName);
+			string fileName = Path.GetFileName(filePath);
+			string newName  = keybindID - 1 + fileName.Remove(0, fileName.IndexOf('_'));
+
+			Log("Renaming: "                 + fileName + " to: " + newName);
+			File.Move(filePath, keybindsPath + "/"      + newName);
 		}
 	}
 
@@ -227,26 +235,27 @@ public static class KeybindModule
 		filePaths = filePaths.SanitizeFilePath();
 
 		Dictionary<string, string> keybindFiles = new();
-		foreach (string filePath in filePaths)
+		foreach( string filePath in filePaths )
 		{
 			string fileName = filePath.Replace(keybindsPath + "/", "");
-			if (!fileName.Contains(".celeste"))
+			if( !fileName.Contains(".celeste") )
 			{
 				continue;
 			}
+
 			int underscoreIndex = fileName.IndexOf('_');
-			if (fileName.Remove(0, underscoreIndex + 1).StartsWith("modsettings"))
+			if( fileName.Remove(0, underscoreIndex + 1).StartsWith("modsettings") )
 				continue;
 
-			string key = "";
-			for (int i = 0; i < underscoreIndex; i++)
+			var key = "";
+			for( var i = 0; i < underscoreIndex; i++ )
 			{
 				key += fileName[i];
 			}
-			if (keybindFiles.ContainsKey(key))
-				continue;
-			keybindFiles.Add(key, filePath);
+
+			keybindFiles.TryAdd(key, filePath);
 		}
+
 		return keybindFiles;
 	}
 
@@ -254,38 +263,41 @@ public static class KeybindModule
 	{
 		try
 		{
-			if (!origName.Contains('_'))
+			if( !origName.Contains('_') )
 			{
 				Log("invalid name");
 				return false;
 			}
 
 			string oldPath = keybindsPath + "/" + origName + ".celeste";
-			if (!File.Exists(oldPath))
+			if( !File.Exists(oldPath) )
 			{
 				Log(oldPath + " does not exist");
 				return false;
 			}
 
-			string origNameIndex = "";
-			for(int i = 0; i < origName.Length; i++)
+			// var origNameIndex = "";
+			// foreach( char t in origName )
+			// {
+			// 	if (t == '_')
+			// 		break;
+			// 	origNameIndex += t;
+			// }
+			int    origNameIndex = origName.IndexOf('_');
+			string newPath       = keybindsPath + "/" + origNameIndex + "_" + newName + ".celeste";
+			if( File.Exists(newPath) )
 			{
-				if (origName[i] == '_')
-					break;
-				origNameIndex += origName[i];
-			}
-			string newPath = keybindsPath + "/" + origNameIndex + "_" + newName + ".celeste";
-			if (File.Exists(newPath))
-			{
-				Log(newPath + " already exists", LogLevel.Info);
+				Log(newPath          + " already exists", LogLevel.Info);
 				Tooltip.Show(newName + " " + "MODOPTIONS_IZUMISQOL_KEYBINDS_EXISTS".AsDialog());
 				return false;
 			}
+
 			File.Move(oldPath, newPath);
-			Tooltip.Show("MODOPTIONS_IZUMISQOL_IMPORTED1".AsDialog() + " " + newName + " " + "MODOPTIONS_IZUMISQOL_IMPORTED2".AsDialog());
+			Tooltip.Show("MODOPTIONS_IZUMISQOL_IMPORTED1".AsDialog() + " " + newName + " " +
+			             "MODOPTIONS_IZUMISQOL_IMPORTED2".AsDialog());
 			return true;
 		}
-		catch (Exception ex)
+		catch( Exception ex )
 		{
 			Tooltip.Show("MODOPTIONS_IZUMISQOL_ERROR_INVALIDCLIPBOARD".AsDialog());
 			Log(ex, LogLevel.Warn);
@@ -295,13 +307,14 @@ public static class KeybindModule
 
 	public static void ApplyKeybinds(int keybindID)
 	{
-		if(keybindID >= ModSettings.GetKeybindNames().Count)
+		if( keybindID >= ModSettings.GetKeybindNames().Count )
 		{
-			Log(keybindID + " exceeded the size of keybindNames");
+			Log(keybindID                                                        + " exceeded the size of keybindNames");
 			Tooltip.Show("MODOPTIONS_IZUMISQOL_KEYBINDERROR_APPLYING".AsDialog() + " " + keybindID);
 			return;
 		}
-		Log("Applying keybind: " + ModSettings.GetKeybindNames()[keybindID]);
+
+		Log("Applying keybind: "                                         + ModSettings.GetKeybindNames()[keybindID]);
 		Tooltip.Show("MODOPTIONS_IZUMISQOL_KEYBINDS_APPLYING".AsDialog() + " " + ModSettings.GetKeybindNames()[keybindID]);
 
 		CopyFromKeybindSwapperToKeybinds(keybindID);
@@ -311,40 +324,44 @@ public static class KeybindModule
 
 	private static void SaveModKeybinds(int keybindID)
 	{
-		foreach (EverestModule module in Everest.Modules)
+		foreach( EverestModule module in Everest.Modules )
 		{
-			if (!WhitelistContains(keybindsPath + "/whitelist.txt", module.Metadata.Name))
+			if( !WhitelistContains(keybindsPath + "/whitelist.txt", module.Metadata.Name) )
 				continue;
 
 			try
 			{
 				object settings = module._Settings;
-				if (settings is null)
+				if( settings is null )
 				{
 					Log("mod settings was null");
 					Log("Could not write modsettings to keybind file.", LogLevel.Warn);
 					continue;
 				}
+
 				Log(settings);
 
-				bool doSave = true;
+				var doSave = true;
 
-				PropertyInfo[] properties = module.SettingsType.GetProperties();
+				PropertyInfo[]      properties   = module.SettingsType.GetProperties();
 				ModKeybindsSaveType settingsSave = new();
-				foreach (PropertyInfo prop in properties)
+				foreach( PropertyInfo prop in properties )
 				{
-					SettingInGameAttribute attribInGame;
-					if (((attribInGame = prop.GetCustomAttribute<SettingInGameAttribute>()) != null && attribInGame.InGame != Engine.Scene is Level) || prop.GetCustomAttribute<SettingIgnoreAttribute>() != null || !prop.CanRead || !prop.CanWrite)
+					SettingInGameAttribute? attribInGame;
+					if( ((attribInGame = prop.GetCustomAttribute<SettingInGameAttribute>()) is not null &&
+					     attribInGame.InGame != Engine.Scene is Level)                ||
+					    prop.GetCustomAttribute<SettingIgnoreAttribute>() is not null || !prop.CanRead || !prop.CanWrite )
 					{
 						continue;
 					}
-					if (typeof(ButtonBinding).IsAssignableFrom(prop.PropertyType))
+
+					if( typeof(ButtonBinding).IsAssignableFrom(prop.PropertyType) )
 					{
-						if (prop.GetValue(settings) is ButtonBinding)
+						if( prop.GetValue(settings) is ButtonBinding )
 						{
-							List<Binding> buttonBindingList = new();
-							ButtonBinding binding = (ButtonBinding)prop.GetValue(settings);
-							if(binding is null || binding.Button is null || binding.Button.Binding is null)
+							List<Binding> buttonBindingList = [ ];
+							var           binding           = (ButtonBinding?)prop.GetValue(settings);
+							if( binding?.Button?.Binding is null )
 							{
 								Log("binding was null");
 								doSave = false;
@@ -352,19 +369,21 @@ public static class KeybindModule
 							}
 
 							buttonBindingList.Add(binding.Button.Binding);
-							settingsSave.buttonBindings.Add(prop.Name, buttonBindingList);
+							settingsSave.ButtonBindings.Add(prop.Name, buttonBindingList);
 						}
+
 						continue;
 					}
-					if (typeof(List<ButtonBinding>).IsAssignableFrom(prop.PropertyType))
+
+					if( typeof(List<ButtonBinding>).IsAssignableFrom(prop.PropertyType) )
 					{
-						if (prop.GetValue(settings) is List<ButtonBinding>)
+						if( prop.GetValue(settings) is List<ButtonBinding> )
 						{
-							List<Binding> bindingList = new();
-							List<ButtonBinding> buttonBindingList = (List<ButtonBinding>)prop.GetValue(settings);
-							buttonBindingList.ForEach(delegate (ButtonBinding buttonBinding)
+							List<Binding>        bindingList       = [ ];
+							List<ButtonBinding>? buttonBindingList = (List<ButtonBinding>?)prop.GetValue(settings);
+							buttonBindingList?.ForEach(delegate(ButtonBinding buttonBinding)
 							{
-								if(buttonBinding is not null && buttonBinding.Button is not null && buttonBinding.Button.Binding is not null)
+								if( buttonBinding.Button?.Binding is not null )
 								{
 									bindingList.Add(buttonBinding.Button.Binding);
 								}
@@ -373,16 +392,16 @@ public static class KeybindModule
 									Log("binding in list was null");
 									doSave = false;
 								}
-
 							});
-							settingsSave.buttonBindings.Add(prop.Name, bindingList);
+							settingsSave.ButtonBindings.Add(prop.Name, bindingList);
 						}
-						continue;
 					}
 				}
-				if (doSave)
+
+				if( doSave )
 				{
-					FileStream fileStream2 = File.Create(keybindsPath + "/" + keybindID + "_modsettings-" + module.Metadata.Name + ".celeste");
+					FileStream fileStream2 =
+						File.Create(keybindsPath + "/" + keybindID + "_modsettings-" + module.Metadata.Name + ".celeste");
 					using StreamWriter writer = new(fileStream2);
 					YamlHelper.Serializer.Serialize(writer, settingsSave, typeof(ModKeybindsSaveType));
 				}
@@ -401,7 +420,7 @@ public static class KeybindModule
 	private static void LoadModKeybinds(int keybindID)
 	{
 		Log("Reloading mod keybinds");
-		foreach (EverestModule module in Everest.Modules)
+		foreach( EverestModule module in Everest.Modules )
 		{
 			string modName = module.Metadata.Name;
 
@@ -409,11 +428,12 @@ public static class KeybindModule
 			Log(modName + " in whitelist: " + inWhitelist);
 
 			string modPath = keybindsPath + "/" + keybindID + "_modsettings-" + modName + ".celeste";
-			if (!inWhitelist)
+			if( !inWhitelist )
 			{
 				continue;
 			}
-			if (!File.Exists(modPath))
+
+			if( !File.Exists(modPath) )
 			{
 				Log(modName + " does not have a keybind file saved");
 				continue;
@@ -421,38 +441,44 @@ public static class KeybindModule
 
 			try
 			{
-				FileStream fileStream = File.OpenRead(modPath);
-				using StreamReader reader = new(fileStream);
-				ModKeybindsSaveType modKeybindsSaveType = (ModKeybindsSaveType)YamlHelper.Deserializer.Deserialize(reader, typeof(ModKeybindsSaveType));
+				FileStream         fileStream = File.OpenRead(modPath);
+				using StreamReader reader     = new(fileStream);
+				var modKeybindsSaveType =
+					(ModKeybindsSaveType?)YamlHelper.Deserializer.Deserialize(reader, typeof(ModKeybindsSaveType));
 
-				object settings = module._Settings;
+				object         settings   = module._Settings;
 				PropertyInfo[] properties = module.SettingsType.GetProperties();
-				foreach (PropertyInfo prop in properties)
+				foreach( PropertyInfo prop in properties )
 				{
-					SettingInGameAttribute attribInGame;
-					if (((attribInGame = prop.GetCustomAttribute<SettingInGameAttribute>()) != null && attribInGame.InGame != Engine.Scene is Level) || prop.GetCustomAttribute<SettingIgnoreAttribute>() != null || !prop.CanRead || !prop.CanWrite)
+					SettingInGameAttribute? attribInGame;
+					if( ((attribInGame = prop.GetCustomAttribute<SettingInGameAttribute>()) is not null &&
+					     attribInGame.InGame                                                != Engine.Scene is Level) ||
+					    prop.GetCustomAttribute<SettingIgnoreAttribute>() is not null || !prop.CanRead || !prop.CanWrite )
 					{
 						continue;
 					}
-					if (typeof(ButtonBinding).IsAssignableFrom(prop.PropertyType))
+
+					if( typeof(ButtonBinding).IsAssignableFrom(prop.PropertyType) )
 					{
-						if (prop.GetValue(settings) is ButtonBinding buttonBinding)
+						if( prop.GetValue(settings) is ButtonBinding buttonBinding && modKeybindsSaveType is not null )
 						{
-							Binding modBinding = buttonBinding.Button.Binding;
-							Binding customBinding = modKeybindsSaveType.buttonBindings[prop.Name][0];
+							Binding modBinding    = buttonBinding.Button.Binding;
+							Binding customBinding = modKeybindsSaveType.ButtonBindings[prop.Name][0];
 							ClearKey(modBinding);
 							modBinding.Add(customBinding.Keyboard.ToArray());
 							modBinding.Add(customBinding.Controller.ToArray());
 							modBinding.Add(customBinding.Mouse.ToArray());
 						}
+
 						continue;
 					}
-					if (typeof(List<ButtonBinding>).IsAssignableFrom(prop.PropertyType))
+
+					if( typeof(List<ButtonBinding>).IsAssignableFrom(prop.PropertyType) )
 					{
-						if(prop.GetValue(settings) is List<ButtonBinding> propButtonBindings)
+						if( prop.GetValue(settings) is List<ButtonBinding> propButtonBindings && modKeybindsSaveType is not null )
 						{
-							List<Binding> savedBindings = modKeybindsSaveType.buttonBindings[prop.Name];
-							for(int i = 0; i< savedBindings.Count; i++)
+							List<Binding> savedBindings = modKeybindsSaveType.ButtonBindings[prop.Name];
+							for( var i = 0; i < savedBindings.Count; i++ )
 							{
 								Binding modBinding = propButtonBindings[i].Button.Binding;
 								ClearKey(modBinding);
@@ -461,7 +487,6 @@ public static class KeybindModule
 								modBinding.Add(savedBindings[i].Mouse.ToArray());
 							}
 						}
-						continue;
 					}
 				}
 			}
@@ -474,7 +499,7 @@ public static class KeybindModule
 
 	public static void CopyFromKeybindSwapperToKeybinds(int keybindID)
 	{
-		if(keybindID > KeybindSettings.Count)
+		if( keybindID > KeybindSettings.Count )
 			return;
 		Log("Swapper to keybinds");
 		ChangeKeybindsFromAToB(KeybindSettings[keybindID], Settings.Instance, keybindID);
@@ -483,7 +508,7 @@ public static class KeybindModule
 
 	public static void CopyFromKeybindsToKeybindSwapper(int keybindID)
 	{
-		if (KeybindSettings.Count < keybindID)
+		if( KeybindSettings.Count < keybindID )
 			return;
 		Log("Keybinds to swapper");
 		ChangeKeybindsFromAToB(Settings.Instance, KeybindSettings[keybindID], keybindID);
@@ -494,50 +519,42 @@ public static class KeybindModule
 		ModSettings.CurrentKeybindSlot = keybindID;
 		Log("Modifying Key Bind " + ModSettings.CurrentKeybindSlot);
 
-		if (a == null)
-		{
-			Log("setting 'a' was null", LogLevel.Warn);
-			return;
-		}
-		if (b == null)
-		{
-			Log("setting 'b' was null", LogLevel.Warn);
-			return;
-		}
-
 		//Settings.Instance            KeybindSettings[keybindID]
+
 		#region
+
 		// adding the menu binds earlier because they always need atleast one button bound
-		b.MenuLeft.	Add(a.MenuLeft.	Keyboard.ToArray());
+		b.MenuLeft.Add(a.MenuLeft.Keyboard.ToArray());
 		b.MenuRight.Add(a.MenuRight.Keyboard.ToArray());
-		b.MenuUp.	Add(a.MenuUp.	Keyboard.ToArray());
-		b.MenuDown.	Add(a.MenuDown.	Keyboard.ToArray());
-		b.Confirm.  Add(a.Confirm.	Keyboard.ToArray());
-		b.Cancel.   Add(a.Cancel.	Keyboard.ToArray());
-		b.Journal.  Add(a.Journal.	Keyboard.ToArray());
-		b.Pause.    Add(a.Pause.	Keyboard.ToArray());
+		b.MenuUp.Add(a.MenuUp.Keyboard.ToArray());
+		b.MenuDown.Add(a.MenuDown.Keyboard.ToArray());
+		b.Confirm.Add(a.Confirm.Keyboard.ToArray());
+		b.Cancel.Add(a.Cancel.Keyboard.ToArray());
+		b.Journal.Add(a.Journal.Keyboard.ToArray());
+		b.Pause.Add(a.Pause.Keyboard.ToArray());
 
-		b.MenuLeft. Add(a.MenuLeft.	Controller.ToArray());
+		b.MenuLeft.Add(a.MenuLeft.Controller.ToArray());
 		b.MenuRight.Add(a.MenuRight.Controller.ToArray());
-		b.MenuUp.   Add(a.MenuUp.	Controller.ToArray());
-		b.MenuDown. Add(a.MenuDown.	Controller.ToArray());
-		b.Confirm.  Add(a.Confirm.	Controller.ToArray());
-		b.Cancel.   Add(a.Cancel.	Controller.ToArray());
-		b.Journal.  Add(a.Journal.	Controller.ToArray());
-		b.Pause.    Add(a.Pause.	Controller.ToArray());
+		b.MenuUp.Add(a.MenuUp.Controller.ToArray());
+		b.MenuDown.Add(a.MenuDown.Controller.ToArray());
+		b.Confirm.Add(a.Confirm.Controller.ToArray());
+		b.Cancel.Add(a.Cancel.Controller.ToArray());
+		b.Journal.Add(a.Journal.Controller.ToArray());
+		b.Pause.Add(a.Pause.Controller.ToArray());
 
-		b.MenuLeft.	Add(a.MenuLeft.	Mouse.ToArray());
+		b.MenuLeft.Add(a.MenuLeft.Mouse.ToArray());
 		b.MenuRight.Add(a.MenuRight.Mouse.ToArray());
-		b.MenuUp.	Add(a.MenuUp.	Mouse.ToArray());
-		b.MenuDown.	Add(a.MenuDown.	Mouse.ToArray());
-		b.Confirm.	Add(a.Confirm.	Mouse.ToArray());
-		b.Cancel.	Add(a.Cancel.	Mouse.ToArray());
-		b.Journal.	Add(a.Journal.	Mouse.ToArray());
-		b.Pause.	Add(a.Pause.	Mouse.ToArray());
+		b.MenuUp.Add(a.MenuUp.Mouse.ToArray());
+		b.MenuDown.Add(a.MenuDown.Mouse.ToArray());
+		b.Confirm.Add(a.Confirm.Mouse.ToArray());
+		b.Cancel.Add(a.Cancel.Mouse.ToArray());
+		b.Journal.Add(a.Journal.Mouse.ToArray());
+		b.Pause.Add(a.Pause.Mouse.ToArray());
+
 		#endregion
 
 		Binding[] bindings =
-		{
+		[
 			b.Cancel,
 			b.Confirm,
 			b.Dash,
@@ -563,10 +580,10 @@ public static class KeybindModule
 			b.Talk,
 			b.Up,
 			b.UpDashOnly,
-			b.UpMoveOnly
-		};
+			b.UpMoveOnly,
+		];
 		Binding[] newBindings =
-		{
+		[
 			a.Cancel,
 			a.Confirm,
 			a.Dash,
@@ -592,10 +609,10 @@ public static class KeybindModule
 			a.Talk,
 			a.Up,
 			a.UpDashOnly,
-			a.UpMoveOnly
-		};
+			a.UpMoveOnly,
+		];
 
-		for (int i = 0; i < bindings.Length; i++)
+		for( var i = 0; i < bindings.Length; i++ )
 		{
 			ClearKey(bindings[i]);
 			bindings[i].Add(newBindings[i].Keyboard.ToArray());
@@ -613,18 +630,16 @@ public static class KeybindModule
 
 	private static void MatchKeybindButtonsToKeybindSettings()
 	{
-		if (ModSettings.ButtonsSwapKeybinds == null)
-			return;
-
 		int swapKeybindsCount = ModSettings.ButtonsSwapKeybinds.Count;
-		if (swapKeybindsCount > KeybindSettings.Count)
+		if( swapKeybindsCount > KeybindSettings.Count )
 		{
 			Log(ModSettings.ButtonsSwapKeybinds.Count);
 			ModSettings.ButtonsSwapKeybinds.RemoveRange(KeybindSettings.Count, swapKeybindsCount - KeybindSettings.Count);
 			Log(ModSettings.ButtonsSwapKeybinds.Count);
 		}
+
 		swapKeybindsCount = ModSettings.ButtonsSwapKeybinds.Count;
-		for (int i = swapKeybindsCount; i < KeybindSettings.Count; i++)
+		for( int i = swapKeybindsCount; i < KeybindSettings.Count; i++ )
 		{
 			ModSettings.ButtonsSwapKeybinds.Add(new ButtonBinding());
 		}
@@ -632,6 +647,6 @@ public static class KeybindModule
 
 	private class ModKeybindsSaveType
 	{
-		public Dictionary<string, List<Binding>> buttonBindings = new();
+		public readonly Dictionary<string, List<Binding>> ButtonBindings = new();
 	}
 }

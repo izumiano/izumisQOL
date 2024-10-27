@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-
 using Microsoft.Xna.Framework;
 
 namespace Celeste.Mod.izumisQOL.UI;
@@ -30,7 +29,7 @@ public interface IToggleableMenuItem
 
 public class ToggleableButton : TextMenu.Button, IToggleableMenuItem
 {
-	protected static Dictionary<string, bool> IsShownFromID = new();
+	protected static readonly Dictionary<string, bool> IsShownFromID = new();
 
 	public bool IsShown 
 	{
@@ -48,8 +47,8 @@ public class ToggleableButton : TextMenu.Button, IToggleableMenuItem
 			IsShownFromID[id] = value;
 		}
 	}
-	protected string id;
-	protected string description;
+	protected readonly string id;
+	protected readonly string description;
 
 	protected ToggleableButton(string label, string id, string description, bool visibleByDefault = false) : base(label) 
 	{
@@ -65,7 +64,7 @@ public class ToggleableButton : TextMenu.Button, IToggleableMenuItem
 	{
 		ToggleableButton btn = new(label, id, description, visibleByDefault)
 		{
-			IsShown = IsShownFromID.ContainsKey(id) ? IsShownFromID[id] : visibleByDefault
+			IsShown = IsShownFromID.ContainsKey(id) ? IsShownFromID[id] : visibleByDefault,
 		};
 		return btn;
 	}
@@ -106,7 +105,7 @@ public class ToggleableRestartButton : ToggleableButton
 	{
 		ToggleableRestartButton btn = new(id)
 		{
-			IsShown = IsShownFromID.ContainsKey(id) ? IsShownFromID[id] : visibleByDefault
+			IsShown = IsShownFromID.ContainsKey(id) ? IsShownFromID[id] : visibleByDefault,
 		};
 		return btn;
 	}

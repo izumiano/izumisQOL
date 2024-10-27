@@ -1,20 +1,18 @@
 ﻿using System.Collections;
 using Microsoft.Xna.Framework;
-using Monocle;
+using On.Monocle;
+using Camera = Monocle.Camera;
+using Engine = Monocle.Engine;
+using Entity = Monocle.Entity;
+using StateMachine = Monocle.StateMachine;
 
 namespace Celeste.Mod.izumisQOL;
 public static class NoClipModule
 {
 	public static bool Enabled
 	{
-		get
-		{
-			return ModSettings.NoClipEnabled;
-		}
-		set
-		{
-			ModSettings.NoClipEnabled = value;
-		}
+		get => ModSettings.NoClipEnabled;
+		set => ModSettings.NoClipEnabled = value;
 	}
 
 	private static float normalSpeed => ModSettings.NoClipNormalSpeed * 0.25f;
@@ -26,21 +24,21 @@ public static class NoClipModule
 	public static void Load()
 	{
 		Everest.Events.Player.OnRegisterStates += OnRegisterStates;
-		On.Celeste.Player.Update += PlayerUpdate;
-		On.Celeste.Player.OnTransition += OnPlayerTransition;
-		On.Celeste.Level.End += OnLevelEnd;
+		On.Celeste.Player.Update               += PlayerUpdate;
+		On.Celeste.Player.OnTransition         += OnPlayerTransition;
+		On.Celeste.Level.End                   += OnLevelEnd;
 
-		On.Monocle.Collide.Check_Entity_Entity += CheckEntity;
+		Collide.Check_Entity_Entity += CheckEntity;
 	}
 
 	public static void Unload()
 	{
 		Everest.Events.Player.OnRegisterStates -= OnRegisterStates;
-		On.Celeste.Player.Update -= PlayerUpdate;
-		On.Celeste.Player.OnTransition -= OnPlayerTransition;
-		On.Celeste.Level.End -= OnLevelEnd;
+		On.Celeste.Player.Update               -= PlayerUpdate;
+		On.Celeste.Player.OnTransition         -= OnPlayerTransition;
+		On.Celeste.Level.End                   -= OnLevelEnd;
 
-		On.Monocle.Collide.Check_Entity_Entity -= CheckEntity;
+		Collide.Check_Entity_Entity -= CheckEntity;
 	}
 
 	private static void OnRegisterStates(Player player)
@@ -59,11 +57,13 @@ public static class NoClipModule
 	{
 		orig(self);
 
-		if (Engine.Scene is Level level)
+		if( Engine.Scene is not Level level )
 		{
-			Camera cam = level.Camera;
-			camPos = cam.Position;
+			return;
 		}
+		
+		Camera cam = level.Camera;
+		camPos = cam.Position;
 	}
 
 	private static void PlayerUpdate(On.Celeste.Player.orig_Update orig, Player self)
@@ -87,21 +87,23 @@ public static class NoClipModule
 	private static Vector2 camPos;
 	private static int StateUpdate(Player player)
 	{
-		Vector2 aim = Input.Aim.Value * (Input.Grab.Check ? fastSpeed : (Input.Dash.Check ? slowSpeed : normalSpeed));
+		Vector2 aim = Input.Aim.Value * (Input.Grab.Check ? fastSpeed : Input.Dash.Check ? slowSpeed : normalSpeed);
 
 		player.MoveH(aim.X);
 		player.MoveV(aim.Y);
 
-		if (Engine.Scene is Level level)
+		if( Engine.Scene is not Level level )
 		{
-			Camera cam = level.Camera;
-
-			Vector2 target = player.Position - new Vector2(cam.Viewport.Width / 2f, cam.Viewport.Height / 2f) + aim * 20;
-			target.X = MathHelper.Clamp(target.X, level.Bounds.Left, level.Bounds.Right - 320);
-			target.Y = MathHelper.Clamp(target.Y, level.Bounds.Top, level.Bounds.Bottom - 180);
-			camPos += (target - camPos) * 0.1f;
-			cam.Position = camPos;
+			return noClipState;
 		}
+		
+		Camera cam = level.Camera;
+
+		Vector2 target = player.Position                                                  - new Vector2(cam.Viewport.Width / 2f, cam.Viewport.Height / 2f) + aim * 20;
+		target.X     =  MathHelper.Clamp(target.X, level.Bounds.Left, level.Bounds.Right  - 320);
+		target.Y     =  MathHelper.Clamp(target.Y, level.Bounds.Top,  level.Bounds.Bottom - 180);
+		camPos       += (target - camPos) * 0.1f;
+		cam.Position =  camPos;
 
 		return noClipState;
 	}
@@ -131,7 +133,7 @@ public static class NoClipModule
 		Log("StateEnd");
 	}
 
-	private static bool CheckEntity(On.Monocle.Collide.orig_Check_Entity_Entity orig, Entity a, Entity b)
+	private static bool CheckEntity(Collide.orig_Check_Entity_Entity orig, Entity a, Entity b)
 	{
 		if (!Enabled) return orig(a, b);
 
@@ -143,14 +145,13 @@ public static class NoClipModule
 				return false;
 			}
 		}
-		if (b is Player playerB)
+
+		if( b is not Player playerB || playerB.StateMachine.State != noClipState )
 		{
-			if (playerB.StateMachine.State == noClipState)
-			{
-				orig(a, b);
-				return false;
-			}
+			return orig(a, b);
 		}
-		return orig(a, b);
+		
+		orig(a, b);
+		return false;
 	}
 }
