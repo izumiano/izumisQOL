@@ -7,7 +7,7 @@
 		<LangVersion>latest</LangVersion>
 		<CelestePrefix Condition="'$(CelestePrefix)' == '' And Exists('..\..\Celeste.dll')">..\..</CelestePrefix>
 		<CelestePrefix Condition="'$(CelestePrefix)' == ''">lib-stripped</CelestePrefix>
-		<ZippedFiles>..\everest.yaml;..\bin\**\*.*;..\Audio\**\*.*;..\Dialog\**\*.*;..\Graphics\**\*.*;..\Ahorn\**\*.*;..\Loenn\**\*.*</ZippedFiles>
+		<ZippedFiles>everest.yaml;bin\**\*.*;Audio\**\*.*;Dialog\**\*.*;Graphics\**\*.*;Ahorn\**\*.*;Loenn\**\*.*;Assets\**\*.*</ZippedFiles>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
@@ -18,7 +18,7 @@
 	</ItemDefinitionGroup>
 
 	<ItemGroup>
-		<PackageReference Include="MonoMod.RuntimeDetour" Version="25.0.2" PrivateAssets="all" ExcludeAssets="runtime" />
+		<PackageReference Include="MonoMod.RuntimeDetour" Version="25.2.3" PrivateAssets="all" ExcludeAssets="runtime" />
 		<PackageReference Include="MonoMod.Patcher" Version="25.0.0-prerelease.2" />
 		<PackageReference Include="CelesteAnalyzer" Version="*" />
 		<PackageReference Include="obs-websocket-dotnet" Version="5.0.0.3" />
@@ -41,7 +41,7 @@
 		<ItemGroup>
 			<FilesToPackage Include="$(ZippedFiles)" />
 		</ItemGroup>
-		<PackageMod Files="@(FilesToPackage)" OutputPath="..\izumisQOL.zip" />
+		<PackageMod Files="@(FilesToPackage)" OutputPath="izumisQOL.zip" />
 	</Target>
 
 	<PropertyGroup>
@@ -59,11 +59,13 @@
 			<Using Namespace="System.IO.Compression" />
 			<Code Type="Fragment" Language="cs">
 				<![CDATA[
-                var projectDir = Path.Combine(@"$(ProjectDir)", ".."); // Go one level up, since we're inside the 'Source' directory
+                //var projectDir = Path.Combine(@"$(ProjectDir)", ".."); // Go one level up, since we're inside the 'Source' directory
+                var projectDir = @"$(ProjectDir)";
                 projectDir = Uri.UnescapeDataString(projectDir);
             
                 if (File.Exists(OutputPath))
                     File.Delete(OutputPath);
+                    
 
                 using (ZipArchive zip = ZipFile.Open(OutputPath, ZipArchiveMode.Create))
                 {
@@ -72,6 +74,8 @@
                         string filePath = file.GetMetadata("FullPath");
                         string entryName = GetRelativePath(projectDir, filePath);
                         
+                        //Console.WriteLine(filePath);
+                        //Console.WriteLine(entryName);
                         zip.CreateEntryFromFile(filePath, entryName);
                     }
                 }

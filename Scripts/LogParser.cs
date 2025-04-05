@@ -12,4 +12,9 @@ public static class LogParser
 	{
 		return "x: " + vector.X + "  y: " + vector.Y;
 	}
+
+	public static string Array<T>(T[] array)
+	{
+		return "[" + string.Join(", ", array) + "]";
+	}
 }
