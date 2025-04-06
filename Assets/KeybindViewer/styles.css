@@ -7,10 +7,27 @@ body{
     margin: var(--margin);
 }
 
+#modList{
+    padding: 0;
+    list-style-type: none;
+    width: fit-content;
+}
+
+#modList > ul{
+    user-select: none;
+    width: 100%;
+    padding: 10%;
+    color: white;
+}
+
+#modList > ul.selected{
+    font-weight: bold;
+}
+
 #keyboard{
     --keyColor: #efdeef;
     --keySectionSpacingMultiplier: 0.4;
-    --keySize: calc((100vw - var(--margin) * 2)/(22 + var(--keySectionSpacingMultiplier) * 2)); /* 100% width divided by (width in regular sized keys, plus spacing distance times amount of spaces */
+    --keySize: calc((100lvw - var(--margin) * 2)/(22 + var(--keySectionSpacingMultiplier) * 2)); /* 100% width divided by (width in regular sized keys, plus spacing distance times amount of spaces */
 }
 
 #keyboard > .keyboardRow{
@@ -44,6 +61,10 @@ body{
 
 #keyboard > .keyboardRow > .hasKeybind{
     background-color: #d85a5a !important;
+}
+
+#keyboard > .keyboardRow > .modHovering{
+    background-color: #5a77d8 !important;
 }
 
 #keyboard > .keyboardRow > .empty {

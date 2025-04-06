@@ -1,4 +1,5 @@
 const keyboardElement = document.getElementById("keyboard");
+const modList = document.getElementById("modList");
 
 function safeDictPush(dict, key, val){
 	if(key in dict){
@@ -10,58 +11,116 @@ function safeDictPush(dict, key, val){
 	dict[key] = [val];
 }
 
-function getKeyData(keybinds){
-	let keyData = {};
-	for(const key of Object.entries(keybinds)){
-		const keyName = key[0];
-		const keyList = keys[keyName];
-		if(keyList === undefined){
-			console.log(keyName + "did not have a corresponding key");
-			continue;
-		}
-		for(const child of keyList){
-			child.classList.add("hasKeybind");
-			
-			let tooltip = ""
-			for(const keyInfo of key[1]){
-				tooltip += keyInfo.Module + "<br>";
-			}
-			child.setAttribute("title", tooltip);
-
-			child.onclick = onKeyPress;
-			keyData[child.dataset.key] = key[1];
-		}
-	}
-	return keyData;
-}
-
-function onKeyPress(){
-	const keyButton = this;
-	const key = keyButton.dataset.key;
-	
-	for(const item of keyData[key]){
-		console.log(item.Module);
-	}
-}
-
-async function displayKeybindInfo(){
-	const keybindInfo = await (await fetch('http://localhost:32270/izumisQOL/getKeybinds')).json();
-	console.log(keybindInfo);
-
-	keys = {};
+function getModKeybinds(keybinds){
+	let keyElements = {};
 	for(const row of keyboardElement.children){
 		for(const keyEl of row.children){
 			const key = keyEl.dataset.key;
 			if(key === undefined){
 				continue;
 			}
-			safeDictPush(keys, key, keyEl);
+			safeDictPush(keyElements, key, keyEl);
 		}
 	}
-	keyData = getKeyData(keybindInfo.Bindings.Keybinds);
+
+	let mods = {};
+	for(const key of Object.entries(keybinds)){
+		const keyName = key[0];
+		const keyList = keyElements[keyName];
+		if(keyList === undefined){
+			console.log(keyName + " did not have a corresponding key");
+			continue;
+		}
+		
+		for(const child of keyList){
+			let tooltip = ""
+			for(const keyInfo of key[1]){
+				tooltip += keyInfo.Module + ": " + keyInfo.PropertyName + "<br>";
+				
+				safeDictPush(mods, keyInfo.Module, child);
+			}
+			child.setAttribute("tooltip", tooltip);
+		}
+	}
+	return mods;
 }
 
-displayKeybindInfo();
+function displayMods(modKeybinds){
+	for(const mod of Object.entries(modKeybinds)) {
+		const modName = mod[0];
+		const keys = mod[1];
+		let ul = document.createElement("ul");
+		ul.innerText = modName;
+		ul.onclick = () => {
+			if(modName === selectedMod){
+				selectedMod = null;
+				displayModKeybinds(modKeybinds, modName);
+				ul.classList.remove("selected");
+				return;
+			}
+			selectedMod = modName;
+			
+			let obj = {}
+			obj[modName] = keys;
+			displayModKeybinds(obj);
+			
+			for(const child of modList.children){
+				child.classList.remove("selected");
+			}
+			
+			ul.classList.add("selected");
+		}
+		ul.onmouseover = () => {
+			if(selectedMod == null){
+				displayModKeybinds(modKeybinds, modName);
+			}
+		}
+		ul.onmouseleave = () => {
+			if(selectedMod === null){
+				displayModKeybinds(modKeybinds);
+			}
+		}
+		modList.appendChild(ul);
+	}
+}
 
-let keys = {};
-let keyData = {}
+function displayModKeybinds(modKeybinds, hoveringOver = null){
+	for(const row of keyboardElement.children){
+		for(const keyEl of row.children){
+			const key = keyEl.dataset.key;
+			if(key === undefined){
+				continue;
+			}
+			keyEl.classList.remove("hasKeybind");
+			keyEl.classList.remove("modHovering");
+			keyEl.setAttribute("title", "");
+		}
+	}
+	
+	for(const mod of Object.entries(modKeybinds)){
+		const modName = mod[0];
+		const keys = mod[1];
+		
+		for(const key of keys){
+			key.classList.add("hasKeybind");
+			key.setAttribute("title", key.getAttribute("tooltip") ?? "");
+			
+			if(modName === hoveringOver){
+				key.classList.add("modHovering");
+			}
+		}
+	}
+}
+
+async function main()
+{
+	const keybindInfo = await (await fetch('http://localhost:32270/izumisQOL/getKeybinds')).json();
+
+	const modKeybinds = getModKeybinds(keybindInfo.Bindings.Keybinds);
+	displayModKeybinds(modKeybinds);
+	displayMods(modKeybinds);
+}
+
+let selectedMod = null;
+
+main();
