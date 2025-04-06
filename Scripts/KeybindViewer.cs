@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -6,7 +7,6 @@ using System.Reflection;
 using Celeste.Mod.izumisQOL.Scripts;
 using Monocle;
 using Microsoft.Xna.Framework.Input;
-using Celeste.Mod;
 
 namespace Celeste.Mod.izumisQOL;
 
@@ -23,19 +23,19 @@ public static class KeybindViewer{
 
 	private static void CopyAsset(string fileName)
 	{
-		Log("Copying assets for keybindViewer...");
+		Log($"Copying {fileName} for keybindViewer...");
 		
 		var fileRelativePath = Path.Combine("KeybindViewer", fileName);
 		var assetPath        = Path.Combine("Assets",        fileRelativePath);
-		if( !Everest.Content.TryGet(assetPath, out ModAsset? htmlAsset, includeDirs: true) || htmlAsset is null )
+		if( !Everest.Content.TryGet(assetPath, out ModAsset? asset, includeDirs: true) || asset is null )
 		{
 			Log($"Failed to load {assetPath}", LogLevel.Error);
 			return;
 		}
 
 		using FileStream fileStream = File.Create(Path.Combine(nameof(izumisQOL), fileRelativePath));
-		htmlAsset.Stream.Seek(0L, SeekOrigin.Begin);
-		htmlAsset.Stream.CopyTo(fileStream);
+		asset.Stream.Seek(0L, SeekOrigin.Begin);
+		asset.Stream.CopyTo(fileStream);
 		Log($"Wrote file '{fileName}' to path '{fileRelativePath}'");
 	}
 	
@@ -47,74 +47,139 @@ public static class KeybindViewer{
     });
 	}
 
-	public static BindingCollection GetBindInfo()
+	public static BindingCollection GetBindInfoCollection()
 	{
 		var bindings = new BindingCollection();
 		foreach( EverestModule module in Everest.Modules )
 		{
-			object settings = module._Settings;
-			if( settings is null )
+			if( module._Settings is not { } settings )
 			{
 				Log($"Could not get modsettings for {module.Metadata.Name}.", LogLevel.Warn);
 				continue;
 			}
 
-			Log(settings);
+			Log(module.Metadata.Name);
 
 			PropertyInfo[] properties = module.SettingsType.GetProperties();
 			foreach( PropertyInfo prop in properties )
 			{
-				SettingInGameAttribute? attribInGame;
-				if( ((attribInGame = prop.GetCustomAttribute<SettingInGameAttribute>()) is not null &&
-				     attribInGame.InGame != Engine.Scene is Level)                ||
-				    prop.GetCustomAttribute<SettingIgnoreAttribute>() is not null || !prop.CanRead || !prop.CanWrite )
+				if( !prop.CanRead )
 				{
 					continue;
 				}
 
-				if( typeof(ButtonBinding).IsAssignableFrom(prop.PropertyType) )
-				{
-					if( prop.GetValue(settings) is ButtonBinding )
-					{
-						var           binding           = (ButtonBinding?)prop.GetValue(settings);
-						if( binding?.Button?.Binding is null )
-						{
-							Log("binding was null");
-							continue;
-						}
-						bindings.Add(new BindInfo(module.Metadata.Name, binding.Button.Binding));
-					}
-
-					continue;
-				}
-
-				if( typeof(List<ButtonBinding>).IsAssignableFrom(prop.PropertyType) )
-				{
-					if( prop.GetValue(settings) is List<ButtonBinding> )
-					{
-						List<ButtonBinding>? buttonBindingList = (List<ButtonBinding>?)prop.GetValue(settings) ?? [];
-						// buttonBindingList?.ForEach(buttonBinding =>
-						foreach( ButtonBinding binding in buttonBindingList )
-						{
-							if( binding.Button?.Binding is not null )
-							{
-								bindings.Add(new BindInfo(module.Metadata.Name, binding.Button.Binding));
-							}
-							else
-							{
-								Log("binding in list was null");
-							}
-						}
-					}
-				}
+				bindings.Add(GetBindInfoFromProperty(prop, module, settings));
 			}
 		}
 
 		return bindings;
 	}
+
+	private static IEnumerable<BindInfo> GetBindInfoFromProperty(PropertyInfo prop, EverestModule module, EverestModuleSettings settings)
+	{
+		if( typeof(ButtonBinding).IsAssignableFrom(prop.PropertyType) && prop.GetValue(settings) is ButtonBinding binding )
+		{
+			if( binding.Button?.Binding is null )
+			{
+				Log("binding was null");
+				yield break;
+			}
+			yield return new BindInfo(module.Metadata.Name, GetPropertyName(prop, module), binding.Button.Binding);
+		}
+				
+		else if( typeof(List<ButtonBinding>).IsAssignableFrom(prop.PropertyType)
+		    && prop.GetValue(settings) is List<ButtonBinding> buttonBindingList)
+		{
+			for(int i = 0; i < buttonBindingList.Count; i++)
+			{
+				var listBinding = buttonBindingList[i];
+				if( listBinding.Button?.Binding is null )
+				{
+					Log("binding in list was null");
+					continue;
+				}
+							
+				yield return new BindInfo(
+					module.Metadata.Name, 
+					GetPropertyName(prop, module) + $"[{i}]", 
+					listBinding.Button.Binding
+				);
+			}
+		}
+		
+		else if( typeof(List<Keys>).IsAssignableFrom(prop.PropertyType)
+		         && prop.GetValue(settings) is List<Keys> keyList)
+		{
+			foreach( Keys key in keyList )
+			{
+				var keyBinding = new Binding();
+				keyBinding.Add(key);
+				
+				yield return new BindInfo(
+					module.Metadata.Name, 
+					GetPropertyName(prop, module), 
+					keyBinding
+				);
+			}
+		}
+		
+		else if( typeof(List<Buttons>).IsAssignableFrom(prop.PropertyType)
+		         && prop.GetValue(settings) is List<Buttons> buttonsList)
+		{
+			foreach( Buttons button in buttonsList )
+			{
+				var buttonBinding = new Binding();
+				buttonBinding.Add(button);
+				
+				yield return new BindInfo(
+					module.Metadata.Name, 
+					GetPropertyName(prop, module), 
+					buttonBinding
+				);
+			}
+		}
+
+		else if( typeof(IDictionary).IsAssignableFrom(prop.PropertyType)
+		    && prop.GetValue(settings) is IDictionary buttonBindingDict)
+		{
+			foreach( DictionaryEntry keyValue in buttonBindingDict )
+			{
+				if( keyValue.Value is not ButtonBinding dictBinding )
+				{
+					prop.Name.Log("was not a ButtonBinding dict");
+					break;
+				}
+				if( dictBinding.Button?.Binding is null )
+				{
+					Log("binding in list was null");
+					continue;
+				}
+						
+				yield return new BindInfo(
+					module.Metadata.Name, 
+					GetPropertyName(prop, module) + $"[{keyValue.Key}]", 
+					dictBinding.Button.Binding
+				);
+			}
+		}
+	}
+	
+	private static string GetPropertyName(PropertyInfo propertyInfo, EverestModule module)
+	{
+		string text = module.SettingsType.Name.ToLowerInvariant();
+		if (text.EndsWith("settings"))
+		{
+			text = text[..^8];
+		}
+		string nameDefaultPrefix = "modoptions_" + text + "_";
+		string input             = propertyInfo.GetCustomAttribute<SettingNameAttribute>()?.Name
+		                           ?? nameDefaultPrefix + propertyInfo.Name.ToLowerInvariant();
+		
+		return input.DialogCleanOrNull() ?? propertyInfo.Name.SpacedPascalCase();
+	}
 }
 
-public record BindInfo(string Module, Binding Binding);
+public record BindInfo(string Module, string PropertyName, Binding Binding);
 
 public class BindingCollection
 {
@@ -146,6 +211,14 @@ public class BindingCollection
 				Buttons.Add(button, [ bindInfo ]);
 			}
 		});
+	}
+
+	public void Add(IEnumerable<BindInfo> bindInfos)
+	{
+		foreach( var bindInfo in bindInfos )
+		{
+			Add(bindInfo);
+		}
 	}
 
 	public override string ToString()

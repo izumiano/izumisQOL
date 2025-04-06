@@ -15,7 +15,7 @@ public static class DebugRC
 		{
 			httpListener.Response.AddHeader("Access-Control-Allow-Origin", "*");
 			
-			new KeybindsResponse(statusCode: StatusCode.Ok, celesteStatusCode: CelesteStatusCode.Ok, bindings: KeybindViewer.GetBindInfo())
+			new KeybindsResponse(statusCode: StatusCode.Ok, celesteStatusCode: CelesteStatusCode.Ok, bindings: KeybindViewer.GetBindInfoCollection())
 				.WriteJson(httpListener);
 		}
 	};
