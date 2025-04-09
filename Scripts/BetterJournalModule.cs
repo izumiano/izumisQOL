@@ -942,8 +942,8 @@ public static class BetterJournalModule
 
 	private struct CustomAreaStats
 	{
-		public readonly long[] TimePlayed = new long[3];
-		public readonly int[]  Deaths     = new int[3];
+		public long[] TimePlayed = new long[3];
+		public int[]  Deaths     = new int[3];
 
 		public CustomAreaStats(AreaModeStats[] areaModes)
 		{
