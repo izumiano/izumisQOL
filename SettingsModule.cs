@@ -124,7 +124,7 @@ public class SettingsModule : EverestModuleSettings
 
 	[YamlIgnore] public bool CheckReplayBufferStatus => OBSPollFrequencyIndex[RecordingType.ReplayBuffer] != 0;
 
-	public readonly Dictionary<RecordingType, int> OBSPollFrequencyIndex = new()
+	public Dictionary<RecordingType, int> OBSPollFrequencyIndex = new()
 	{
 		{ RecordingType.Record, 0 },
 		{ RecordingType.Stream, 0 },
