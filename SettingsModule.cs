@@ -477,6 +477,25 @@ public class SettingsModule : EverestModuleSettings
 		);
 		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_REMOVE_DESC".AsDialog());
 
+		subMenu.Add(new TextMenu.SubHeader("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXPORTS_HEADER".AsDialog()));
+
+		subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXPORTS_ENABLED".AsDialog())
+		{
+			OnPressed = () => { TextInput.SetClipboardText(WhitelistModule.GetEnabledModsExport().Log()); },
+		});
+		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXPORTS_ENABLED_DESC".AsDialog());
+
+		subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXPORTS_WHITELIST".AsDialog())
+		{
+			OnPressed = () =>
+			{
+				TextInput.SetClipboardText(WhitelistModule
+				                           .GetCurrentWhitelistModsExport(GetWhitelistName(CurrentWhitelistSlot)).Log());
+			},
+		});
+		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXPORTS_WHITELIST_DESC".AsDialog());
+
+
 		menu.Add(subMenu);
 	}
 

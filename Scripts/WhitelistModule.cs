@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 
 namespace Celeste.Mod.izumisQOL;
@@ -29,7 +30,7 @@ public static class WhitelistModule
 
 	private static void LoadWhitelistFiles()
 	{
-		string[] files = Directory.GetFiles(whitelistsPath).SanitizeFilePath();
+		var files = Directory.GetFiles(whitelistsPath).SanitizeFilePath();
 
 		if( files.Length <= 0 )
 		{
@@ -37,9 +38,9 @@ public static class WhitelistModule
 			return;
 		}
 
-		foreach( string file in files )
+		foreach( var file in files )
 		{
-			string fileName = file.Replace(whitelistsPath + "/", "").Replace(".txt", "");
+			var fileName = file.Replace(whitelistsPath + "/", "").Replace(".txt", "");
 
 			ModSettings.AddWhitelistName(fileName);
 			Log(fileName);
@@ -48,24 +49,21 @@ public static class WhitelistModule
 
 	public static bool RenameFile(string? origName, string newName)
 	{
-		if( origName is null )
-		{
-			return false;
-		}
-		
+		if( origName is null ) return false;
+
 		try
 		{
-			string newPath = whitelistsPath + "/" + newName + ".txt";
+			var newPath = whitelistsPath + "/" + newName + ".txt";
 			if( File.Exists(newPath) )
 			{
-				Log(newPath          + " already exists", LogLevel.Info);
+				Log(newPath + " already exists", LogLevel.Info);
 				Tooltip.Show(newName + " " + "MODOPTIONS_IZUMISQOL_WHITELIST_EXISTS".AsDialog());
 				return false;
 			}
 
 			File.Move(whitelistsPath + "/" + origName + ".txt", newPath);
 			Tooltip.Show("MODOPTIONS_IZUMISQOL_IMPORTED1".AsDialog() + " " + newName + " " +
-			             "MODOPTIONS_IZUMISQOL_IMPORTED2".AsDialog());
+				"MODOPTIONS_IZUMISQOL_IMPORTED2".AsDialog());
 			return true;
 		}
 		catch( Exception ex )
@@ -84,48 +82,42 @@ public static class WhitelistModule
 			id++;
 		}
 
-		List<string> whitelist       = GetCurrentEverestWhitelist();
-		var          whitelistString = "";
-		foreach( string entry in whitelist )
+		var whitelist       = GetCurrentEverestWhitelist();
+		var whitelistString = "";
+		foreach( var entry in whitelist )
 		{
 			whitelistString += entry + "\n";
 		}
 
-		File.WriteAllText(whitelistsPath          + "/whitelist_" + id + ".txt", whitelistString);
+		File.WriteAllText(whitelistsPath + "/whitelist_" + id + ".txt", whitelistString);
 		ModSettings.AddWhitelistName("whitelist_" + id);
 	}
 
 	public static void RemoveWhitelist(string? fileName)
 	{
-		if( fileName is null )
-		{
-			return;
-		}
-		
-		string path = whitelistsPath + "/" + fileName + ".txt";
-		Log("Deleting: "             + path);
+		if( fileName is null ) return;
+
+		var path = whitelistsPath + "/" + fileName + ".txt";
+		Log("Deleting: " + path);
 		File.Delete(path);
 	}
 
 	public static void SaveCurrentWhitelist(string? fileName, int index)
 	{
-		if( fileName is null )
-		{
-			return;
-		}
-		
+		if( fileName is null ) return;
+
 		try
 		{
 			if( !File.Exists(whitelistsPath + "/" + fileName + ".txt") )
 			{
 				Tooltip.Show(fileName + " " + "MODOPTIONS_IZUMISQOL_WHITELISTERROR_DOESNOTEXIST".AsDialog());
-				Log(whitelistsPath    + "/" + fileName + ".txt" + " does not exist", LogLevel.Info);
+				Log(whitelistsPath + "/" + fileName + ".txt" + " does not exist", LogLevel.Info);
 				return;
 			}
 
-			List<string> whitelist       = GetCurrentEverestWhitelist();
-			var          whitelistString = "";
-			foreach( string entry in whitelist )
+			var whitelist       = GetCurrentEverestWhitelist();
+			var whitelistString = "";
+			foreach( var entry in whitelist )
 			{
 				whitelistString += entry + "\n";
 			}
@@ -141,31 +133,35 @@ public static class WhitelistModule
 		}
 	}
 
+	private static string[]? LoadWhitelist(string? name)
+	{
+		if( !File.Exists(whitelistsPath + "/" + name + ".txt") )
+		{
+			Log(whitelistsPath + "/" + name + ".txt" + " does not exist", LogLevel.Info);
+			Tooltip.Show(name + " " + "MODOPTIONS_IZUMISQOL_WHITELISTERROR_DOESNOTEXIST".AsDialog());
+			return null;
+		}
+
+		return File.ReadAllLines(whitelistsPath + "/" + name + ".txt");
+	}
+
 	public static bool WriteToEverestBlacklist(string? name)
 	{
-		if( name is null )
-		{
-			return false;
-		}
-		
+		if( name is null ) return false;
+
 		try
 		{
-			if( !File.Exists(whitelistsPath + "/" + name + ".txt") )
-			{
-				Log(whitelistsPath + "/" + name + ".txt" + " does not exist", LogLevel.Info);
-				Tooltip.Show(name  + " " + "MODOPTIONS_IZUMISQOL_WHITELISTERROR_DOESNOTEXIST".AsDialog());
-				return false;
-			}
+			var whitelistLines = LoadWhitelist(name);
+			if( whitelistLines is null ) return false;
 
-			string[] whitelistLines        = File.ReadAllLines(whitelistsPath + "/" + name + ".txt");
-			string[] everestBlacklistLines = File.ReadAllLines(Everest.Loader.PathBlacklist);
-			var      everestBlacklistText  = "";
+			var everestBlacklistLines = File.ReadAllLines(Everest.Loader.PathBlacklist);
+			var everestBlacklistText  = "";
 
 			if( ModSettings.WhitelistIsExclusive )
 			{
-				string[] modFiles   = Directory.GetFiles(Everest.Loader.PathMods).SanitizeFilePath();
-				string[] modFolders = Directory.GetDirectories(Everest.Loader.PathMods).SanitizeFilePath();
-				foreach( string modPath in modFiles )
+				var modFiles   = Directory.GetFiles(Everest.Loader.PathMods).SanitizeFilePath();
+				var modFolders = Directory.GetDirectories(Everest.Loader.PathMods).SanitizeFilePath();
+				foreach( var modPath in modFiles )
 				{
 					if( !modPath.EndsWith(".zip") )
 						continue;
@@ -173,7 +169,7 @@ public static class WhitelistModule
 					AddBlacklistText(modPath);
 				}
 
-				foreach( string modPath in modFolders )
+				foreach( var modPath in modFolders )
 				{
 					AddBlacklistText(modPath);
 				}
@@ -200,13 +196,13 @@ public static class WhitelistModule
 			File.WriteAllText(Everest.Loader.PathBlacklist, everestBlacklistText);
 
 			Tooltip.Show((ModSettings.WhitelistIsExclusive ? "Exclusively " : "Non-exclusively ") + "applied " + name +
-			             " to blacklist");
+				" to blacklist");
 
 			return true;
 
 			string GetBlacklistLineToWrite(string blacklistLine)
 			{
-				foreach( string whitelistLine in whitelistLines )
+				foreach( var whitelistLine in whitelistLines )
 				{
 					if( string.IsNullOrEmpty(whitelistLine) || whitelistLine[0] == '#' )
 						continue;
@@ -232,9 +228,10 @@ public static class WhitelistModule
 	private static List<string> GetCurrentEverestWhitelist()
 	{
 		return Everest.Modules
-		       .Where(module => !IsEssentialModule(module.Metadata.Name))
-		       .Select(module => module.Metadata.Name + (string.IsNullOrEmpty(module.Metadata.PathArchive) ? "" : ".zip"))
-		       .ToList();
+		              .Where(module => !IsEssentialModule(module.Metadata.Name))
+		              .Select(module =>
+			              module.Metadata.Name + (string.IsNullOrEmpty(module.Metadata.PathArchive) ? "" : ".zip"))
+		              .ToList();
 
 		// foreach( EverestModule module in Everest.Modules )
 		// {
@@ -248,8 +245,165 @@ public static class WhitelistModule
 
 	private static bool IsEssentialModule(string moduleName)
 	{
-		string name = moduleName.Replace(".zip", "");
+		var name = moduleName.Replace(".zip", "");
 		return name is "Everest" or "Celeste" or "DialogCutscene" or "UpdateChecker" or "InfiniteSaves" or "DebugRebind"
 			or "RebindPeriod" or "Cache";
 	}
+
+	private static EverestModuleMetadata[]? LoadZip(string? archive)
+	{
+		if( archive is null ) return null;
+
+		try
+		{
+			using var zipArchive = ZipFile.OpenRead(archive);
+			foreach( var entry in zipArchive.Entries )
+			{
+				if( entry.FullName == "metadata.yaml" )
+				{
+					using( var stream = entry.ExtractStream() )
+					{
+						using var input                 = new StreamReader(stream);
+						var       everestModuleMetadata = YamlHelper.Deserializer.Deserialize<EverestModuleMetadata>(input);
+						everestModuleMetadata.PathArchive = archive;
+						everestModuleMetadata.PostParse();
+						return new EverestModuleMetadata[1] { everestModuleMetadata, };
+					}
+				}
+
+				if( !(entry.FullName == "multimetadata.yaml") && !(entry.FullName == "everest.yaml") &&
+					!(entry.FullName == "everest.yml") ) continue;
+				using var stream2      = entry.ExtractStream();
+				using var streamReader = new StreamReader(stream2);
+				if( !streamReader.EndOfStream )
+				{
+					var array  = YamlHelper.Deserializer.Deserialize<EverestModuleMetadata[]>(streamReader);
+					var array2 = array;
+					foreach( var obj in array2 )
+					{
+						obj.PathArchive = archive;
+						obj.PostParse();
+					}
+
+					return array;
+				}
+			}
+		}
+		catch( Exception value )
+		{
+			Logger.Warn("loader", $"Failed loading everest.yaml in archive {archive}: {value}");
+		}
+
+		return null;
+	}
+
+	private static EverestModuleMetadata[]? LoadDir(string? dir)
+	{
+		if( dir is null ) return null;
+
+		try
+		{
+			var path = Path.Combine(dir, "metadata.yaml");
+			if( File.Exists(path) )
+			{
+				using var input                 = new StreamReader(path);
+				var       everestModuleMetadata = YamlHelper.Deserializer.Deserialize<EverestModuleMetadata>(input);
+				everestModuleMetadata.PathDirectory = dir;
+				everestModuleMetadata.PostParse();
+				return new EverestModuleMetadata[1] { everestModuleMetadata, };
+			}
+
+			path = Path.Combine(dir, "multimetadata.yaml");
+			if( !File.Exists(path) ) path = Path.Combine(dir, "everest.yaml");
+			if( !File.Exists(path) ) path = Path.Combine(dir, "everest.yml");
+			if( File.Exists(path) )
+			{
+				using var streamReader = new StreamReader(path);
+				if( !streamReader.EndOfStream )
+				{
+					var array  = YamlHelper.Deserializer.Deserialize<EverestModuleMetadata[]>(streamReader);
+					var array2 = array;
+					foreach( var obj in array2 )
+					{
+						obj.PathDirectory = dir;
+						obj.PostParse();
+					}
+
+					return array;
+				}
+			}
+		}
+		catch( Exception value )
+		{
+			Logger.Warn("loader", $"Failed loading everest.yaml in directory {dir}: {value}");
+		}
+
+		return null;
+	}
+
+	private static Dictionary<string, IEnumerable<EverestModuleMetadata>> LoadYamlsFromWhitelist(string[] whitelist)
+	{
+		var dictionary             = new Dictionary<string, IEnumerable<EverestModuleMetadata>>();
+		var source                 = Everest.Modules.Select(module => module.Metadata);
+		var everestModuleMetadatas = source as EverestModuleMetadata[] ?? source.ToArray();
+		foreach( var fileName in whitelist )
+		{
+			var filePath = Path.Combine(Everest.Loader.PathMods, fileName);
+			if( fileName.EndsWith(".zip") )
+			{
+				var array = everestModuleMetadatas.Where(meta => meta.PathArchive == filePath).ToArray();
+				if( array.Length == 0 ) array = LoadZip(filePath);
+				if( array != null ) dictionary[fileName] = array;
+			}
+			else
+			{
+				var array = everestModuleMetadatas.Where(meta => meta.PathDirectory == filePath).ToArray();
+				if( array.Length == 0 ) array = LoadDir(filePath);
+				if( array != null ) dictionary[fileName] = array;
+			}
+		}
+
+		return dictionary;
+	}
+
+	private static string ModuleCollectionToExportString(IEnumerable<EverestModuleMetadata> moduleCollection)
+	{
+		var modules =
+			moduleCollection
+				.Where(module => module.Name != "Celeste")
+				.Select(module =>
+				{
+					var name    = module.Name;
+					var version = $"{module.Version.Major}.{module.Version.Minor}.{module.Version.Build}";
+
+					return new ModuleExportInfo(name, version);
+				});
+
+		return YamlHelper.Serializer.Serialize(modules);
+	}
+
+	private static string ModuleCollectionToExportString(IEnumerable<EverestModule> moduleCollection)
+	{
+		return ModuleCollectionToExportString(moduleCollection.Select(module => module.Metadata));
+	}
+
+	public static string GetEnabledModsExport()
+	{
+		return ModuleCollectionToExportString(Everest.Modules);
+	}
+
+	public static string GetCurrentWhitelistModsExport(string? whitelistName)
+	{
+		var currentWhitelist = LoadWhitelist(whitelistName);
+		if( currentWhitelist is null ) return "";
+
+		var modules = LoadYamlsFromWhitelist(currentWhitelist)
+		              .Select(module => module.Value)
+		              .Aggregate(new List<EverestModuleMetadata>(),
+			              (array, module) => array.Concat([ ..module, ]).ToList());
+
+		return ModuleCollectionToExportString(modules);
+	}
+
+	private record ModuleExportInfo(string Name, string Version);
 }
