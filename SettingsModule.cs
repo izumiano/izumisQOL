@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Celeste.Mod.izumisQOL.Obs;
 using Celeste.Mod.izumisQOL.UI;
 using YamlDotNet.Serialization;
@@ -12,7 +11,8 @@ public class SettingsModule : EverestModuleSettings
 {
 	public bool EnableHotkeys { get; set; } = true;
 
-	// ButtonBinds
+	#region ButtonBinds
+
 	public ButtonBinding ButtonSaveJournal { get; set; } = new();
 
 	[SettingName("Suppress OBS-Indicators")]
@@ -22,10 +22,13 @@ public class SettingsModule : EverestModuleSettings
 
 	public ButtonBinding ButtonLoadKeybind { get; set; } = new();
 
-	public List<ButtonBinding> ButtonsSwapKeybinds { get; set; } = [];
+	public List<ButtonBinding> ButtonsSwapKeybinds { get; set; } = [ ];
 
-	// KeybindModule settings
-	private readonly List<string> keybindNames = [];
+	#endregion
+
+	#region KeybindModule Settings
+
+	private readonly List<string> keybindNames = [ ];
 
 	[SettingIgnore] private TextMenu.Slider? CurrentKeybindSlider { get; set; }
 
@@ -44,16 +47,17 @@ public class SettingsModule : EverestModuleSettings
 			}
 
 			if( currentKeybindSlot > KeybindModule.KeybindSettings.Count - 1 )
-			{
 				currentKeybindSlot = KeybindModule.KeybindSettings.Count - 1;
-			}
 
 			return currentKeybindSlot;
 		}
-		set { currentKeybindSlot = value; }
+		set => currentKeybindSlot = value;
 	}
 
-	// WhitelistModule settings
+	#endregion
+
+	#region WhitelistModule Settings
+
 	private readonly List<string> whitelistNames = [ ];
 
 	[SettingIgnore] private TextMenu.Slider? CurrentWhitelistSlider { get; set; }
@@ -70,24 +74,31 @@ public class SettingsModule : EverestModuleSettings
 				currentWhitelistSlot = 0;
 			}
 			else
-			{
 				currentWhitelistSlot = value;
-			}
 		}
 	}
 
 	public bool WhitelistIsExclusive = true;
 
-	// BetterJournal settings
+	#endregion
+
+	#region BetterJournal Settings
+
 	public bool BetterJournalEnabled { get; set; }
 	public bool ShowModTimeInJournal;
 	public bool SeparateABCSideTimes = true;
 
-	// GamepadPauser settings
+	#endregion
+
+	#region GamepadPauser Settings
+
 	public bool GamepadPauserEnabled { get; set; }
 	public int  PauseAfterFramesGamepadInactive = 10;
 
-	// OBS Websocket settings
+	#endregion
+
+	#region OBS Websocket Settings
+
 	public bool OBSIntegrationEnabled { get; set; }
 	public bool ConnectToOBSWebsocketsOnStartup;
 
@@ -101,10 +112,7 @@ public class SettingsModule : EverestModuleSettings
 		[Obsolete]
 		set
 		{
-			if( value )
-			{
-				setRecordingPollFrequencyIndex = true;
-			}
+			if( value ) setRecordingPollFrequencyIndex = true;
 		}
 	}
 
@@ -115,10 +123,7 @@ public class SettingsModule : EverestModuleSettings
 		[Obsolete]
 		set
 		{
-			if( value )
-			{
-				setStreamingPollFrequencyIndex = true;
-			}
+			if( value ) setStreamingPollFrequencyIndex = true;
 		}
 	}
 
@@ -143,15 +148,9 @@ public class SettingsModule : EverestModuleSettings
 		{
 			if( value < 0 ) return;
 
-			if( setRecordingPollFrequencyIndex )
-			{
-				OBSPollFrequencyIndex[RecordingType.Record] = value > 0 ? value - 1 : 0;
-			}
+			if( setRecordingPollFrequencyIndex ) OBSPollFrequencyIndex[RecordingType.Record] = value > 0 ? value - 1 : 0;
 
-			if( setStreamingPollFrequencyIndex )
-			{
-				OBSPollFrequencyIndex[RecordingType.Stream] = value > 0 ? value - 1 : 0;
-			}
+			if( setStreamingPollFrequencyIndex ) OBSPollFrequencyIndex[RecordingType.Stream] = value > 0 ? value - 1 : 0;
 		}
 	}
 
@@ -170,13 +169,19 @@ public class SettingsModule : EverestModuleSettings
 		set => OBSIntegration.Password = value;
 	}
 
-	// NoClip Settings
+	#endregion
+
+	#region NoClip Settings
+
 	[YamlIgnore]    public bool NoClipEnabled     { get; set; }
 	[SettingIgnore] public int  NoClipNormalSpeed { get; set; } = 8;
 	[SettingIgnore] public int  NoClipFastSpeed   { get; set; } = 8;
 	[SettingIgnore] public int  NoClipSlowSpeed   { get; set; } = 8;
 
-	// Other settings
+	#endregion
+
+	#region Other Settings
+
 	public bool ShowRestartButtonInMainMenu { get; set; }
 
 	private bool verboseLogging;
@@ -194,6 +199,7 @@ public class SettingsModule : EverestModuleSettings
 		}
 	}
 
+	#endregion
 
 	public void CreateCurrentKeybindSlotEntry(TextMenu menu, bool inGame)
 	{
@@ -210,10 +216,7 @@ public class SettingsModule : EverestModuleSettings
 				OnValueChange = delegate(int val)
 				{
 					CurrentKeybindSlot = val;
-					if( AutoLoadKeybinds )
-					{
-						KeybindModule.ApplyKeybinds(val);
-					}
+					if( AutoLoadKeybinds ) KeybindModule.ApplyKeybinds(val);
 				},
 			});
 		subMenu.AddDescription(menu, CurrentKeybindSlider,
@@ -233,7 +236,7 @@ public class SettingsModule : EverestModuleSettings
 			{
 				Log("Copying to: " + CurrentKeybindSlider.Index);
 				Tooltip.Show("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_COPYKEYBINDS_TOOLTIP".AsDialog() + " " +
-				             GetKeybindName(CurrentKeybindSlider.Index));
+					GetKeybindName(CurrentKeybindSlider.Index));
 
 				KeybindModule.SaveKeybinds(CurrentKeybindSlider.Index);
 			}
@@ -250,9 +253,9 @@ public class SettingsModule : EverestModuleSettings
 		menuItem.Pressed(
 			delegate
 			{
-				string clipboardText = TextInput.GetClipboardText();
+				var clipboardText = TextInput.GetClipboardText();
 				if( !string.IsNullOrEmpty(clipboardText) &&
-				    KeybindModule.RenameFile(CurrentKeybindSlot + "_" + GetKeybindName(CurrentKeybindSlot), clipboardText) )
+					KeybindModule.RenameFile(CurrentKeybindSlot + "_" + GetKeybindName(CurrentKeybindSlot), clipboardText) )
 				{
 					ChangeKeybindName(CurrentKeybindSlot, clipboardText);
 					CurrentKeybindSlider.Values.Insert(CurrentKeybindSlot + 1, Tuple.Create(clipboardText, CurrentKeybindSlot));
@@ -267,7 +270,7 @@ public class SettingsModule : EverestModuleSettings
 		menuItem.Pressed(
 			delegate
 			{
-				int val = CurrentKeybindSlider.Values.Count;
+				var val = CurrentKeybindSlider.Values.Count;
 
 				KeybindModule.SaveKeybinds(val);
 
@@ -288,15 +291,12 @@ public class SettingsModule : EverestModuleSettings
 			{
 				if( keybindNames.Count > 1 )
 				{
-					int keybindSlot = CurrentKeybindSlider.Index;
+					var keybindSlot = CurrentKeybindSlider.Index;
 					Tooltip.Add(
 						tooltips: new Tooltip.Info("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_REMOVE_TOOLTIP".AsDialog() + " " +
-						                           GetKeybindName(keybindSlot)), clearQueue: true);
+							GetKeybindName(keybindSlot)), clearQueue: true);
 
-					if( keybindSlot >= CurrentKeybindSlider.Values.Count - 1 )
-					{
-						keybindSlot--;
-					}
+					if( keybindSlot >= CurrentKeybindSlider.Values.Count - 1 ) keybindSlot--;
 
 					if( keybindSlot < 0 )
 					{
@@ -308,16 +308,16 @@ public class SettingsModule : EverestModuleSettings
 					keybindNames.RemoveAt(CurrentKeybindSlider.Index);
 
 					CurrentKeybindSlider.Values.Clear();
-					int offset = 0;
+					var offset = 0;
 					for( var i = 0; i < keybindNames.Count; i++ )
 					{
-						string? keybindName = GetKeybindName(i);
+						var keybindName = GetKeybindName(i);
 						if( keybindName is null )
 						{
 							offset++;
 							continue;
 						}
-						
+
 						CurrentKeybindSlider.Values.Add(new Tuple<string, int>(keybindName, i - offset));
 					}
 
@@ -328,13 +328,9 @@ public class SettingsModule : EverestModuleSettings
 					ButtonsSwapKeybinds.RemoveAt(ButtonsSwapKeybinds.Count - 1);
 
 					if( AutoLoadKeybinds )
-					{
 						KeybindModule.ApplyKeybinds(keybindSlot);
-					}
 					else
-					{
 						Tooltip.Show();
-					}
 				}
 
 				Log("only 1 item in slider");
@@ -353,7 +349,7 @@ public class SettingsModule : EverestModuleSettings
 		if( inGame )
 		{
 			menuItem = new TextMenu.SubHeader("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_ONLYINMAINMENU".AsDialog(),
-				topPadding: false);
+				false);
 			subMenu.Add(menuItem);
 			menu.Add(subMenu);
 			return;
@@ -383,9 +379,7 @@ public class SettingsModule : EverestModuleSettings
 			delegate
 			{
 				if( WhitelistModule.WriteToEverestBlacklist(GetWhitelistName(CurrentWhitelistSlot)) )
-				{
 					restartButton.Show(5, menu, subMenu);
-				}
 			}
 		);
 		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_APPLY_DESC".AsDialog());
@@ -410,10 +404,10 @@ public class SettingsModule : EverestModuleSettings
 		menuItem.Pressed(
 			delegate
 			{
-				string clipboardText = TextInput.GetClipboardText();
+				var clipboardText = TextInput.GetClipboardText();
 
 				if( !string.IsNullOrEmpty(clipboardText) &&
-				    WhitelistModule.RenameFile(GetWhitelistName(CurrentWhitelistSlot), clipboardText) )
+					WhitelistModule.RenameFile(GetWhitelistName(CurrentWhitelistSlot), clipboardText) )
 				{
 					ChangeWhitelistName(CurrentWhitelistSlot, clipboardText);
 					CurrentWhitelistSlider.Values.Insert(CurrentWhitelistSlot + 1,
@@ -430,7 +424,7 @@ public class SettingsModule : EverestModuleSettings
 			delegate
 			{
 				WhitelistModule.AddWhitelist();
-				int val = whitelistNames.Count - 1;
+				var val = whitelistNames.Count - 1;
 				CurrentWhitelistSlider.Add(GetWhitelistName(val), val);
 				CurrentWhitelistSlider.SelectWiggler.Start();
 
@@ -443,19 +437,13 @@ public class SettingsModule : EverestModuleSettings
 		menuItem.Pressed(
 			delegate
 			{
-				if( whitelistNames.Count <= 1 )
-				{
-					return;
-				}
-				
-				int whitelistSlot = CurrentWhitelistSlider.Index;
-				Tooltip.Show("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_REMOVE_TOOLTIP".AsDialog() + " " +
-				             GetWhitelistName(whitelistSlot));
+				if( whitelistNames.Count <= 1 ) return;
 
-				if( whitelistSlot >= CurrentWhitelistSlider.Values.Count - 1 )
-				{
-					whitelistSlot--;
-				}
+				var whitelistSlot = CurrentWhitelistSlider.Index;
+				Tooltip.Show("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_REMOVE_TOOLTIP".AsDialog() + " " +
+					GetWhitelistName(whitelistSlot));
+
+				if( whitelistSlot >= CurrentWhitelistSlider.Values.Count - 1 ) whitelistSlot--;
 
 				CurrentWhitelistSlider.Values.Count.Log("count");
 
@@ -472,13 +460,13 @@ public class SettingsModule : EverestModuleSettings
 				CurrentWhitelistSlider.Values.Clear();
 				for( var i = 0; i < whitelistNames.Count; i++ )
 				{
-					string? whitelistName = GetWhitelistName(i);
+					var whitelistName = GetWhitelistName(i);
 					if( whitelistName is null )
 					{
 						offset++;
 						continue;
 					}
-					
+
 					CurrentWhitelistSlider.Values.Add(new Tuple<string, int>(whitelistName, i - offset));
 				}
 
@@ -558,10 +546,7 @@ public class SettingsModule : EverestModuleSettings
 				OnValueChange = val =>
 				{
 					OBSIntegrationEnabled = val;
-					if( !OBSIntegrationEnabled )
-					{
-						OBSIntegration.Disconnect();
-					}
+					if( !OBSIntegrationEnabled ) OBSIntegration.Disconnect();
 				},
 			});
 		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_INTEGRATIONENABLED_DESC".AsDialog());
@@ -572,13 +557,9 @@ public class SettingsModule : EverestModuleSettings
 			OnPressed = () =>
 			{
 				if( OBSIntegrationEnabled )
-				{
 					OBSIntegration.Connect();
-				}
 				else
-				{
 					Tooltip.Show("MODOPTIONS_IZUMISQOL_OBSSETTINGS_INTEGRATIONDISABLED_TOOLTIP".AsDialog());
-				}
 			},
 		});
 		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CONNECT_DESC".AsDialog());
@@ -594,15 +575,11 @@ public class SettingsModule : EverestModuleSettings
 		{
 			OnPressed = () =>
 			{
-				string clipboardText = TextInput.GetClipboardText();
+				var clipboardText = TextInput.GetClipboardText();
 				if( string.IsNullOrEmpty(clipboardText) )
-				{
 					Tooltip.Show("MODOPTIONS_IZUMISQOL_OBSSETTINGS_INVALIDCLIPBOARD_TOOLTIP".AsDialog());
-				}
 				else
-				{
 					OBSHostPort = clipboardText;
-				}
 			},
 		});
 		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTHOSTPORT_DESC".AsDialog());
@@ -633,7 +610,7 @@ public class SettingsModule : EverestModuleSettings
 			OnValueChange = val => ShowRecordingIndicatorWhen = (OBSRecordingIndicator.DisplayType)val,
 		});
 		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_SHOWINDICATOR_DESC".AsDialog());
-		
+
 		subMenu.Add(menuItem = new TextMenu.Slider("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKRECORD".AsDialog(),
 			index => OBSIntegration.PollFrequencyText[index],
 			0, OBSIntegration.PollFrequencyText.Length - 1, OBSPollFrequencyIndex[RecordingType.Record])
@@ -675,10 +652,7 @@ public class SettingsModule : EverestModuleSettings
 
 	public void CreateNoClipEnabledEntry(TextMenu menu, bool inGame)
 	{
-		if( !inGame )
-		{
-			NoClipEnabled = false;
-		}
+		if( !inGame ) NoClipEnabled = false;
 
 		TextMenuExt.SubMenu subMenu = new("NoClip Settings", false);
 
