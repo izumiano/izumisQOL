@@ -342,9 +342,6 @@ public class SettingsModule : EverestModuleSettings
 		);
 		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_REMOVE_DESC".AsDialog());
 
-		subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_OPEN_BROWSER".AsDialog()));
-		menuItem.Pressed(KeybindViewer.Show);
-
 		menu.Add(subMenu);
 	}
 

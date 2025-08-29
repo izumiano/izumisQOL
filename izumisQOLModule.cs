@@ -2,7 +2,6 @@
 
 global using static Celeste.Mod.izumisQOL.Global;
 using System;
-using Celeste.Mod.izumisQOL.EverestInterop;
 using Celeste.Mod.izumisQOL.Menu;
 using Celeste.Mod.izumisQOL.ModIntegration;
 using Celeste.Mod.izumisQOL.Obs;
@@ -46,8 +45,6 @@ public class izumisQOL : EverestModule
 		{
 			OBSIntegration.Connect(true);
 		}
-		
-		DebugRC.Load();
 	}
 
 	// Optional, initialize anything after Celeste has initialized itself properly.
@@ -58,14 +55,12 @@ public class izumisQOL : EverestModule
 	{
 		CollabUtils2Integration.Load();
 		Indicator.Load();
-		KeybindViewer.Load();
 	}
 
 	// Unload the entirety of your mod's content. Free up any native resources.
 	public override void Unload()
 	{
 		Hooks.Unload();
-		DebugRC.Unload();
 	}
 
 	public override void OnInputInitialize()
