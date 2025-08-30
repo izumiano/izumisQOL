@@ -80,6 +80,8 @@ public class SettingsModule : EverestModuleSettings
 
 	public bool WhitelistIsExclusive = true;
 
+	private List<WhitelistModule.ModuleExportInfo> missingModules = [ ];
+
 	#endregion
 
 	#region BetterJournal Settings
@@ -372,20 +374,20 @@ public class SettingsModule : EverestModuleSettings
 		subMenu.AddDescription(menu, CurrentWhitelistSlider,
 			"MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_CURRENTWHITELIST_DESC".AsDialog());
 
-		var restartButton = ToggleableRestartButton.New("restartForApplyWhitelist");
+		var restartForApplyWhitelistButton = ToggleableRestartButton.New("restartForApplyWhitelist");
 
-		subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_APPLY".AsDialog()));
-		menuItem.Pressed(
-			delegate
+		subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_APPLY".AsDialog())
+		{
+			OnPressed = () =>
 			{
-				if( WhitelistModule.WriteToEverestBlacklist(GetWhitelistName(CurrentWhitelistSlot)) )
-					restartButton.Show(5, menu, subMenu);
-			}
-		);
+				if( WhitelistModule.WriteWhitelistToEverestBlacklist(GetWhitelistName(CurrentWhitelistSlot)) )
+					restartForApplyWhitelistButton.Show(menu, subMenu);
+			},
+		});
 		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_APPLY_DESC".AsDialog());
 		subMenu.NeedsRelaunch(menu, menuItem);
 
-		restartButton.AddToMenuIfIsShown(menu, subMenu);
+		restartForApplyWhitelistButton.AddToMenuIfIsShown(menu, subMenu);
 
 		subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_SAVE".AsDialog()));
 		menuItem.Pressed(
@@ -477,7 +479,7 @@ public class SettingsModule : EverestModuleSettings
 		);
 		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_REMOVE_DESC".AsDialog());
 
-		subMenu.Add(new TextMenu.SubHeader("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXPORTS_HEADER".AsDialog()));
+		subMenu.Add(new TextMenu.SubHeader("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXTERNAL_HEADER".AsDialog()));
 
 		subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXPORTS_ENABLED".AsDialog())
 		{
@@ -495,6 +497,44 @@ public class SettingsModule : EverestModuleSettings
 		});
 		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXPORTS_WHITELIST_DESC".AsDialog());
 
+		var installMissingDependenciesButton = ToggleableButton.New("Install Missing Dependencies",
+			"installMissingDependenciesButton", "Install missing dependencies.");
+		installMissingDependenciesButton.OnPressed = () =>
+		{
+			foreach( var module in missingModules )
+			{
+				Log(module.Name);
+			}
+		};
+		var importWhitelistRestartButton = ToggleableRestartButton.New("importWhitelistRestartButton");
+		subMenu.Add(menuItem = new TextMenu.Button("Apply Whitelist From Clipboard")
+		{
+			OnPressed = () =>
+			{
+				var importInfo = WhitelistModule.ApplyImport(TextInput.GetClipboardText());
+				if( !importInfo.Successful ) return;
+
+				importWhitelistRestartButton.Show(menu, subMenu);
+
+				missingModules = importInfo.MissingDependencies;
+
+				Log("Missing Dependencies");
+				foreach( var (name, version) in missingModules )
+				{
+					name.Log("name");
+					version.Log("version");
+				}
+
+				if( missingModules.Count != 0 )
+					installMissingDependenciesButton.Show(menu, subMenu);
+			},
+		});
+		subMenu.AddDescription(menu, menuItem,
+			"Apply a whitelist in Everest's standard yaml format for mods from the clipboard.");
+		subMenu.NeedsRelaunch(menu, menuItem);
+
+		installMissingDependenciesButton.AddToMenuIfIsShown(menu, subMenu);
+		importWhitelistRestartButton.AddToMenuIfIsShown(menu, subMenu);
 
 		menu.Add(subMenu);
 	}
@@ -714,17 +754,18 @@ public class SettingsModule : EverestModuleSettings
 
 		var restartButton = ToggleableRestartButton.New("restartForMenuRestartButton");
 
-		subMenu.Add(menuItem = new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_OTHERSETTINGS_SHOWRESTARTINMAINMENU".AsDialog(),
+		subMenu.Add(menuItem = new TextMenu.OnOff(
+			"MODOPTIONS_IZUMISQOL_OTHERSETTINGS_SHOWRESTARTINMAINMENU".AsDialog(),
 			ShowRestartButtonInMainMenu)
 		{
-			OnValueChange =
-				delegate(bool val)
-				{
-					restartButton.Show(3, menu, subMenu);
-					ShowRestartButtonInMainMenu = val;
-				},
+			OnValueChange = val =>
+			{
+				restartButton.Show(menu, subMenu);
+				ShowRestartButtonInMainMenu = val;
+			},
 		});
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OTHERSETTINGS_SHOWRESTARTINMAINMENU_DESC".AsDialog());
+		subMenu.AddDescription(menu, menuItem,
+			"MODOPTIONS_IZUMISQOL_OTHERSETTINGS_SHOWRESTARTINMAINMENU_DESC".AsDialog());
 		subMenu.NeedsRelaunch(menu, menuItem);
 
 		restartButton.AddToMenuIfIsShown(menu, subMenu);
