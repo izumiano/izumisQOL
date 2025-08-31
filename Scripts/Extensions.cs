@@ -41,7 +41,7 @@ public static class Extensions
 	}
 
 	public static void AddDescription(
-		this TextMenuExt.SubMenu subMenu, TextMenu containingMenu, TextMenu.Item subMenuItem, string description
+		this TextMenu.Item subMenuItem, TextMenuExt.SubMenu subMenu, TextMenu containingMenu, string description
 	)
 	{
 		TextMenuExt.EaseInSubHeaderExt descriptionText = new(description, initiallyVisible: false, containingMenu)
@@ -72,7 +72,7 @@ public static class Extensions
 			(Action)Delegate.Combine(subMenuItem.OnLeave, (Action)delegate { descriptionText.FadeVisible = false; });
 	}
 
-	public static void NeedsRelaunch(this TextMenuExt.SubMenu subMenu, TextMenu containingMenu, TextMenu.Item subMenuItem)
+	public static void NeedsRelaunch(this TextMenu.Item subMenuItem, TextMenuExt.SubMenu subMenu, TextMenu containingMenu)
 	{
 		TextMenuExt.EaseInSubHeaderExt needsRelaunchText =
 			new("MODOPTIONS_NEEDSRELAUNCH".AsDialog(), initiallyVisible: false, containingMenu)

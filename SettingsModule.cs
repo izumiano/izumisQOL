@@ -221,7 +221,7 @@ public class SettingsModule : EverestModuleSettings
 					if( AutoLoadKeybinds ) KeybindModule.ApplyKeybinds(val);
 				},
 			});
-		subMenu.AddDescription(menu, CurrentKeybindSlider,
+		CurrentKeybindSlider.AddDescription(subMenu, menu,
 			"MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_CURRENTKEYBINDSLOT_DESC".AsDialog() + "\n\n" +
 			"MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_CURRENTKEYBINDSLOT_DESCNOTE".AsDialog());
 
@@ -230,7 +230,7 @@ public class SettingsModule : EverestModuleSettings
 			{
 				OnValueChange = delegate(bool val) { AutoLoadKeybinds = val; },
 			});
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_AUTOLOADKEYBINDS_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_AUTOLOADKEYBINDS_DESC".AsDialog());
 
 		subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_COPYKEYBINDS".AsDialog()));
 		menuItem.Pressed(
@@ -243,13 +243,13 @@ public class SettingsModule : EverestModuleSettings
 				KeybindModule.SaveKeybinds(CurrentKeybindSlider.Index);
 			}
 		);
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_COPYKEYBINDS_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_COPYKEYBINDS_DESC".AsDialog());
 
 		subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_LOAD".AsDialog()));
 		menuItem.Pressed(
 			delegate { KeybindModule.ApplyKeybinds(CurrentKeybindSlider.Index); }
 		);
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_LOAD_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_LOAD_DESC".AsDialog());
 
 		subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_IMPORTCLIPBOARD".AsDialog()));
 		menuItem.Pressed(
@@ -266,7 +266,7 @@ public class SettingsModule : EverestModuleSettings
 				}
 			}
 		);
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_IMPORTCLIPBOARD_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_IMPORTCLIPBOARD_DESC".AsDialog());
 
 		subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_ADD".AsDialog()));
 		menuItem.Pressed(
@@ -285,7 +285,7 @@ public class SettingsModule : EverestModuleSettings
 				izumisQOL.InitializeButtonBinding(ButtonsSwapKeybinds[val]);
 			}
 		);
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_ADD_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_ADD_DESC".AsDialog());
 
 		subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_REMOVE".AsDialog()));
 		menuItem.Pressed(
@@ -338,7 +338,7 @@ public class SettingsModule : EverestModuleSettings
 				Log("only 1 item in slider");
 			}
 		);
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_REMOVE_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_KEYBINDSETTINGS_REMOVE_DESC".AsDialog());
 
 		menu.Add(subMenu);
 	}
@@ -371,7 +371,7 @@ public class SettingsModule : EverestModuleSettings
 			{
 				OnValueChange = delegate(int val) { CurrentWhitelistSlot = val; },
 			});
-		subMenu.AddDescription(menu, CurrentWhitelistSlider,
+		CurrentWhitelistSlider.AddDescription(subMenu, menu,
 			"MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_CURRENTWHITELIST_DESC".AsDialog());
 
 		var restartForApplyWhitelistButton = ToggleableRestartButton.New("restartForApplyWhitelist");
@@ -384,8 +384,8 @@ public class SettingsModule : EverestModuleSettings
 					restartForApplyWhitelistButton.Show(menu, subMenu);
 			},
 		});
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_APPLY_DESC".AsDialog());
-		subMenu.NeedsRelaunch(menu, menuItem);
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_APPLY_DESC".AsDialog());
+		menuItem.NeedsRelaunch(subMenu, menu);
 
 		restartForApplyWhitelistButton.AddToMenuIfIsShown(menu, subMenu);
 
@@ -393,14 +393,14 @@ public class SettingsModule : EverestModuleSettings
 		menuItem.Pressed(
 			delegate { WhitelistModule.SaveCurrentWhitelist(GetWhitelistName(CurrentWhitelistSlot), CurrentWhitelistSlot); }
 		);
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_SAVE_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_SAVE_DESC".AsDialog());
 
 		subMenu.Add(menuItem =
 			new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXCLUSIVE".AsDialog(), WhitelistIsExclusive)
 			{
 				OnValueChange = delegate(bool val) { WhitelistIsExclusive = val; },
 			});
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXCLUSIVE_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXCLUSIVE_DESC".AsDialog());
 
 		subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_IMPORTCLIPBOARD".AsDialog()));
 		menuItem.Pressed(
@@ -419,7 +419,7 @@ public class SettingsModule : EverestModuleSettings
 				}
 			}
 		);
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_IMPORTCLIPBOARD_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_IMPORTCLIPBOARD_DESC".AsDialog());
 
 		subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_ADD".AsDialog()));
 		menuItem.Pressed(
@@ -433,7 +433,7 @@ public class SettingsModule : EverestModuleSettings
 				Tooltip.Show("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_ADD_TOOLTIP".AsDialog());
 			}
 		);
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_ADD_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_ADD_DESC".AsDialog());
 
 		subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_REMOVE".AsDialog()));
 		menuItem.Pressed(
@@ -477,7 +477,7 @@ public class SettingsModule : EverestModuleSettings
 				CurrentWhitelistSlider.SelectWiggler.Start();
 			}
 		);
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_REMOVE_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_REMOVE_DESC".AsDialog());
 
 		subMenu.Add(new TextMenu.SubHeader("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXTERNAL_HEADER".AsDialog()));
 
@@ -485,7 +485,7 @@ public class SettingsModule : EverestModuleSettings
 		{
 			OnPressed = () => { TextInput.SetClipboardText(WhitelistModule.GetEnabledModsExport().Log()); },
 		});
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXPORTS_ENABLED_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXPORTS_ENABLED_DESC".AsDialog());
 
 		subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXPORTS_WHITELIST".AsDialog())
 		{
@@ -495,7 +495,7 @@ public class SettingsModule : EverestModuleSettings
 				                           .GetCurrentWhitelistModsExport(GetWhitelistName(CurrentWhitelistSlot)).Log());
 			},
 		});
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXPORTS_WHITELIST_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXPORTS_WHITELIST_DESC".AsDialog());
 
 		var installMissingDependenciesButton = ToggleableButton.New("Install Missing Dependencies",
 			"installMissingDependenciesButton", "Install missing dependencies.");
@@ -529,9 +529,9 @@ public class SettingsModule : EverestModuleSettings
 					installMissingDependenciesButton.Show(menu, subMenu);
 			},
 		});
-		subMenu.AddDescription(menu, menuItem,
+		menuItem.AddDescription(subMenu, menu,
 			"Apply a whitelist in Everest's standard yaml format for mods from the clipboard.");
-		subMenu.NeedsRelaunch(menu, menuItem);
+		menuItem.NeedsRelaunch(subMenu, menu);
 
 		installMissingDependenciesButton.AddToMenuIfIsShown(menu, subMenu);
 		importWhitelistRestartButton.AddToMenuIfIsShown(menu, subMenu);
@@ -555,7 +555,7 @@ public class SettingsModule : EverestModuleSettings
 			{
 				OnValueChange = val => ShowModTimeInJournal = val,
 			});
-		subMenu.AddDescription(menu, menuItem,
+		menuItem.AddDescription(subMenu, menu,
 			"MODOPTIONS_IZUMISQOL_BETTERJOURNALSETTINGS_MODTIMEINJOURNAL_DESC".AsDialog());
 
 		subMenu.Add(menuItem =
@@ -563,7 +563,7 @@ public class SettingsModule : EverestModuleSettings
 			{
 				OnValueChange = val => SeparateABCSideTimes = val,
 			});
-		subMenu.AddDescription(menu, menuItem,
+		menuItem.AddDescription(subMenu, menu,
 			"MODOPTIONS_IZUMISQOL_BETTERJOURNALSETTINGS_SEPARATEABCSIDE_DESC".AsDialog());
 
 		menu.Add(subMenu);
@@ -580,7 +580,7 @@ public class SettingsModule : EverestModuleSettings
 			{
 				OnValueChange = val => GamepadPauserEnabled = val,
 			});
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_ENABLE_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_ENABLE_DESC".AsDialog());
 
 		subMenu.Add(menuItem =
 			new TextMenu.Slider("MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_PAUSEFRAMESINACTIVE".AsDialog(),
@@ -588,7 +588,7 @@ public class SettingsModule : EverestModuleSettings
 			{
 				OnValueChange = val => PauseAfterFramesGamepadInactive = val,
 			});
-		subMenu.AddDescription(menu, menuItem,
+		menuItem.AddDescription(subMenu, menu,
 			"MODOPTIONS_IZUMISQOL_GAMEAPADPAUSESETTINGS_PAUSEFRAMESINACTIVE_DESC".AsDialog());
 
 		menu.Add(subMenu);
@@ -608,7 +608,7 @@ public class SettingsModule : EverestModuleSettings
 					if( !OBSIntegrationEnabled ) OBSIntegration.Disconnect();
 				},
 			});
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_INTEGRATIONENABLED_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_INTEGRATIONENABLED_DESC".AsDialog());
 
 		subMenu.Add(menuItem = new DisableableButton("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CONNECT".AsDialog(),
 			() => OBSIntegration.IsConnected || OBSIntegration.WaitingForConnection)
@@ -621,14 +621,14 @@ public class SettingsModule : EverestModuleSettings
 					Tooltip.Show("MODOPTIONS_IZUMISQOL_OBSSETTINGS_INTEGRATIONDISABLED_TOOLTIP".AsDialog());
 			},
 		});
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CONNECT_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CONNECT_DESC".AsDialog());
 
 		subMenu.Add(menuItem =
 			new DisableableButton("MODOPTIONS_IZUMISQOL_OBSSETTINGS_DISCONNECT".AsDialog(), () => !OBSIntegration.IsConnected)
 			{
 				OnPressed = OBSIntegration.Disconnect,
 			});
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_DISCONNECT_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_DISCONNECT_DESC".AsDialog());
 
 		subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTHOSTPORT".AsDialog())
 		{
@@ -641,20 +641,20 @@ public class SettingsModule : EverestModuleSettings
 					OBSHostPort = clipboardText;
 			},
 		});
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTHOSTPORT_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTHOSTPORT_DESC".AsDialog());
 
 		subMenu.Add(menuItem = new TextMenu.Button("MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTPASSWORD".AsDialog())
 		{
 			OnPressed = () => OBSPassword = TextInput.GetClipboardText(),
 		});
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTPASSWORD_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_IMPORTPASSWORD_DESC".AsDialog());
 
 		subMenu.Add(menuItem =
 			new TextMenu.OnOff("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CONNECTSTARTUP".AsDialog(), ConnectToOBSWebsocketsOnStartup)
 			{
 				OnValueChange = val => ConnectToOBSWebsocketsOnStartup = val,
 			});
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CONNECTSTARTUP_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CONNECTSTARTUP_DESC".AsDialog());
 
 		subMenu.Add(menuItem = new TextMenu.Slider("MODOPTIONS_IZUMISQOL_OBSSETTINGS_SHOWINDICATOR".AsDialog(),
 			index =>
@@ -668,7 +668,7 @@ public class SettingsModule : EverestModuleSettings
 		{
 			OnValueChange = val => ShowRecordingIndicatorWhen = (OBSRecordingIndicator.DisplayType)val,
 		});
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_SHOWINDICATOR_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_SHOWINDICATOR_DESC".AsDialog());
 
 		subMenu.Add(menuItem = new TextMenu.Slider("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKRECORD".AsDialog(),
 			index => OBSIntegration.PollFrequencyText[index],
@@ -680,7 +680,7 @@ public class SettingsModule : EverestModuleSettings
 				OBSIntegration.CancelObsPoll();
 			},
 		});
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKRECORD_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKRECORD_DESC".AsDialog());
 
 		subMenu.Add(menuItem = new TextMenu.Slider("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKSTREAM".AsDialog(),
 			index => OBSIntegration.PollFrequencyText[index],
@@ -692,7 +692,7 @@ public class SettingsModule : EverestModuleSettings
 				OBSIntegration.CancelObsPoll();
 			},
 		});
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKSTREAM_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKSTREAM_DESC".AsDialog());
 
 		subMenu.Add(menuItem = new TextMenu.Slider("MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKREPLAYBUFFER".AsDialog(),
 			index => OBSIntegration.PollFrequencyText[index],
@@ -704,7 +704,7 @@ public class SettingsModule : EverestModuleSettings
 				OBSIntegration.CancelObsPoll();
 			},
 		});
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKREPLAYBUFFER_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_OBSSETTINGS_CHECKREPLAYBUFFER_DESC".AsDialog());
 
 		menu.Add(subMenu);
 	}
@@ -721,28 +721,28 @@ public class SettingsModule : EverestModuleSettings
 			OnValueChange = val => NoClipEnabled = val,
 			Disabled      = !inGame,
 		});
-		subMenu.AddDescription(menu, menuItem, "Whether NoClip is enabled or not.");
+		menuItem.AddDescription(subMenu, menu, "Whether NoClip is enabled or not.");
 
 		subMenu.Add(menuItem =
 			new TextMenu.Slider("Movement Speed", index => (index * 0.25f).ToString(), 1, 16, NoClipNormalSpeed)
 			{
 				OnValueChange = val => NoClipNormalSpeed = val,
 			});
-		subMenu.AddDescription(menu, menuItem, "How fast regular movement speed is while NoClip is enabled.");
+		menuItem.AddDescription(subMenu, menu, "How fast regular movement speed is while NoClip is enabled.");
 
 		subMenu.Add(menuItem =
 			new TextMenu.Slider("Fast Movement Speed", index => (index * 0.5f).ToString(), 1, 16, NoClipFastSpeed)
 			{
 				OnValueChange = val => NoClipFastSpeed = val,
 			});
-		subMenu.AddDescription(menu, menuItem, "How fast movement speed is while holding the grab button.");
+		menuItem.AddDescription(subMenu, menu, "How fast movement speed is while holding the grab button.");
 
 		subMenu.Add(menuItem =
 			new TextMenu.Slider("Slow Movement Speed", index => (index * 0.125f).ToString(), 1, 16, NoClipSlowSpeed)
 			{
 				OnValueChange = val => NoClipSlowSpeed = val,
 			});
-		subMenu.AddDescription(menu, menuItem, "How fast movement speed is while holding the dash button.");
+		menuItem.AddDescription(subMenu, menu, "How fast movement speed is while holding the dash button.");
 
 		menu.Add(subMenu);
 	}
@@ -764,9 +764,9 @@ public class SettingsModule : EverestModuleSettings
 				ShowRestartButtonInMainMenu = val;
 			},
 		});
-		subMenu.AddDescription(menu, menuItem,
+		menuItem.AddDescription(subMenu, menu,
 			"MODOPTIONS_IZUMISQOL_OTHERSETTINGS_SHOWRESTARTINMAINMENU_DESC".AsDialog());
-		subMenu.NeedsRelaunch(menu, menuItem);
+		menuItem.NeedsRelaunch(subMenu, menu);
 
 		restartButton.AddToMenuIfIsShown(menu, subMenu);
 
@@ -775,7 +775,7 @@ public class SettingsModule : EverestModuleSettings
 			{
 				OnValueChange = val => VerboseLogging = val,
 			});
-		subMenu.AddDescription(menu, menuItem, "MODOPTIONS_IZUMISQOL_OTHERSETTINGS_VERBOSELOGGING_DESC".AsDialog());
+		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_OTHERSETTINGS_VERBOSELOGGING_DESC".AsDialog());
 
 		menu.Add(subMenu);
 	}

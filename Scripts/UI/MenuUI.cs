@@ -79,7 +79,7 @@ public class ToggleableButton : TextMenu.Button, IToggleableMenuItem
 	public void AddToMenuIfIsShown(TextMenu menu, TextMenuExt.SubMenu subMenu)
 	{
 		subMenu.Add(this);
-		subMenu.AddDescription(menu, this, description);
+		this.AddDescription(subMenu, menu, description);
 	}
 
 	public override void Render(Vector2 position, bool highlighted)
