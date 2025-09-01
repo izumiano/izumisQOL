@@ -3,13 +3,26 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Reflection;
+using System.Runtime.Serialization;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.TypeInspectors;
 
 namespace Celeste.Mod.izumisQOL;
 
 public static class WhitelistModule
 {
 	private static readonly string whitelistsPath = UserIO.SavePath.SanitizeFilePath() + "/izumisQOL/whitelists";
+
+	private static readonly ISerializer serializer = new SerializerBuilder()
+	                                                 .WithTypeInspector(inspector =>
+		                                                 new EverestModuleTypeInspector(inspector))
+	                                                 .Build();
+
+	private static readonly IDeserializer deserializer = new DeserializerBuilder()
+	                                                     .WithTypeInspector(inspector =>
+		                                                     new EverestModuleTypeInspector(inspector))
+	                                                     .Build();
 
 	public static void Init()
 	{
@@ -146,7 +159,7 @@ public static class WhitelistModule
 		return File.ReadAllLines(whitelistsPath + "/" + name + ".txt");
 	}
 
-	private static void WriteToEverestBlacklist(List<string> whitelistLines)
+	private static void WriteToEverestBlacklist(List<string> modList)
 	{
 		var everestBlacklistLines = File.ReadAllLines(Everest.Loader.PathBlacklist);
 		var everestBlacklistText  = "";
@@ -187,20 +200,18 @@ public static class WhitelistModule
 				                       (current, blacklistline) => current + GetBlacklistLineToWrite(blacklistline));
 		}
 
-		File.WriteAllText(Everest.Loader.PathBlacklist, everestBlacklistText);
+		File.WriteAllText(Everest.Loader.PathBlacklist, everestBlacklistText.Log("Blacklist"));
+		return;
 
 		string GetBlacklistLineToWrite(string blacklistLine)
 		{
-			foreach( var whitelistLine in whitelistLines )
+			foreach( var whitelistLine in modList
+			                              .Where(whitelistLine =>
+				                              !string.IsNullOrEmpty(whitelistLine) && whitelistLine[0] != '#')
+			                              .Where(whitelistLine => blacklistLine.StartsWith(whitelistLine)) )
 			{
-				if( string.IsNullOrEmpty(whitelistLine) || whitelistLine[0] == '#' )
-					continue;
-
-				if( blacklistLine.StartsWith(whitelistLine) )
-				{
-					blacklistLine = "# " + whitelistLine;
-					break;
-				}
+				blacklistLine = "# " + whitelistLine;
+				break;
 			}
 
 			return blacklistLine + "\n";
@@ -237,15 +248,6 @@ public static class WhitelistModule
 		              .Select(module =>
 			              module.Metadata.Name + (string.IsNullOrEmpty(module.Metadata.PathArchive) ? "" : ".zip"))
 		              .ToList();
-
-		// foreach( EverestModule module in Everest.Modules )
-		// {
-		// 	string entry = module.Metadata.Name;
-		// 	if( !IsEssentialModule(entry) )
-		// 	{
-		// 		whitelist.Add(entry + (string.IsNullOrEmpty(module.Metadata.PathArchive) ? "" : ".zip"));
-		// 	}
-		// }
 	}
 
 	private static bool IsEssentialModule(string moduleName)
@@ -346,8 +348,8 @@ public static class WhitelistModule
 		return null;
 	}
 
-	private static Dictionary<string, IEnumerable<EverestModuleMetadata>?> LoadModuleYamls(
-		IEnumerable<string>? whitelist = null
+	public static Dictionary<string, IEnumerable<EverestModuleMetadata>?> LoadModuleYamls(
+		IEnumerable<string>? whitelist = null, Action<float>? progressCallback = null
 	)
 	{
 		var dictionary             = new Dictionary<string, IEnumerable<EverestModuleMetadata>?>();
@@ -356,16 +358,22 @@ public static class WhitelistModule
 
 		if( Everest.Loader.PathMods is null ) return [ ];
 
-		var fileList = whitelist ??
+		var fileIEnumerable = whitelist ??
 		[
 			..Directory.GetFiles(Everest.Loader.PathMods).Select(filePath => Path.GetFileName(filePath)),
 			..Directory.GetDirectories(Everest.Loader.PathMods)
 			           .Select(dirPath => Path.GetFileName(dirPath)),
 		];
 
-		foreach( var fileName in fileList )
+		var fileList = fileIEnumerable.ToList();
+		for( var i = 0; i < fileList.Count; i++ )
 		{
-			if( fileName == "Cache" ) continue;
+			var fileName = fileList[i];
+			if( fileName == "Cache" )
+			{
+				progressCallback?.Invoke((float)i / fileList.Count);
+				continue;
+			}
 
 			var filePath = Path.Combine(Everest.Loader.PathMods, fileName);
 			if( fileName.EndsWith(".zip") )
@@ -380,6 +388,8 @@ public static class WhitelistModule
 				if( array.Length == 0 ) array = LoadDir(filePath);
 				dictionary[fileName] = array;
 			}
+
+			progressCallback?.Invoke((float)i / (fileList.Count - 1));
 		}
 
 		return dictionary;
@@ -395,10 +405,14 @@ public static class WhitelistModule
 					var name    = module.Name;
 					var version = $"{module.Version.Major}.{module.Version.Minor}.{module.Version.Build}";
 
-					return new ModuleExportInfo(name, version);
+					return new EverestModuleMetadata
+					{
+						Name          = name,
+						VersionString = version,
+					};
 				});
 
-		return YamlHelper.Serializer.Serialize(modules);
+		return serializer.Serialize(modules);
 	}
 
 	private static string ModuleCollectionToExportString(IEnumerable<EverestModule> moduleCollection)
@@ -424,74 +438,98 @@ public static class WhitelistModule
 		return ModuleCollectionToExportString(modules);
 	}
 
-	public static ApplyImportAttemptData ApplyImport(string? whitelistYaml)
+	private static List<EverestModuleMetadata> YamlToModuleList(string? whitelistYaml)
 	{
-		if( whitelistYaml is null )
+		if( string.IsNullOrWhiteSpace(whitelistYaml) )
 		{
 			Tooltip.Show("Cannot Import Empty String.");
-			return new ApplyImportAttemptData([ ], false);
+			return [ ];
 		}
 
-		List<ModuleExportInfo> modules;
 		try
 		{
-			modules = ((List<object>?)YamlHelper.Deserializer.Deserialize(whitelistYaml))?
-				.Select(obj =>
-				{
-					var dict         = (Dictionary<object, object>)obj;
-					var version      = (string)dict["Version"];
-					var validVersion = new Regex(@"^(?:\d+\.){0,2}\d+$"); // match n, n.n and n.n.n // where n is any number
-					if( !validVersion.IsMatch(version) ) throw new ArgumentException("Invalid version string");
-
-					return new ModuleExportInfo((string)dict["Name"], version);
-				}).Where(module => module.Name != "Everest").ToList()
-				?? [ ];
+			return deserializer.Deserialize<List<EverestModuleMetadata>>(whitelistYaml);
 		}
 		catch( Exception ex )
 		{
 			Log(ex.ToString(), LogLevel.Error);
 			Tooltip.Show("Failed parsing yaml.");
-			return new ApplyImportAttemptData([ ], false);
-		}
-
-		try
-		{
-			var moduleYamls = LoadModuleYamls();
-
-			HashSet<string>        whitelistLines = [ ];
-			List<ModuleExportInfo> missingModules = [ ..modules, ];
-			foreach( var (modulePath, _yamls) in moduleYamls )
-			{
-				if( _yamls?.ToList() is not { } yamls ) continue;
-
-				for( var i = missingModules.Count - 1; i >= 0; i-- )
-				{
-					var module        = missingModules[i];
-					var moduleVersion = new Version(module.Version);
-
-					if( !yamls.Any(yaml => yaml.Name == module.Name && yaml.Version >= moduleVersion) ) continue;
-
-					missingModules.RemoveAt(i);
-					whitelistLines.Add(modulePath);
-				}
-			}
-
-			WriteToEverestBlacklist([ ..whitelistLines, ]);
-
-			Tooltip.Show((ModSettings.WhitelistIsExclusive ? "Exclusively " : "Non-exclusively ") +
-				"applied clipboard to blacklist");
-
-			return new ApplyImportAttemptData(missingModules, true);
-		}
-		catch( Exception ex )
-		{
-			Log(ex, LogLevel.Error);
-			Tooltip.Show("MODOPTIONS_IZUMISQOL_WHITELISTERROR_FAILEDWRITE".AsDialog());
-			return new ApplyImportAttemptData([ ], false);
+			return [ ];
 		}
 	}
 
-	public record ApplyImportAttemptData(List<ModuleExportInfo> MissingDependencies, bool Successful);
+	public static void ApplyImport(string? whitelistYaml)
+	{
+		var moduleList = YamlToModuleList(whitelistYaml);
 
-	public record ModuleExportInfo(string Name, string Version);
+		if( moduleList.Count == 0 ) return;
+
+		var missingModules = moduleList.Where(module =>
+			                               Everest.Modules
+			                                      .Select(enabledModule => enabledModule.Metadata)
+			                                      .All(enabledModule =>
+				                                      enabledModule.Name != module.Name ||
+				                                      enabledModule.Version < module.Version))
+		                               .ToList();
+
+		var modulesToDisable = Everest.Modules.Select(enabledModule => enabledModule.Metadata).Where(enabledModule =>
+			                              moduleList
+				                              .All(module =>
+					                              enabledModule.Name != module.Name))
+		                              .Where(module => module.Name is not "Celeste" and not "Everest" and not "EverestCore")
+		                              .ToList();
+
+		if( Celeste.Instance.scene is not Overworld overworld )
+		{
+			Log("Overworld is null", LogLevel.Error);
+			return;
+		}
+
+		OuiDependencyDownloader.MissingDependencies = missingModules;
+		OuiDependencyDownloader.ModulesToDisable    = ModSettings.WhitelistIsExclusive ? modulesToDisable : [ ];
+		overworld.Goto<OuiDependencyDownloader>();
+	}
+
+	private class EverestModuleTypeInspector : TypeInspectorSkeleton
+	{
+		private readonly ITypeInspector _innerTypeInspector;
+
+		public EverestModuleTypeInspector(ITypeInspector innerTypeInspector)
+		{
+			_innerTypeInspector = innerTypeInspector;
+		}
+
+		public override string GetEnumName(Type enumType, string name)
+		{
+			var members = enumType.GetMembers();
+			foreach( var memberInfo in members )
+			{
+				if( memberInfo.GetCustomAttribute<EnumMemberAttribute>()?.Value == name ) return memberInfo.Name;
+			}
+
+			return name;
+		}
+
+		public override string GetEnumValue(object? enumValue)
+		{
+			if( enumValue == null ) return string.Empty;
+			var text = enumValue.ToString();
+			var type = enumValue.GetType();
+			if( text is null ) return string.Empty;
+			var member = type.GetMember(text);
+			if( member.Length == 0 ) return text;
+			var customAttribute                                = member[0].GetCustomAttribute<EnumMemberAttribute>();
+			if( customAttribute is { Value: not null, } ) text = customAttribute.Value;
+			return text;
+		}
+
+		public override IEnumerable<IPropertyDescriptor> GetProperties(Type type, object? container)
+		{
+			var properties = _innerTypeInspector.GetProperties(type, container);
+
+			properties = properties.Where(p => p.Name is "Name" or "Version");
+
+			return properties;
+		}
+	}
 }

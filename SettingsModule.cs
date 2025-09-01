@@ -80,8 +80,6 @@ public class SettingsModule : EverestModuleSettings
 
 	public bool WhitelistIsExclusive = true;
 
-	private List<WhitelistModule.ModuleExportInfo> missingModules = [ ];
-
 	#endregion
 
 	#region BetterJournal Settings
@@ -497,44 +495,13 @@ public class SettingsModule : EverestModuleSettings
 		});
 		menuItem.AddDescription(subMenu, menu, "MODOPTIONS_IZUMISQOL_WHITELISTSETTINGS_EXPORTS_WHITELIST_DESC".AsDialog());
 
-		var installMissingDependenciesButton = ToggleableButton.New("Install Missing Dependencies",
-			"installMissingDependenciesButton", "Install missing dependencies.");
-		installMissingDependenciesButton.OnPressed = () =>
-		{
-			foreach( var module in missingModules )
-			{
-				Log(module.Name);
-			}
-		};
-		var importWhitelistRestartButton = ToggleableRestartButton.New("importWhitelistRestartButton");
 		subMenu.Add(menuItem = new TextMenu.Button("Apply Whitelist From Clipboard")
 		{
-			OnPressed = () =>
-			{
-				var importInfo = WhitelistModule.ApplyImport(TextInput.GetClipboardText());
-				if( !importInfo.Successful ) return;
-
-				importWhitelistRestartButton.Show(menu, subMenu);
-
-				missingModules = importInfo.MissingDependencies;
-
-				Log("Missing Dependencies");
-				foreach( var (name, version) in missingModules )
-				{
-					name.Log("name");
-					version.Log("version");
-				}
-
-				if( missingModules.Count != 0 )
-					installMissingDependenciesButton.Show(menu, subMenu);
-			},
+			OnPressed = () => { WhitelistModule.ApplyImport(TextInput.GetClipboardText()); },
 		});
 		menuItem.AddDescription(subMenu, menu,
-			"Apply a whitelist in Everest's standard yaml format for mods from the clipboard.");
+			"Apply a whitelist in Everest's standard yaml format for mods from the clipboard.\n\nNote: This is affected by the 'Is Exclusive' option.");
 		menuItem.NeedsRelaunch(subMenu, menu);
-
-		installMissingDependenciesButton.AddToMenuIfIsShown(menu, subMenu);
-		importWhitelistRestartButton.AddToMenuIfIsShown(menu, subMenu);
 
 		menu.Add(subMenu);
 	}
