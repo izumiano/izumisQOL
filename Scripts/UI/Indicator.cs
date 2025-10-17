@@ -9,7 +9,7 @@ namespace Celeste.Mod.izumisQOL.UI;
 
 public class Indicator : Entity
 {
-	protected readonly static List<Indicator> Indicators = [ ];
+	protected static readonly List<Indicator> Indicators = [ ];
 
 	public bool IsVisible
 	{
@@ -84,7 +84,7 @@ public class Indicator : Entity
 		{
 			for( var i = 0; i < rowIndex; i++ )
 			{
-				Indicator indicator = Indicators[i];
+				var indicator = Indicators[i];
 
 				if( indicator.ParentIcon is null && indicator.IsVisible )
 					visibleIcons++;
@@ -104,8 +104,8 @@ public class Indicator : Entity
 
 		Log("Adding indicators");
 		Indicators.ForEach(i => i.Tag = (int)Tags.HUD | (int)Tags.Global | (int)Tags.FrozenUpdate | (int)Tags.PauseUpdate |
-		                                (int)Tags.TransitionUpdate);
-		scene.Add(Indicators);
+			(int)Tags.TransitionUpdate);
+		MainThreadHelper.Schedule(() => { scene.Add(Indicators); });
 	}
 }
 
@@ -119,8 +119,8 @@ public class OBSRecordingIndicator : Indicator
 	}
 
 	private static bool IsRecordingOrStreamingOrReplayBuffering => OBSIntegration.IsRecording ||
-	                                                               OBSIntegration.IsStreaming ||
-	                                                               OBSIntegration.IsReplayBuffering;
+		OBSIntegration.IsStreaming ||
+		OBSIntegration.IsReplayBuffering;
 
 	private static bool ShowIndicator
 	{

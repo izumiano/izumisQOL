@@ -5,7 +5,8 @@ using Microsoft.Xna.Framework;
 using Monocle;
 
 namespace Celeste.Mod.izumisQOL;
-[Tracked()]
+
+[Tracked]
 public class Tooltip : Entity
 {
 	public enum DisplayPosition
@@ -28,11 +29,12 @@ public class Tooltip : Entity
 
 	private Tooltip(string message, float duration, DisplayPosition position)
 	{
-		this.message = message;
+		this.message  = message;
 		this.duration = duration;
-		Vector2 messageSize = ActiveFont.Measure(message);
+		var messageSize = ActiveFont.Measure(message);
 		Position = GetScreenPositionFromDisplayEnum(position, messageSize);
-		Tag = (int)Tags.HUD | (int)Tags.Global | (int)Tags.FrozenUpdate | (int)Tags.PauseUpdate | (int)Tags.TransitionUpdate;
+		Tag = (int)Tags.HUD | (int)Tags.Global | (int)Tags.FrozenUpdate | (int)Tags.PauseUpdate |
+			(int)Tags.TransitionUpdate;
 		Add(new Coroutine(Show()));
 	}
 
@@ -41,38 +43,37 @@ public class Tooltip : Entity
 		return position switch
 		{
 			DisplayPosition.BottomLeft => new Vector2(25f, Engine.Height - messageSize.Y - 12.5f),
-			DisplayPosition.TopLeft => new Vector2(25f, 12.5f),
-			DisplayPosition.BottomRight => new Vector2(Engine.Width - messageSize.X - 25f, Engine.Height - messageSize.Y - 12.5f),
+			DisplayPosition.TopLeft    => new Vector2(25f, 12.5f),
+			DisplayPosition.BottomRight => new Vector2(Engine.Width - messageSize.X - 25f,
+				Engine.Height - messageSize.Y - 12.5f),
 			DisplayPosition.TopRight => new Vector2(Engine.Width - messageSize.X - 25f, 12.5f),
-			_ => Vector2.Zero,
+			_                        => Vector2.Zero,
 		};
 	}
 
 	private IEnumerator Show()
 	{
-		while (alpha < 1f)
+		while( alpha < 1f )
 		{
 			unEasedAlpha = Calc.Approach(unEasedAlpha, 1f, Engine.RawDeltaTime * 5f);
-			alpha = Ease.SineOut(unEasedAlpha);
+			alpha        = Ease.SineOut(unEasedAlpha);
 			yield return null;
 		}
+
 		yield return Dismiss();
 	}
 
 	private IEnumerator Dismiss()
 	{
 		yield return duration;
-		while (alpha > 0f)
+		while( alpha > 0f )
 		{
 			unEasedAlpha = Calc.Approach(unEasedAlpha, 0f, Engine.RawDeltaTime * 5f);
-			alpha = Ease.SineIn(unEasedAlpha);
+			alpha        = Ease.SineIn(unEasedAlpha);
 			yield return null;
 		}
 
-		if(tooltipQueue.Count > 0)
-		{
-			Display();
-		}
+		if( tooltipQueue.Count > 0 ) Display();
 
 		RemoveSelf();
 	}
@@ -80,25 +81,25 @@ public class Tooltip : Entity
 	public override void Render()
 	{
 		base.Render();
-		ActiveFont.DrawOutline(message, Position, Vector2.Zero, Vector2.One, Color.White * alpha, 2f, Color.Black * alpha * alpha * alpha);
+		ActiveFont.DrawOutline(message, Position, Vector2.Zero, Vector2.One, Color.White * alpha, 2f,
+			Color.Black * alpha * alpha * alpha);
 	}
 
 	public static void Display()
 	{
-		Scene scene = Engine.Scene;
-		if (scene != null)
+		MainThreadHelper.Schedule(() =>
 		{
-			if (!scene.Tracker.Entities.TryGetValue(typeof(Tooltip), out var tooltips))
+			var scene = Engine.Scene;
+			if( scene != null )
 			{
-				tooltips = scene.Entities.FindAll<Tooltip>().Cast<Entity>().ToList();
+				if( !scene.Tracker.Entities.TryGetValue(typeof(Tooltip), out var tooltips) )
+					tooltips = scene.Entities.FindAll<Tooltip>().Cast<Entity>().ToList();
+
+				tooltips.ForEach(delegate(Entity entity) { entity.RemoveSelf(); });
+				var info = tooltipQueue.Dequeue();
+				scene.Add(new Tooltip(info.Message, info.Duration, info.Position));
 			}
-			tooltips.ForEach(delegate (Entity entity)
-			{
-				entity.RemoveSelf();
-			});
-			Info info = tooltipQueue.Dequeue();
-			scene.Add(new Tooltip(info.Message, info.Duration, info.Position));
-		}
+		});
 	}
 
 	public static void Show(params Info[] tooltips)
@@ -124,7 +125,7 @@ public class Tooltip : Entity
 
 	public static void Add(params Info[] tooltips)
 	{
-		foreach (Info tooltip in tooltips)
+		foreach( var tooltip in tooltips )
 		{
 			tooltipQueue.Enqueue(tooltip);
 		}
@@ -132,21 +133,18 @@ public class Tooltip : Entity
 
 	public static void Add(bool clearQueue = true, params Info[] tooltips)
 	{
-		if (clearQueue)
-		{
-			tooltipQueue.Clear();
-		}
+		if( clearQueue ) tooltipQueue.Clear();
 		Add(tooltips);
 	}
 
-	public static void Add(string message, bool clearQueue = true, float duration = 1f, DisplayPosition position = DisplayPosition.BottomLeft)
+	public static void Add(
+		string message, bool clearQueue = true, float duration = 1f, DisplayPosition position = DisplayPosition.BottomLeft
+	)
 	{
-		if (clearQueue)
-		{
-			tooltipQueue.Clear();
-		}
+		if( clearQueue ) tooltipQueue.Clear();
 		tooltipQueue.Enqueue(new Info(message, duration, position));
 	}
+
 	public struct Info(string message, float duration = 1f, DisplayPosition position = DisplayPosition.BottomLeft)
 	{
 		public readonly string          Message  = message.Log();
@@ -154,5 +152,3 @@ public class Tooltip : Entity
 		public readonly float           Duration = duration;
 	}
 }
-
-
