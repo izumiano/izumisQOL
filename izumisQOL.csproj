@@ -74,6 +74,11 @@
                         string filePath = file.GetMetadata("FullPath");
                         string entryName = GetRelativePath(projectDir, filePath);
                         
+                        if(entryName.StartsWith("bin/Debug") || entryName.StartsWith("bin/Release")) 
+                        {
+                        	continue;
+                        }
+                        
                         //Console.WriteLine(filePath);
                         //Console.WriteLine(entryName);
                         zip.CreateEntryFromFile(filePath, entryName);
