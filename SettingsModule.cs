@@ -255,7 +255,7 @@ public class SettingsModule : EverestModuleSettings
 			{
 				var clipboardText = TextInput.GetClipboardText();
 				if( !string.IsNullOrEmpty(clipboardText) &&
-					KeybindModule.RenameFile(CurrentKeybindSlot + "_" + GetKeybindName(CurrentKeybindSlot), clipboardText) )
+					KeybindModule.RenameFile(CurrentKeybindSlot + "_" + GetKeybindName(CurrentKeybindSlot), clipboardText, showTooltip: true) )
 				{
 					ChangeKeybindName(CurrentKeybindSlot, clipboardText);
 					CurrentKeybindSlider.Values.Insert(CurrentKeybindSlot + 1, Tuple.Create(clipboardText, CurrentKeybindSlot));

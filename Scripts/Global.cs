@@ -22,7 +22,7 @@ public static class Global
 	{
 		return File.ReadAllLines(path)
 		           .Where(line => line[0] != '#')
-		           .Any(line => line.StartsWith(name));
+		           .Any(line => line.Trim() == name);
 	}
 
 	public static Task? RunAfter(
@@ -38,7 +38,7 @@ public static class Global
 		{
 			return task;
 		}
-		
+
 		cancellationTokenSource = new CancellationTokenSource();
 		return null;
 	}
@@ -48,7 +48,9 @@ public static class Global
 	)
 	{
 		if( task != null )
+		{
 			return;
+		}
 
 		await Task.Delay(millisecondsDelay, cancellationTokenSource.Token);
 
