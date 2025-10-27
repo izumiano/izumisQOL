@@ -38,6 +38,11 @@ public static class Extensions
 
 	public static string AsDialog(this string dialogID)
 	{
+		if( Dialog.Languages is null )
+		{
+			return "Dialog not yet loaded";
+		}
+
 		return Dialog.Clean(dialogID);
 	}
 
@@ -105,9 +110,17 @@ public static class Extensions
 
 	public static Oui? Goto(this Overworld overworld, Type? ouiType)
 	{
-		if( ouiType is not { } oui2 ) return null;
+		if( ouiType is not { } oui2 )
+		{
+			return null;
+		}
+
 		var uI = GetUI(oui2);
-		if( uI != null ) overworld.routineEntity.Add(new Coroutine(overworld.GotoRoutine(uI)));
+		if( uI != null )
+		{
+			overworld.routineEntity.Add(new Coroutine(overworld.GotoRoutine(uI)));
+		}
+
 		return uI;
 
 		Oui? GetUI(Type ouiTypeIn)
@@ -115,7 +128,10 @@ public static class Extensions
 			Oui? ouiOut = null;
 			foreach( var ui in overworld.UIs )
 			{
-				if( ui.GetType() == ouiTypeIn ) ouiOut = ui;
+				if( ui.GetType() == ouiTypeIn )
+				{
+					ouiOut = ui;
+				}
 			}
 
 			return ouiOut;
@@ -135,16 +151,24 @@ public static class Extensions
 		var log  = string.IsNullOrEmpty(identifier) ? text : identifier + ": " + text;
 
 		if( string.IsNullOrEmpty(log) )
+		{
 			log = (string.IsNullOrEmpty(identifier) ? "value" : identifier) + " was null or empty";
+		}
 
 		try
 		{
 			methodInfo ??= new StackTrace().GetFrame(1)?.GetMethod();
 
-			if( methodInfo is null ) throw new Exception("methodInfo was null");
+			if( methodInfo is null )
+			{
+				throw new Exception("methodInfo was null");
+			}
 
 			var className = methodInfo.GetRealDeclaringType()?.Name;
-			if( className is null ) throw new Exception("className was null");
+			if( className is null )
+			{
+				throw new Exception("className was null");
+			}
 
 			var methodName = methodInfo.Name;
 
