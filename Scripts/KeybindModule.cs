@@ -552,10 +552,7 @@ public static class KeybindModule
 						{
 							var modBinding    = buttonBinding.Button.Binding;
 							var customBinding = modKeybindsSaveType.ButtonBindings[prop.Name][0];
-							ClearKey(modBinding);
-							modBinding.Add(customBinding.Keyboard.ToArray());
-							modBinding.Add(customBinding.Controller.ToArray());
-							modBinding.Add(customBinding.Mouse.ToArray());
+							SetBindingTo(modBinding, customBinding);
 						}
 
 						continue;
@@ -569,10 +566,7 @@ public static class KeybindModule
 							for( var i = 0; i < savedBindings.Count; i++ )
 							{
 								var modBinding = propButtonBindings[i].Button.Binding;
-								ClearKey(modBinding);
-								modBinding.Add(savedBindings[i].Keyboard.ToArray());
-								modBinding.Add(savedBindings[i].Controller.ToArray());
-								modBinding.Add(savedBindings[i].Mouse.ToArray());
+								SetBindingTo(modBinding, savedBindings[i]);
 							}
 						}
 					}
@@ -708,18 +702,15 @@ public static class KeybindModule
 
 		for( var i = 0; i < bindings.Length; i++ )
 		{
-			ClearKey(bindings[i]);
-			bindings[i].Add(newBindings[i].Keyboard.ToArray());
-			bindings[i].Add(newBindings[i].Controller.ToArray());
-			bindings[i].Add(newBindings[i].Mouse.ToArray());
+			SetBindingTo(bindings[i], newBindings[i]);
 		}
 	}
 
-	private static void ClearKey(Binding binding)
+	private static void SetBindingTo(Binding binding, Binding newBinding)
 	{
-		binding.ClearGamepad();
-		binding.ClearKeyboard();
-		binding.ClearMouse();
+		binding.Keyboard   = [ ..newBinding.Keyboard, ];
+		binding.Controller = [ ..newBinding.Controller, ];
+		binding.Mouse      = [ ..newBinding.Mouse, ];
 	}
 
 	private static void MatchKeybindButtonsToKeybindSettings()
