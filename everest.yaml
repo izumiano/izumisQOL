@@ -1,9 +1,9 @@
 - Name: izumisQOL
-  Version: 1.6.4
+  Version: 1.6.5
   DLL: bin/izumisQOL.dll
   Dependencies:
     - Name: EverestCore
       Version: 1.5935.0
   OptionalDependencies:
     - Name: CollabUtils2
-      Version: 1.8.11
+      Version: 1.12.5

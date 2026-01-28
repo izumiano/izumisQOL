@@ -5,7 +5,7 @@ namespace Celeste.Mod.izumisQOL.ModIntegration;
 
 public static class IntegrationUtils
 {
-	public static bool TryGetModule(EverestModuleMetadata meta, out EverestModule? module)
+	public static bool TryGetModule(EverestModuleMetadata meta, [NotNullWhen(true)] out EverestModule? module)
 	{
 		foreach( EverestModule other in Everest.Modules )
 		{

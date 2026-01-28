@@ -6,31 +6,55 @@ using System.Text.RegularExpressions;
 using MonoMod.Utils;
 
 namespace Celeste.Mod.izumisQOL.ModIntegration;
+
 public static class CollabUtils2Integration
 {
 	public static bool Loaded;
 
 	private static Type? progressPageType;
 
-	private static EverestModule? collabUtils2Module;
-	private static MethodInfo?    isHeartSide_MethodInfo;
+	private static MethodInfo? isHeartSide_MethodInfo;
+	private static FieldInfo? collabInGameForcedArea_FieldInfo;
 
 	public static void Load()
 	{
-		if( !IntegrationUtils.TryGetModule(new EverestModuleMetadata
-		   {
-			   Name          = "CollabUtils2",
-			   VersionString = "1.8.11",
-		   }, out collabUtils2Module) )
+		if (!IntegrationUtils.TryGetModule(new EverestModuleMetadata
+		{
+			Name = "CollabUtils2",
+			VersionString = "1.12.5",
+		}, out var collabUtils2EverestModule))
 		{
 			return;
 		}
-		
-		Log("loaded");
-		Loaded = true;
 
-		progressPageType       = collabUtils2Module!.GetType().Module.GetType("Celeste.Mod.CollabUtils2.UI.OuiJournalCollabProgressInLobby");
-		isHeartSide_MethodInfo = collabUtils2Module.GetType().Module.GetType("Celeste.Mod.CollabUtils2.LobbyHelper")?.GetMethod("IsHeartSide", BindingFlags.Static | BindingFlags.Public);
+		var collabUtils2Module = collabUtils2EverestModule.GetType().Module;
+
+		progressPageType = collabUtils2Module.GetType("Celeste.Mod.CollabUtils2.UI.OuiJournalCollabProgressInLobby");
+		isHeartSide_MethodInfo = collabUtils2Module
+			.GetType("Celeste.Mod.CollabUtils2.LobbyHelper")
+			?.GetMethod("IsHeartSide", BindingFlags.Static | BindingFlags.Public);
+		collabInGameForcedArea_FieldInfo = collabUtils2Module
+			.GetType("Celeste.Mod.CollabUtils2.UI.InGameOverworldHelper")
+			?.GetField("collabInGameForcedArea", BindingFlags.NonPublic | BindingFlags.Static);
+
+		if (progressPageType is null)
+		{
+			Log("progressPageType not found", logLevel: LogLevel.Warn);
+			return;
+		}
+		if (isHeartSide_MethodInfo is null)
+		{
+			Log("isHeartSide_MethodInfo not found", logLevel: LogLevel.Warn);
+			return;
+		}
+		if (collabInGameForcedArea_FieldInfo is null)
+		{
+			Log("collabInGameForcedArea_FieldInfo not found", logLevel: LogLevel.Warn);
+			return;
+		}
+
+		Log($"Loaded CollabUtils2 v{collabUtils2EverestModule.Metadata.VersionString}");
+		Loaded = true;
 	}
 
 	/// <summary>
@@ -50,17 +74,22 @@ public static class CollabUtils2Integration
 
 	public static bool IsHeartSide(string sid)
 	{
-		object? isHeartSide = isHeartSide_MethodInfo?.Invoke(null, [ sid, ]);
+		object? isHeartSide = isHeartSide_MethodInfo?.Invoke(null, [sid,]);
 		return (bool)(isHeartSide ?? false);
+	}
+
+	public static string? GetCurrentLevelSet()
+	{
+		return (collabInGameForcedArea_FieldInfo?.GetValue(null) as AreaData)?.LevelSet;
 	}
 
 	private static List<AreaStats> GetUnsortedCollabStats(SaveData instance, OuiJournal journal)
 	{
-		string? journalLevelSet = journal.Overworld is null ? null : new DynData<Overworld>(journal.Overworld).Get<AreaData>("collabInGameForcedArea")?.LevelSet;
+		string? journalLevelSet = GetCurrentLevelSet();
 
 		LevelSetStats levelSet = instance.GetLevelSetStatsFor(journalLevelSet);
 
-		if(levelSet.Areas.TrueForAll(area => area.SID != "SpringCollab2020/5-Grandmaster/ZZ-NewHeartSide"))
+		if (levelSet.Areas.TrueForAll(area => area.SID != "SpringCollab2020/5-Grandmaster/ZZ-NewHeartSide"))
 		{
 			return levelSet.Areas;
 		}
@@ -106,9 +135,9 @@ public static class CollabUtils2Integration
 	private static int FirstProgressPage(OuiJournal journal)
 	{
 		var i = 0;
-		while(journal.Pages[i].GetType() != progressPageType)
+		while (journal.Pages[i].GetType() != progressPageType)
 		{
-			if(i + 1 > journal.Pages.Count - 1)
+			if (i + 1 > journal.Pages.Count - 1)
 			{
 				return -1;
 			}
@@ -126,7 +155,7 @@ public static class CollabUtils2Integration
 			firstIndexOnPage = -1;
 			return -1;
 		}
-		
+
 		int i = page.PageIndex - firstProgressPage;
 		firstIndexOnPage = MAPS_PER_PAGE * i;
 		int val = GetUnsortedCollabStats(instance, journal).Count - MAPS_PER_PAGE * i;

@@ -25,7 +25,7 @@ public static class BetterJournalModule
 	{
 		get
 		{
-			if( JournalProgressPage is null )
+			if (JournalProgressPage is null)
 			{
 				return JournalDataType.Default;
 			}
@@ -34,7 +34,7 @@ public static class BetterJournalModule
 		}
 		set
 		{
-			if( JournalProgressPage != null )
+			if (JournalProgressPage != null)
 			{
 				journalDataTypes[JournalProgressPage] = value;
 			}
@@ -53,12 +53,12 @@ public static class BetterJournalModule
 	{
 		get
 		{
-			if( _journal is null )
+			if (_journal is null)
 			{
 				return null;
 			}
 
-			if( _journal.PageIndex > _journal.Pages.Count - 1 || _journal.PageIndex < 0 )
+			if (_journal.PageIndex > _journal.Pages.Count - 1 || _journal.PageIndex < 0)
 			{
 				return null;
 			}
@@ -73,7 +73,7 @@ public static class BetterJournalModule
 	{
 		get
 		{
-			if( JournalProgressPage is null )
+			if (JournalProgressPage is null)
 			{
 				return null;
 			}
@@ -90,9 +90,9 @@ public static class BetterJournalModule
 	{
 		get
 		{
-			if( journalSnapshot == null )
+			if (journalSnapshot == null)
 			{
-				if( _journal is null ) return null;
+				if (_journal is null) return null;
 				journalSnapshot = LoadJournalSnapshot(_journal);
 			}
 
@@ -106,9 +106,9 @@ public static class BetterJournalModule
 		get
 		{
 			var save = SaveData.Instance;
-			if( save == null )
+			if (save == null)
 				return 1;
-			if( SeparateABCSideTimes(save) <= 0 || CurrJournalDataType == JournalDataType.Default )
+			if (SeparateABCSideTimes(save) <= 0 || CurrJournalDataType == JournalDataType.Default)
 			{
 				return 1;
 			}
@@ -117,7 +117,7 @@ public static class BetterJournalModule
 		}
 	}
 
-	public static  bool InJournal                  => JournalProgressPage != null;
+	public static bool InJournal => JournalProgressPage != null;
 	private static bool ProgressPageIsCollabUtils2 => CollabUtils2Integration.IsCU2ProgressPage(JournalProgressPage);
 
 
@@ -135,7 +135,7 @@ public static class BetterJournalModule
 	{
 		orig(self);
 
-		if( !ModSettings.BetterJournalEnabled )
+		if (!ModSettings.BetterJournalEnabled)
 			return;
 
 		InputHandler(self);
@@ -143,17 +143,17 @@ public static class BetterJournalModule
 
 	private static void InputHandler(OuiJournal journal)
 	{
-		if( !ModSettings.EnableHotkeys )
+		if (!ModSettings.EnableHotkeys)
 			return;
 
-		if( ModSettings.ButtonSaveJournal.Pressed )
+		if (ModSettings.ButtonSaveJournal.Pressed)
 		{
-			if( SaveJournalSnapshot(journal) )
+			if (SaveJournalSnapshot(journal))
 			{
 				Tooltip.Show("MODOPTIONS_IZUMISQOL_BETTERJOURNAL_SAVED_TOOLTIP".AsDialog(),
 					position: Tooltip.DisplayPosition.TopLeft);
 				JournalSnapshot = null;
-				if( ChangeCurrentJournalDataType(JournalDataType.Default) )
+				if (ChangeCurrentJournalDataType(JournalDataType.Default))
 				{
 					UpdateJournalData(journal);
 				}
@@ -161,9 +161,9 @@ public static class BetterJournalModule
 		}
 
 		int input = JournalDataTypeInput(journal);
-		if( input != 0 )
+		if (input != 0)
 		{
-			if( ChangeCurrentJournalDataType(input) )
+			if (ChangeCurrentJournalDataType(input))
 			{
 				UpdateJournalData(journal);
 			}
@@ -173,40 +173,40 @@ public static class BetterJournalModule
 	private static void UpdateJournalData(OuiJournal journal)
 	{
 		var instance = SaveData.Instance;
-		if( instance is null || JournalProgressPage is null )
+		if (instance is null || JournalProgressPage is null)
 			return;
 
-		if( JournalSnapshot == null && (int)CurrJournalDataType > 1 )
+		if (JournalSnapshot == null && (int)CurrJournalDataType > 1)
 		{
 			return;
 		}
 
 		try
 		{
-			var isCollabUtils2Page         = false;
-			var firstIndexOnPage           = 0;
+			var isCollabUtils2Page = false;
+			var firstIndexOnPage = 0;
 			int mapsOnThisCollabUtils2Page = -1;
-			if( CollabUtils2Integration.IsCU2ProgressPage(JournalProgressPage) )
+			if (CollabUtils2Integration.IsCU2ProgressPage(JournalProgressPage))
 			{
 				isCollabUtils2Page = true;
 				mapsOnThisCollabUtils2Page =
 					CollabUtils2Integration.MapsOnPage(JournalProgressPage, journal, instance, out firstIndexOnPage);
 			}
-			else if( JournalProgressPage.GetType() != typeof(OuiJournalProgress) )
+			else if (JournalProgressPage.GetType() != typeof(OuiJournalProgress))
 			{
 				return;
 			}
 
 			DynamicData journalProgressDynData = DynamicData.For(JournalProgressPage);
-			var         table                  = journalProgressDynData.Get<OuiJournalPage.Table>("table");
-			if( table is null )
+			var table = journalProgressDynData.Get<OuiJournalPage.Table>("table");
+			if (table is null)
 			{
 				return;
 			}
 			DynamicData tableDynData = DynamicData.For(table);
 
 			var rows = tableDynData.Get<List<OuiJournalPage.Row>>("rows");
-			if( rows is null )
+			if (rows is null)
 			{
 				return;
 			}
@@ -214,14 +214,14 @@ public static class BetterJournalModule
 			SetupDefaultTableData();
 
 			int lastUnmoddedRow = isCollabUtils2Page ? mapsOnThisCollabUtils2Page + 2 : GetLastUnmoddedRowIndex(rows);
-			int abcSeparation   = SeparateABCSideTimes(instance);
+			int abcSeparation = SeparateABCSideTimes(instance);
 			var heartsideOffset = 0;
-			for( var i = 1; i < lastUnmoddedRow - 1; i++ )
+			for (var i = 1; i < lastUnmoddedRow - 1; i++)
 			{
-				if( isCollabUtils2Page )
+				if (isCollabUtils2Page)
 				{
 					GetInterludeOffset(firstIndexOnPage + i - 1, instance, journal, out AreaStats? area, true);
-					if( area is null )
+					if (area is null)
 					{
 						return;
 					}
@@ -241,7 +241,7 @@ public static class BetterJournalModule
 						OuiJournalPage.Cell cell = new OuiJournalPage.EmptyCell(100f);
 
 						int entriesIndex = entries.Count + mode + instance.UnlockedModes - 6;
-						if( entriesIndex > entries.Count - 1 || entriesIndex < 0 )
+						if (entriesIndex > entries.Count - 1 || entriesIndex < 0)
 						{
 							return;
 						}
@@ -249,27 +249,27 @@ public static class BetterJournalModule
 						long time = GetTimeAtIndexFromDataType(firstIndexOnPage + i - 1, journal, CurrJournalDataType, mode,
 							out int modesForThisArea, instance, JournalSnapshot, isCollabUtils2Page);
 
-						if( modesForThisArea < 1 )
+						if (modesForThisArea < 1)
 						{
 							return;
 						}
-						
-						if( !ProgressPageIsCollabUtils2 && mode > abcSeparation )
+
+						if (!ProgressPageIsCollabUtils2 && mode > abcSeparation)
 						{
 							GetInterludeOffset(i - 1, instance, journal, out AreaStats? area);
-							if( area is null )
+							if (area is null)
 							{
 								return;
 							}
 							AreaData areaData = AreaData.Get(area);
-							if( !areaData.HasMode((AreaMode)mode) )
+							if (!areaData.HasMode((AreaMode)mode))
 							{
 								cell = new OuiJournalPage.EmptyCell(0);
 							}
 						}
-						else if( mode <= abcSeparation || CurrJournalDataType != JournalDataType.Default )
+						else if (mode <= abcSeparation || CurrJournalDataType != JournalDataType.Default)
 						{
-							if( time == 0 )
+							if (time == 0)
 							{
 								cell = new OuiJournalPage.IconCell("dot");
 							}
@@ -289,13 +289,13 @@ public static class BetterJournalModule
 
 						entries[entriesIndex] = cell;
 
-						if( modesForThisArea > mode + 1 )
+						if (modesForThisArea > mode + 1)
 						{
 							ReplaceTime(mode + 1);
 						}
 					}
 				}
-				catch( Exception ex )
+				catch (Exception ex)
 				{
 					Log(ex, LogLevel.Error);
 				}
@@ -309,17 +309,17 @@ public static class BetterJournalModule
 					{
 						int unlockedCopy = unlocked;
 						int entriesIndex = entries.Count + mode + instance.UnlockedModes - unlockedCopy - 6 +
-						                   (ProgressPageIsCollabUtils2 ? -1 : 0);
-						if( entriesIndex > entries.Count - 1 || entriesIndex < 0 )
+															 (ProgressPageIsCollabUtils2 ? -1 : 0);
+						if (entriesIndex > entries.Count - 1 || entriesIndex < 0)
 						{
 							return;
 						}
 
 						int deaths = GetDeathsAtIndexFromDataType(firstIndexOnPage + i - 1, journal, CurrJournalDataType, mode, ref unlocked,
-							instance,                                                         JournalSnapshot, isCollabUtils2Page);
+							instance, JournalSnapshot, isCollabUtils2Page);
 
 						OuiJournalPage.Cell cell;
-						if( deaths <= 0 && ProgressPageIsCollabUtils2 )
+						if (deaths <= 0 && ProgressPageIsCollabUtils2)
 						{
 							cell = new OuiJournalPage.IconCell("dot")
 							{
@@ -341,19 +341,19 @@ public static class BetterJournalModule
 
 						entries[entriesIndex] = cell;
 
-						if( unlocked > mode + 1 )
+						if (unlocked > mode + 1)
 						{
 							ReplaceDeathCount(mode + 1);
 						}
 					}
 				}
-				catch( Exception ex )
+				catch (Exception ex)
 				{
 					Log(ex, LogLevel.Error);
 				}
 			}
 
-			if( RenderTarget != null )
+			if (RenderTarget != null)
 			{
 				JournalProgressPage.Redraw(RenderTarget);
 			}
@@ -364,9 +364,9 @@ public static class BetterJournalModule
 
 			void InitializeColumns(OuiJournalPage.Row row)
 			{
-				if( isCollabUtils2Page )
+				if (isCollabUtils2Page)
 					return;
-				while( row.Count < 12 )
+				while (row.Count < 12)
 				{
 					row.Add(new OuiJournalPage.EmptyCell(0f));
 				}
@@ -378,11 +378,11 @@ public static class BetterJournalModule
 				#region Header
 
 				float width = 0;
-				if( ProgressPageIsCollabUtils2 )
+				if (ProgressPageIsCollabUtils2)
 				{
 					bool displayIcons = (from area in AreaData.Areas
-					                     where !area.Interlude_Safe
-					                     select area.Icon).Distinct().Count() > 1;
+															 where !area.Interlude_Safe
+															 select area.Icon).Distinct().Count() > 1;
 					width = displayIcons ? 360f : 420f;
 				}
 
@@ -391,17 +391,17 @@ public static class BetterJournalModule
 
 				#endregion
 
-				if( !isCollabUtils2Page )
+				if (!isCollabUtils2Page)
 				{
 					#region Top Row Time Columns
 
 					List<OuiJournalPage.Cell> entries = table.Header.Entries;
-					if( CurrJournalDataType == JournalDataType.Default || SeparateABCSideTimes(instance) <= 0 )
+					if (CurrJournalDataType == JournalDataType.Default || SeparateABCSideTimes(instance) <= 0)
 					{
 						entries[^3] = new OuiJournalPage.IconCell("time", 220f);
 						entries[^2] = new OuiJournalPage.EmptyCell(100f);
 					}
-					else if( instance.UnlockedModes > 2 )
+					else if (instance.UnlockedModes > 2)
 					{
 						entries[^3] = new OuiJournalPage.EmptyCell(100f);
 						entries[^2] = new OuiJournalPage.IconCell("time", 100f);
@@ -409,7 +409,7 @@ public static class BetterJournalModule
 
 					#endregion
 
-					if( modTotalsTimeCell is not null )
+					if (modTotalsTimeCell is not null)
 					{
 						modTotalsTimeCell.SpreadOverColumns = TimeColumnSpread;
 						DynamicData.For(modTotalsTimeCell).Set("forceWidth", CurrJournalDataType != JournalDataType.Default);
@@ -418,10 +418,10 @@ public static class BetterJournalModule
 					#region Default Total Time Cell
 
 					int totalTimeRowIndex = GetLastUnmoddedRowIndex(rows);
-					if( totalTimeRowIndex < rows.Count - 1 && totalTimeRowIndex >= 0 )
+					if (totalTimeRowIndex < rows.Count - 1 && totalTimeRowIndex >= 0)
 					{
-						OuiJournalPage.Row  defaultTotalTimeRow = rows[totalTimeRowIndex];
-						OuiJournalPage.Cell totalTimeCell       = defaultTotalTimeRow.Entries[^1];
+						OuiJournalPage.Row defaultTotalTimeRow = rows[totalTimeRowIndex];
+						OuiJournalPage.Cell totalTimeCell = defaultTotalTimeRow.Entries[^1];
 						totalTimeCell.SpreadOverColumns = TimeColumnSpread;
 						DynamicData.For(totalTimeCell).Set("forceWidth", CurrJournalDataType != JournalDataType.Default);
 					}
@@ -430,7 +430,7 @@ public static class BetterJournalModule
 				}
 			}
 		}
-		catch( Exception ex )
+		catch (Exception ex)
 		{
 			Log(ex);
 		}
@@ -438,8 +438,8 @@ public static class BetterJournalModule
 
 	private static int JournalDataTypeInput(OuiJournal self)
 	{
-		if( !InJournal || (self.Page() is not OuiJournalProgress &&
-		                   !CollabUtils2Integration.IsCU2ProgressPage(self.Page())) )
+		if (!InJournal || (self.Page() is not OuiJournalProgress &&
+											 !CollabUtils2Integration.IsCU2ProgressPage(self.Page())))
 			return 0;
 
 		int input = Input.MenuUp.Pressed
@@ -451,17 +451,17 @@ public static class BetterJournalModule
 	private static bool ChangeCurrentJournalDataType(int dir)
 	{
 		var instance = SaveData.Instance;
-		if( instance == null )
+		if (instance == null)
 		{
 			return false;
 		}
 
-		int             newLocation = (int)CurrJournalDataType + dir;
-		var newType     = (JournalDataType)newLocation;
-		if( JournalSnapshot == null )
+		int newLocation = (int)CurrJournalDataType + dir;
+		var newType = (JournalDataType)newLocation;
+		if (JournalSnapshot == null)
 		{
 			int abcSeparation = SeparateABCSideTimes(instance, newType);
-			switch( newLocation )
+			switch (newLocation)
 			{
 				case > 1:
 				case 0:
@@ -472,16 +472,16 @@ public static class BetterJournalModule
 					break;
 			}
 
-			if( newType != JournalDataType.SeparateTimes || abcSeparation <= 0 ) 
+			if (newType != JournalDataType.SeparateTimes || abcSeparation <= 0)
 				return false;
-			
+
 			Log(newType);
 			CurrJournalDataType = newType;
 			return true;
 
 		}
 
-		switch( newLocation )
+		switch (newLocation)
 		{
 			case < 0:
 				CurrJournalDataType = JournalDataType.Difference;
@@ -491,7 +491,7 @@ public static class BetterJournalModule
 				return true;
 		}
 
-		if( newType == JournalDataType.SeparateTimes && SeparateABCSideTimes(instance, newType) <= 0 )
+		if (newType == JournalDataType.SeparateTimes && SeparateABCSideTimes(instance, newType) <= 0)
 		{
 			newType = (JournalDataType)(newLocation + dir);
 		}
@@ -503,19 +503,19 @@ public static class BetterJournalModule
 	private static bool ChangeCurrentJournalDataType(JournalDataType journalDataType)
 	{
 		var instance = SaveData.Instance;
-		if( instance == null )
+		if (instance == null)
 		{
 			return false;
 		}
 
-		if( JournalSnapshot == null )
+		if (JournalSnapshot == null)
 		{
 			return false;
 		}
 
-		var             newLocation = (int)journalDataType;
-		var newType     = (JournalDataType)newLocation;
-		if( newType == JournalDataType.SeparateTimes && SeparateABCSideTimes(instance) <= 0 )
+		var newLocation = (int)journalDataType;
+		var newType = (JournalDataType)newLocation;
+		if (newType == JournalDataType.SeparateTimes && SeparateABCSideTimes(instance) <= 0)
 		{
 			newType = (JournalDataType)(newLocation + 1);
 		}
@@ -530,25 +530,25 @@ public static class BetterJournalModule
 	// ReSharper disable once InconsistentNaming
 	private static int SeparateABCSideTimes(SaveData instance, JournalDataType? journalDataType = null)
 	{
-		if( ProgressPageIsCollabUtils2 || !ModSettings.SeparateABCSideTimes )
+		if (ProgressPageIsCollabUtils2 || !ModSettings.SeparateABCSideTimes)
 			return 0;
 
 		journalDataType ??= CurrJournalDataType;
 
-		if( journalDataType.Value == JournalDataType.Default )
+		if (journalDataType.Value == JournalDataType.Default)
 			return 0;
 
-		List<AreaStats> areas                = instance.LevelSetStats.AreasIncludingCeleste;
-		var             highestSideAvailable = 0;
-		foreach( AreaData areaData in areas.Select(AreaData.Get) )
+		List<AreaStats> areas = instance.LevelSetStats.AreasIncludingCeleste;
+		var highestSideAvailable = 0;
+		foreach (AreaData areaData in areas.Select(AreaData.Get))
 		{
-			if( areaData.HasMode((AreaMode)2) )
+			if (areaData.HasMode((AreaMode)2))
 			{
 				highestSideAvailable = 2;
 				break;
 			}
 
-			if( areaData.HasMode((AreaMode)1) )
+			if (areaData.HasMode((AreaMode)1))
 			{
 				highestSideAvailable = 1;
 			}
@@ -560,17 +560,17 @@ public static class BetterJournalModule
 	private static int GetLastUnmoddedRowIndex(List<OuiJournalPage.Row> rows)
 	{
 		var offset = 0;
-		if( modTotalsTimeCell != null && ModSettings.ShowModTimeInJournal )
+		if (modTotalsTimeCell != null && ModSettings.ShowModTimeInJournal)
 		{
 			offset = 2;
 		}
 
 		int val = rows.Count - 2 - offset;
-		if( val >= rows.Count - 1 )
+		if (val >= rows.Count - 1)
 		{
 			val = rows.Count - 1;
 		}
-		else if( val < 0 )
+		else if (val < 0)
 		{
 			val = 0;
 		}
@@ -581,28 +581,28 @@ public static class BetterJournalModule
 	private static int GetInterludeOffset(int index, SaveData instance, OuiJournal journal, out AreaStats? area, bool isCollabUtils2 = false)
 	{
 		List<AreaStats> areas;
-		if( isCollabUtils2 )
+		if (isCollabUtils2)
 		{
 			areas = CollabUtils2Integration.GetSortedCollabAreaStats(instance, journal);
-			area  = areas[index];
+			area = areas[index];
 			return 0;
 		}
 
 		var offset = 0;
 		areas = instance.LevelSetStats.AreasIncludingCeleste;
-		for( var i = 0; i < areas.Count - 1; i++ )
+		for (var i = 0; i < areas.Count - 1; i++)
 		{
-			if( AreaData.Get(areas[i]).Interlude_Safe )
+			if (AreaData.Get(areas[i]).Interlude_Safe)
 			{
 				offset++;
-				if( offset + index >= areas.Count )
+				if (offset + index >= areas.Count)
 				{
 					Log("weh");
 					area = null;
 					return 0;
 				}
 			}
-			else if( i >= index + offset )
+			else if (i >= index + offset)
 			{
 				break;
 			}
@@ -613,12 +613,12 @@ public static class BetterJournalModule
 	}
 
 	private static long GetTimeAtIndexFromDataType(
-		int                   index, OuiJournal journal, JournalDataType journalDataType, int mode, out int modesForThisArea, SaveData instance,
+		int index, OuiJournal journal, JournalDataType journalDataType, int mode, out int modesForThisArea, SaveData instance,
 		List<CustomAreaStats>? customAreaStats, bool isCollabUtils2
 	)
 	{
 		int offset = GetInterludeOffset(index, instance, journal, out AreaStats? area, isCollabUtils2);
-		if( area is null )
+		if (area is null)
 		{
 			modesForThisArea = 0;
 			return -1;
@@ -626,7 +626,7 @@ public static class BetterJournalModule
 
 		AreaData areaData = AreaData.Get(area);
 		modesForThisArea = isCollabUtils2 ? 1 : areaData.Mode.Length;
-		if( !areaData.HasMode((AreaMode)mode) )
+		if (!areaData.HasMode((AreaMode)mode))
 		{
 			return -1;
 		}
@@ -634,42 +634,42 @@ public static class BetterJournalModule
 		long newTimePlayed = area.Modes[mode].TimePlayed;
 
 		long totalTime = area.TotalTimePlayed;
-		if( SeparateABCSideTimes(instance) <= 0 )
+		if (SeparateABCSideTimes(instance) <= 0)
 		{
 			newTimePlayed = totalTime;
 		}
 
-		if( journalDataType == JournalDataType.Default )
+		if (journalDataType == JournalDataType.Default)
 		{
 			return totalTime;
 		}
 
-		if( journalDataType == JournalDataType.SeparateTimes )
+		if (journalDataType == JournalDataType.SeparateTimes)
 		{
 			return newTimePlayed;
 		}
 
-		if( customAreaStats is null )
+		if (customAreaStats is null)
 			return -1;
 
-		CustomAreaStats areaStats     = customAreaStats[index + offset];
-		long            oldTimePlayed = areaStats.TimePlayed[mode];
+		CustomAreaStats areaStats = customAreaStats[index + offset];
+		long oldTimePlayed = areaStats.TimePlayed[mode];
 
-		if( SeparateABCSideTimes(instance) <= 0 )
+		if (SeparateABCSideTimes(instance) <= 0)
 		{
 			oldTimePlayed = 0;
-			foreach( long time in areaStats.TimePlayed )
+			foreach (long time in areaStats.TimePlayed)
 			{
 				oldTimePlayed += time;
 			}
 		}
 
-		if( journalDataType == JournalDataType.Saved )
+		if (journalDataType == JournalDataType.Saved)
 		{
 			return oldTimePlayed;
 		}
 
-		if( journalDataType == JournalDataType.Difference )
+		if (journalDataType == JournalDataType.Difference)
 		{
 			return newTimePlayed - oldTimePlayed;
 		}
@@ -678,46 +678,46 @@ public static class BetterJournalModule
 	}
 
 	private static int GetDeathsAtIndexFromDataType(
-		int                    index, OuiJournal journal, JournalDataType journalDataType, int mode, ref int unlockedModes, SaveData instance,
+		int index, OuiJournal journal, JournalDataType journalDataType, int mode, ref int unlockedModes, SaveData instance,
 		List<CustomAreaStats>? customAreaStats, bool isCollabUtils2
 	)
 	{
 		int offset = GetInterludeOffset(index, instance, journal, out AreaStats? area, isCollabUtils2);
-		if( area is null )
+		if (area is null)
 		{
 			return -1;
 		}
-		
-		AreaData areaData         = AreaData.Get(area);
-		int      modesForThisArea = isCollabUtils2 ? 1 : areaData.Mode.Length;
-		if( modesForThisArea < unlockedModes )
+
+		AreaData areaData = AreaData.Get(area);
+		int modesForThisArea = isCollabUtils2 ? 1 : areaData.Mode.Length;
+		if (modesForThisArea < unlockedModes)
 		{
 			unlockedModes = modesForThisArea;
 		}
 
-		if( !areaData.HasMode((AreaMode)mode) )
+		if (!areaData.HasMode((AreaMode)mode))
 		{
 			return -1;
 		}
 
 		int newDeaths = area.Modes[mode].Deaths;
 
-		if( journalDataType is JournalDataType.Default or JournalDataType.SeparateTimes )
+		if (journalDataType is JournalDataType.Default or JournalDataType.SeparateTimes)
 		{
 			return newDeaths;
 		}
 
-		if( customAreaStats == null )
+		if (customAreaStats == null)
 			return -1;
 
 		CustomAreaStats areaStats = customAreaStats[index + offset];
-		int             oldDeaths = areaStats.Deaths[mode];
+		int oldDeaths = areaStats.Deaths[mode];
 
 		return journalDataType switch
 		{
-			JournalDataType.Saved      => oldDeaths,
+			JournalDataType.Saved => oldDeaths,
 			JournalDataType.Difference => newDeaths - oldDeaths,
-			_                          => -1,
+			_ => -1,
 		};
 	}
 
@@ -725,10 +725,10 @@ public static class BetterJournalModule
 	{
 		return journalDataType switch
 		{
-			JournalDataType.Saved                                    => Color.Green,
-			JournalDataType.Difference                               => Color.Red,
+			JournalDataType.Saved => Color.Green,
+			JournalDataType.Difference => Color.Red,
 			JournalDataType.Default or JournalDataType.SeparateTimes => JournalProgressPage?.TextColor ?? Color.White,
-			_                                                        => Color.White,
+			_ => Color.White,
 		};
 	}
 
@@ -736,33 +736,33 @@ public static class BetterJournalModule
 	{
 		return journalDataType switch
 		{
-			JournalDataType.Default       => "journal_progress".AsDialog(),
+			JournalDataType.Default => "journal_progress".AsDialog(),
 			JournalDataType.SeparateTimes => "MODOPTIONS_IZUMISQOL_BETTERJOURNAL_SEPARATEABCSIDE".AsDialog(),
-			JournalDataType.Saved         => "MODOPTIONS_IZUMISQOL_BETTERJOURNAL_SAVED".AsDialog(),
-			JournalDataType.Difference    => "MODOPTIONS_IZUMISQOL_BETTERJOURNAL_DIFFERENCE".AsDialog(),
-			_                             => "_ERROR_",
+			JournalDataType.Saved => "MODOPTIONS_IZUMISQOL_BETTERJOURNAL_SAVED".AsDialog(),
+			JournalDataType.Difference => "MODOPTIONS_IZUMISQOL_BETTERJOURNAL_DIFFERENCE".AsDialog(),
+			_ => "_ERROR_",
 		};
 	}
 
 	private static float GetHeaderTextSizeFromDataType(JournalDataType journalDataType, bool isCollabUtils2)
 	{
-		if( isCollabUtils2 )
+		if (isCollabUtils2)
 			return 1f;
 
 		return journalDataType switch
 		{
-			JournalDataType.Default       => 1f,
+			JournalDataType.Default => 1f,
 			JournalDataType.SeparateTimes => 0.6f,
-			JournalDataType.Saved         => 1.4f,
-			JournalDataType.Difference    => 0.85f,
-			_                             => 1f,
+			JournalDataType.Saved => 1.4f,
+			JournalDataType.Difference => 0.85f,
+			_ => 1f,
 		};
 	}
 
 	private static long GetTotalModTime()
 	{
 		var instance = SaveData.Instance;
-		if( instance == null )
+		if (instance == null)
 			return 0;
 
 		long totalTime = 0;
@@ -773,7 +773,7 @@ public static class BetterJournalModule
 	private static int GetTotalModDeaths()
 	{
 		var instance = SaveData.Instance;
-		if( instance == null )
+		if (instance == null)
 			return 0;
 
 		var totalDeaths = 0;
@@ -783,24 +783,24 @@ public static class BetterJournalModule
 
 	private static void AddModTotalToJournal(OuiJournalProgress journalProgressPage, OuiJournalPage.Table table)
 	{
-		if( !ModSettings.ShowModTimeInJournal )
+		if (!ModSettings.ShowModTimeInJournal)
 			return;
 
 		OuiJournalPage.Row row = table
-		                         .AddRow().Add(new OuiJournalPage.TextCell(
-			                         "MODOPTIONS_IZUMISQOL_BETTERJOURNAL_MODTOTALS".AsDialog(), new Vector2(1f, 0.5f), 0.7f,
-			                         journalProgressPage.TextColor))
-		                         .Add(null)
-		                         .Add(null)
-		                         .Add(null)
-		                         .Add(null)
-		                         .Add(null);
+														 .AddRow().Add(new OuiJournalPage.TextCell(
+															 "MODOPTIONS_IZUMISQOL_BETTERJOURNAL_MODTOTALS".AsDialog(), new Vector2(1f, 0.5f), 0.7f,
+															 journalProgressPage.TextColor))
+														 .Add(null)
+														 .Add(null)
+														 .Add(null)
+														 .Add(null)
+														 .Add(null);
 		row.Add(new OuiJournalPage.TextCell(Dialog.Deaths(GetTotalModDeaths()), journalProgressPage.TextJustify, 0.6f,
 			journalProgressPage.TextColor)
 		{
 			SpreadOverColumns = SaveData.Instance.UnlockedModes,
 		});
-		for( var i = 1; i < SaveData.Instance.UnlockedModes; i++ )
+		for (var i = 1; i < SaveData.Instance.UnlockedModes; i++)
 		{
 			row.Add(null);
 		}
@@ -816,18 +816,18 @@ public static class BetterJournalModule
 	{
 		orig(self, journal);
 
-		if( !ModSettings.BetterJournalEnabled )
+		if (!ModSettings.BetterJournalEnabled)
 			return;
 
-		DynamicData          journalProgressDynData = DynamicData.For(self);
-		var table                  = journalProgressDynData.Get<OuiJournalPage.Table>("table");
-		if( table is null )
+		DynamicData journalProgressDynData = DynamicData.For(self);
+		var table = journalProgressDynData.Get<OuiJournalPage.Table>("table");
+		if (table is null)
 		{
 			return;
 		}
 
 		table.AddColumn(new OuiJournalPage.EmptyCell(100f))
-		     .AddColumn(new OuiJournalPage.EmptyCell(100f));
+				 .AddColumn(new OuiJournalPage.EmptyCell(100f));
 
 		AddModTotalToJournal(self, table);
 	}
@@ -837,7 +837,7 @@ public static class BetterJournalModule
 	)
 	{
 		orig(self, buffer);
-		if( self.GetType() != typeof(OuiJournalProgress) && !CollabUtils2Integration.IsCU2ProgressPage(self) )
+		if (self.GetType() != typeof(OuiJournalProgress) && !CollabUtils2Integration.IsCU2ProgressPage(self))
 		{
 			return;
 		}
@@ -853,8 +853,8 @@ public static class BetterJournalModule
 	public static void OnJournalClose(On.Celeste.OuiJournal.orig_Close orig, OuiJournal self)
 	{
 		CurrJournalDataType = JournalDataType.Default;
-		JournalSnapshot     = null;
-		_journal             = null;
+		JournalSnapshot = null;
+		_journal = null;
 		renderTargets.Clear();
 
 		orig(self);
@@ -863,11 +863,11 @@ public static class BetterJournalModule
 	private static bool SaveJournalSnapshot(OuiJournal journal)
 	{
 		var instance = SaveData.Instance;
-		if( instance == null )
+		if (instance == null)
 			return false;
 
 		List<CustomAreaStats> customAreaStats = [];
-		List<AreaStats>       areaStats;
+		List<AreaStats> areaStats;
 		// areaStats = !ProgressPageIsCollabUtils2 ? instance.LevelSetStats.AreasIncludingCeleste : CollabUtils2Integration.GetSortedCollabAreaStats(instance, journal);
 		areaStats = ProgressPageIsCollabUtils2 ? CollabUtils2Integration.GetSortedCollabAreaStats(instance, journal) : instance.LevelSetStats.AreasIncludingCeleste;
 
@@ -875,16 +875,16 @@ public static class BetterJournalModule
 		areaStats.ForEach(area => area.SID.Log());
 
 		string levelSet = areaStats[0].LevelSet.Replace("/", "").Replace("\n", "");
-		string path     = journalStatsPath + instance.FileSlot + "_" + levelSet + ".txt";
+		string path = journalStatsPath + instance.FileSlot + "_" + levelSet + ".txt";
 		try
 		{
-			FileStream         fileStream = File.Create(path);
-			using StreamWriter writer     = new(fileStream);
+			FileStream fileStream = File.Create(path);
+			using StreamWriter writer = new(fileStream);
 			YamlHelper.Serializer.Serialize(writer, customAreaStats, typeof(List<CustomAreaStats>));
 			Log("Saved journal to: " + path);
 			return true;
 		}
-		catch( Exception ex )
+		catch (Exception ex)
 		{
 			Log(ex);
 			return false;
@@ -894,26 +894,26 @@ public static class BetterJournalModule
 	private static List<CustomAreaStats>? LoadJournalSnapshot(OuiJournal journal)
 	{
 		var instance = SaveData.Instance;
-		if( instance == null )
+		if (instance == null)
 			return null;
 
 		List<CustomAreaStats>? customAreaStats = null;
 
 		try
 		{
-			if( !JournalStatFileExists(journal, instance, out string path) )
+			if (!JournalStatFileExists(journal, instance, out string path))
 			{
 				Log("Could not read from: " + path);
 				return null;
 			}
 
-			FileStream         fileStream = File.OpenRead(path);
-			using StreamReader reader     = new(fileStream);
+			FileStream fileStream = File.OpenRead(path);
+			using StreamReader reader = new(fileStream);
 			customAreaStats =
 				(List<CustomAreaStats>?)YamlHelper.Deserializer.Deserialize(reader, typeof(List<CustomAreaStats>));
 			Log("Successfully read journal snapshot from: " + path);
 		}
-		catch( Exception ex )
+		catch (Exception ex)
 		{
 			Log(ex, LogLevel.Error);
 		}
@@ -924,11 +924,10 @@ public static class BetterJournalModule
 	private static bool JournalStatFileExists(OuiJournal journal, SaveData instance, out string path)
 	{
 		string? levelSet;
-		if( ProgressPageIsCollabUtils2 )
+		ProgressPageIsCollabUtils2.Log("ProgressPageIsCollabUtils2");
+		if (ProgressPageIsCollabUtils2)
 		{
-			levelSet = journal.Overworld == null
-				? null
-				: new DynData<Overworld>(journal.Overworld).Get<AreaData>("collabInGameForcedArea")?.LevelSet;
+			levelSet = CollabUtils2Integration.GetCurrentLevelSet();
 		}
 		else
 		{
@@ -936,14 +935,14 @@ public static class BetterJournalModule
 		}
 
 		levelSet = levelSet?.Replace("/", "").Replace("\n", "");
-		path     = journalStatsPath + instance.FileSlot + "_" + levelSet + ".txt";
+		path = journalStatsPath + instance.FileSlot + "_" + levelSet + ".txt";
 		return File.Exists(path);
 	}
 
 	private struct CustomAreaStats
 	{
 		public long[] TimePlayed = new long[3];
-		public int[]  Deaths     = new int[3];
+		public int[] Deaths = new int[3];
 
 		public CustomAreaStats(AreaModeStats[] areaModes)
 		{
@@ -959,7 +958,7 @@ public static class BetterJournalModule
 		public CustomAreaStats(long[] timePlayed, int[] deaths)
 		{
 			TimePlayed = timePlayed;
-			Deaths     = deaths;
+			Deaths = deaths;
 		}
 
 		public CustomAreaStats() { }
